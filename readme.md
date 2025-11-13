@@ -3,7 +3,7 @@
 A desktop password manager built with PySide6, SQLite, and modern UX touches:
 status badges, multi-select actions, sortable columns, and automatic backups.
 
-## ✨ Features
+## Features
 
 - **Clean UI**
   - Modern table with hover highlight and **sortable headers** (including proper ordering for the **Status** column).
@@ -38,7 +38,7 @@ status badges, multi-select actions, sortable columns, and automatic backups.
     - `Alt+A` Copy App Password
   - Auto-clears clipboard after a configurable timeout.
 
-## 🧰 Tech
+## Tech
 
 - **PySide6** for the UI.
 - **SQLite** for storage.
