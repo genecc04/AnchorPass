@@ -55,16 +55,7 @@ class MainWindow(PreviewMixin, BackupMixin, LockMixin, CrudMixin, TableMixin, Tr
         self.ui_builder.build_central_widget()
         self.ui_builder.wire_connections()
 
-        self._login()
-        self._cache_active_db_path_safely()
-        self.populate_tree()
-        self.reload()
-        self._update_actions_for_selection()
-
-        self._start_idle_lock_timer()
-        self._start_scheduled_backup_timer()
-        self._start_sleep_guard()
-        self._start_expiration_checker()
+        self.prompt_login(force=True)
         
     def _cache_active_db_path_safely(self):
         try:
@@ -331,7 +322,7 @@ class MainWindow(PreviewMixin, BackupMixin, LockMixin, CrudMixin, TableMixin, Tr
 
                 try:
                     db.delete_entry(entry_id)
-                    self.populate_tree()  # Refresh tree to show Deleted folder
+                    self.populate_tree()
                     self.reload()
                     self._log_status("Moved to Trash", 1500)
                 except Exception as e:
@@ -346,7 +337,6 @@ class MainWindow(PreviewMixin, BackupMixin, LockMixin, CrudMixin, TableMixin, Tr
             return
 
         if self._in_deleted_folder():
-            # PERMANENT DELETE
             if len(ids) == 1:
                 msg = "Permanently delete the selected entry?\n\nThis cannot be undone!"
             else:
@@ -369,7 +359,6 @@ class MainWindow(PreviewMixin, BackupMixin, LockMixin, CrudMixin, TableMixin, Tr
             else:
                 QMessageBox.warning(self, "Delete", f"Permanently deleted {len(ids)-errors}, but {errors} failed.")
         else:
-            # SOFT DELETE
             if len(ids) == 1:
                 msg = f"Move the entry '{self.table.item(self.table.currentRow(), 0).text()}' to Trash?"
             else:
@@ -692,7 +681,7 @@ class MainWindow(PreviewMixin, BackupMixin, LockMixin, CrudMixin, TableMixin, Tr
             now = time.monotonic()
             delta = now - getattr(self, "_sleep_guard_last", now)
             self._sleep_guard_last = now
-            if delta > 20:  # System likely slept
+            if delta > 20:
                 self.lock()
         except Exception:
             self._sleep_guard_last = time.monotonic()
@@ -763,3 +752,8 @@ class MainWindow(PreviewMixin, BackupMixin, LockMixin, CrudMixin, TableMixin, Tr
         self.reload()
         if hasattr(self, "_update_actions_for_selection"):
             self._update_actions_for_selection()
+
+    def _set_menu_locked_state(self, locked: bool):
+        mb = self.menuBar()
+        if mb:
+            mb.setEnabled(not locked)

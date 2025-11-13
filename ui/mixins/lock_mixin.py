@@ -1,19 +1,51 @@
 from PySide6.QtWidgets import QMessageBox
 from PySide6.QtCore import QEvent
 import time
-
+from pathlib import Path
 from ui.mixins.auth_mixin import AuthMixin
 
 
 class LockMixin:
-    def lock(self):
+    def lock(self, show_toast: bool = True) -> None:
         self.master = None
         self.cipher = None
-        self.table.setRowCount(0)
-        self.search.clear()
-        QMessageBox.information(self, "Locked", "Vault locked.")
-        self._login()
-        self.reload()
+        self._set_menu_locked_state(True)
+        self.show_lock_overlay(True)
+
+        try:
+            if hasattr(self, "table"):
+                self.table.blockSignals(True)
+                self.table.clearSelection()
+                self.table.setRowCount(0)
+        finally:
+            if hasattr(self, "table"):
+                self.table.blockSignals(False)
+
+        if hasattr(self, "search"):
+            self.search.clear()
+
+        try:
+            if hasattr(self, "_preview_panel"):
+                self._preview_panel.update_plain(None)
+                self._preview_panel.stop()
+        except Exception:
+            pass
+
+        if hasattr(self, "_update_actions_for_selection"):
+            self._update_actions_for_selection()
+
+        if hasattr(self, "show_lock_overlay"):
+            try:
+                self.show_lock_overlay(True)
+            except Exception:
+                pass
+
+        try:
+            if show_toast and hasattr(self, "statusBar"):
+                self.statusBar().showMessage("Vault locked.", 2000)
+        except Exception:
+            pass
+
 
     def change_master_password(self):
         return AuthMixin.change_master_password(self)
@@ -41,6 +73,13 @@ class LockMixin:
         self.reload()
 
     def _update_title(self):
-        if self.current_db:
-            self.setWindowTitle(f"Secure Password Manager: {self.current_db}")
-            self.status_label.setText(f"Active DB: {self.current_db}")
+        db_path = (getattr(self, "current_db", "") or "").strip()
+        if db_path:
+            fname = Path(db_path).name
+            self.setWindowTitle(f"Secure Password Manager: {fname}")
+            if hasattr(self, "status_label"):
+                self.status_label.setText(f"Active DB: {fname}")
+        else:
+            self.setWindowTitle("Secure Password Manager")
+            if hasattr(self, "status_label"):
+                self.status_label.setText("No database open")

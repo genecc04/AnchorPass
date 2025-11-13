@@ -6,7 +6,63 @@ QWidget {
     outline: none;
 }
 * { outline: none; }
-/* Hide dropdown arrows/buttons globally */
+
+/* ===== LockOverlay ===== */
+#LockOverlay {
+                background: rgba(0, 0, 0, 0.15);
+            }
+
+
+#LockOverlay QPushButton {
+    font-size: 40px;
+    padding: 8px 32px;
+    font-weight: 600;
+}
+
+/* QMenuBar base look */
+QMenuBar#AppMenuBar {
+    background: #0f172a;    /* slate-900-ish */
+    color: #e5e7eb;         /* slate-200 */
+}
+
+QMenuBar#AppMenuBar::item {
+    padding: 6px 10px;
+    background: transparent;
+}
+
+/* normal hover/active */
+QMenuBar#AppMenuBar::item:selected {
+    background: rgba(255,255,255,0.06);
+    border-radius: 6px;
+}
+
+/* pure disabled (when you call setEnabled(false)) */
+QMenuBar#AppMenuBar:disabled {
+    background: #0b1220;
+    color: #8a8f98;
+}
+QMenuBar#AppMenuBar:disabled::item {
+    color: #8a8f98;
+}
+QMenuBar#AppMenuBar:disabled::item:selected,
+QMenuBar#AppMenuBar:disabled::item:pressed {
+    background: transparent; /* no hover highlight when disabled */
+}
+
+/* OPTIONAL: locked property – lets you style even if you keep some actions enabled */
+QMenuBar#AppMenuBar[locked="true"] {
+    background: #0b1220;
+    color: #8a8f98;
+    /* subtle top border to signal state */
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+QMenuBar#AppMenuBar[locked="true"]::item {
+    color: #8a8f98;
+}
+QMenuBar#AppMenuBar[locked="true"]::item:selected,
+QMenuBar#AppMenuBar[locked="true"]::item:pressed {
+    background: transparent;
+}
 
 /* QComboBox */
 QComboBox::drop-down {

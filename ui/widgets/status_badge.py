@@ -182,7 +182,7 @@ class StatusBadgeTableWidget(QWidget):
 
         self._check_timer = QTimer(self)
         self._check_timer.timeout.connect(self._check_selection)
-        self._check_timer.start(100)  # Check every 100ms
+        self._check_timer.start(100)
 
     def _check_selection(self):
         parent = self.parent()

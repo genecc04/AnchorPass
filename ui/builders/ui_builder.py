@@ -21,6 +21,7 @@ class UIBuilder:
     def build_menus(self):
         menubar = self.window.menuBar()
         menubar.setNativeMenuBar(False)
+        menubar.setObjectName("AppMenuBar")
 
         file_menu = menubar.addMenu("&File")
         file_menu.addAction(QAction("Change Database", self.window, 
@@ -154,10 +155,10 @@ class UIBuilder:
         if hasattr(self.window, "_init_preview_pane"):
             self.window._init_preview_pane(self.window.splitter_r)
 
-        self.window.splitter_h.setStretchFactor(0, 0)  # tree
-        self.window.splitter_h.setStretchFactor(1, 1)  # right pane
-        self.window.splitter_r.setStretchFactor(0, 1)  # table
-        self.window.splitter_r.setStretchFactor(1, 0)  # preview
+        self.window.splitter_h.setStretchFactor(0, 0)
+        self.window.splitter_h.setStretchFactor(1, 1)
+        self.window.splitter_r.setStretchFactor(0, 1)
+        self.window.splitter_r.setStretchFactor(1, 0)
     
     def _setup_table(self):
         self.window.setup_table()

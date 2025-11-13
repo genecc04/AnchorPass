@@ -89,7 +89,7 @@ class TotpRingWidget(QWidget):
         if p <= 0:
             return
         now = int(time.time())
-        new_remaining = p - 1 - (now % p)  # 29..0 UX
+        new_remaining = p - 1 - (now % p)
         if new_remaining == p - 1 and self._remaining != new_remaining:
             self.rollover.emit()
         self._remaining = new_remaining
@@ -115,7 +115,7 @@ class TotpRingWidget(QWidget):
         p.drawArc(r, 90 * 16, -360 * 16)
 
         frac = (self._remaining / float(self._period)) if self._period > 0 else 0.0
-        span = -int(360 * 16 * frac)  # clockwise
+        span = -int(360 * 16 * frac)
         pen.setColor(self._fg_color)
         p.setPen(pen)
         p.drawArc(r, 90 * 16, span)

@@ -97,7 +97,7 @@ def glyph(name: Union[str, Icon], *, fallback: str = "") -> str:
     key = str(name)
 
     if key:
-        return key  # ligature text
+        return key
     return _codepoints.get(key, fallback)
 
 

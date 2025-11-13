@@ -31,7 +31,6 @@ def change_status(id_: int, new_status: str) -> None:
         c = conn.cursor()
         now = _now_iso()
         
-        # Set the appropriate timestamp based on status
         if new_status == 'expired':
             c.execute(
                 "UPDATE passwords SET status=?, expired_at=?, date_modified=? WHERE id=?;",

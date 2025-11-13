@@ -3,7 +3,7 @@ from PySide6.QtWidgets import ( QWidget, QVBoxLayout, QGroupBox, QGridLayout, QC
 
 class CharacterSetsTab(QWidget):
 
-    EXCLUDED_SIMILAR = set("O0l1I|")  # O/0, l/1, I/|
+    EXCLUDED_SIMILAR = set("O0l1I|")
 
     def __init__(self, parent=None):
         super().__init__(parent)

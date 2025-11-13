@@ -1,31 +1,35 @@
-from PySide6.QtWidgets import QMessageBox, QDialog
+from PySide6.QtWidgets import QMessageBox, QDialog, QWidget, QVBoxLayout, QLabel, QPushButton
+from PySide6.QtCore import QEventLoop, Qt
 from core import db, crypto, security
 from ui.dialogs import DatabaseDialog, MasterDialog, ChangePasswordDialog
-import os, sys
+from ui.widgets.unlock_overlay import UnlockOverlay, LockOverlay
 from pathlib import Path
 from core.db_paths import get_user_documents_dir
 
 class AuthMixin:
-    def _login(self):
-        from PySide6.QtWidgets import QMessageBox
+    def _login(self) -> bool:
         default_db_dir = get_user_documents_dir() / "securepasswordmanager" / "data"
+
         while True:
-            db_dlg = DatabaseDialog()
-            if not db_dlg.exec():
+            db_dlg = DatabaseDialog(self)
+            if db_dlg.exec() != QDialog.Accepted:
                 return False
+
             db_path, is_new_db = db_dlg.values()
             if not db_path:
                 QMessageBox.warning(self, "Error", "Create a database first.")
                 continue
+
             p = Path(str(db_path))
             if is_new_db:
                 parent = p.parent if str(p.parent) not in ("", ".", "/") else default_db_dir
-                filename = p.name or "vault.db"
                 try:
                     parent.mkdir(parents=True, exist_ok=True)
                 except Exception:
                     pass
+                filename = p.name or "vault.db"
                 p = parent / filename
+
             db_path = str(p)
             break
 
@@ -39,9 +43,10 @@ class AuthMixin:
             self._ensure_backup_path_default()
         except Exception:
             pass
-        
+
         while True:
-            dlg = MasterDialog(setup=is_new_db, icon_family=getattr(self, "icon_family", None))
+            dlg = MasterDialog(setup=is_new_db, parent=self,
+                            icon_family=getattr(self, "icon_family", None))
             if dlg.exec() != QDialog.Accepted:
                 return False
 
@@ -64,7 +69,12 @@ class AuthMixin:
         self.master = p1
         self.auto_lock_minutes = minutes
 
-        self._repair_encryption()
+        try:
+            self._repair_encryption()
+        except Exception:
+            pass
+
+        return True
 
     def change_master_password(self):
         dlg = ChangePasswordDialog(self, icon_family=getattr(self, "icon_family", None))
@@ -152,3 +162,99 @@ class AuthMixin:
 
         except Exception as e:
             print(f"[Repair skipped] {e}")
+
+    def _ask_master_inline(self, setup: bool):
+        overlay = UnlockOverlay(parent=self.centralWidget(), setup=setup,
+                                icon_family=getattr(self, "icon_family", None))
+        overlay.show(); overlay.raise_()
+
+        loop = QEventLoop()
+        result = {"ok": False, "p1": "", "p2": "", "m": 0}
+
+        def on_ok(p1, p2, minutes):
+            result.update(ok=True, p1=p1, p2=p2, m=minutes)
+            loop.quit()
+
+        def on_cancel():
+            result.update(ok=False)
+            loop.quit()
+
+        overlay.accepted.connect(on_ok)
+        overlay.canceled.connect(on_cancel)
+
+        loop.exec()
+        overlay.deleteLater()
+        return result["ok"], result["p1"], result["p2"], result["m"]
+    
+    def prompt_login(self, force: bool = False) -> None:
+        if getattr(self, "_login_in_progress", False):
+            return
+        if getattr(self, "cipher", None) and not force:
+            return
+
+        self._login_in_progress = True
+        try:
+            ok = self._login()
+            if ok:
+                    self.unlock()
+            else:
+                    self.lock()
+        finally:
+            self._login_in_progress = False
+
+    def unlock(self):
+        self.show_lock_overlay(False)
+        self._set_menu_locked_state(False)
+        if hasattr(self, "show_lock_overlay"):
+            self.show_lock_overlay(False)
+        if hasattr(self, "_cache_active_db_path_safely"):
+            self._cache_active_db_path_safely()
+        if hasattr(self, "populate_tree"):
+            self.populate_tree()
+        if hasattr(self, "reload"):
+            self.reload()
+        if hasattr(self, "_update_actions_for_selection"):
+            self._update_actions_for_selection()
+
+        for fn in ("_start_idle_lock_timer",
+                "_start_scheduled_backup_timer",
+                "_start_sleep_guard",
+                "_start_expiration_checker"):
+            if hasattr(self, fn):
+                getattr(self, fn)()
+
+    def _init_lock_overlay(self):
+        if hasattr(self, "_lock_overlay"):
+            return
+        cw = self.centralWidget()
+        self._lock_overlay = QWidget(cw)
+        self._lock_overlay.setObjectName("LockOverlay")
+        self._lock_overlay.setAttribute(Qt.WA_StyledBackground, True)
+        self._lock_overlay.setAttribute(Qt.WA_TransparentForMouseEvents, False)
+        self._lock_overlay.setFocusPolicy(Qt.StrongFocus)
+
+        lay = QVBoxLayout(self._lock_overlay)
+        lay.setContentsMargins(24, 24, 24, 24)
+        lay.setSpacing(16)
+
+        btn = QPushButton("Unlock")
+        btn.setDefault(True)
+        btn.clicked.connect(lambda: self.prompt_login(force=True))
+        lay.addWidget(btn, 0, Qt.AlignCenter)
+
+        self._lock_btn = btn
+
+    def show_lock_overlay(self, show: bool):
+        cw = self.centralWidget()
+        if not hasattr(self, "_lock_overlay"):
+            self._init_lock_overlay()
+        self._lock_overlay.setGeometry(cw.rect())
+        self._lock_overlay.setVisible(show)
+        if show:
+            self._lock_overlay.raise_()
+            try:
+                self._lock_overlay.setFocus(Qt.FocusReason.ActiveWindowFocusReason)
+            except Exception:
+                self._lock_overlay.setFocus()
+            if hasattr(self, "_lock_btn"):
+                self._lock_btn.setEnabled(True)

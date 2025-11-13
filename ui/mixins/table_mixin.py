@@ -350,7 +350,6 @@ class TableMixin:
         menu.exec(self.table.viewport().mapToGlobal(pos))
         self.table.clearFocus()
 
-    # Lifecycle helper methods
     def _archive_single_entry(self, entry_id: int):
         try:
             db.change_status(entry_id, "archived")
@@ -471,6 +470,6 @@ class TableMixin:
                         first_row = r
             except Exception:
                 pass
-        # keep keyboard focus sensible
+
         if first_row is not None:
             self.table.setCurrentCell(first_row, 0)

@@ -221,7 +221,6 @@ class PasswordLineEdit(QLineEdit):
         if enabled:
             if self._copy_action is None:
                 self._create_copy_action()
-            # respect current text content
             self._update_copy_visibility(self.text())
         else:
             if self._copy_action is not None:
@@ -377,9 +376,9 @@ class PasswordLineEdit(QLineEdit):
 
         try:
             if _ZXCVBN:
-                score, _ = _score_with_zxcvbn(text)  # 0..4
+                score, _ = _score_with_zxcvbn(text)
             else:
-                score, _ = _score_heuristic(text)    # 0..4
+                score, _ = _score_heuristic(text)
         except Exception:
             score = 0
 
