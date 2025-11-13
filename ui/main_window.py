@@ -528,24 +528,32 @@ class MainWindow(PreviewMixin, BackupMixin, LockMixin, CrudMixin, TableMixin, Tr
 
     def _get_all_selected_entry_ids(self) -> list[int]:
         ids, seen = [], set()
-        try:
-            rows = self.table.selectionModel().selectedRows()
-        except Exception:
-            rows = []
+        sm = self.table.selectionModel()
+        if not sm:
+            return ids
 
-        for idx in rows:
-            try:
-                self.table.setCurrentIndex(idx)
-                eid = self._get_selected_entry_id_from_table()
-                if eid and eid not in seen:
-                    ids.append(eid)
-                    seen.add(eid)
-            except Exception:
-                pass
+        for idx in sm.selectedRows():
+            eid = None
+            it0 = self.table.item(idx.row(), 0)
+            if it0 is not None:
+                val = it0.data(Qt.UserRole)
+                try:
+                    eid = int(val) if val is not None else None
+                except Exception:
+                    eid = None
 
-        if rows:
-            self.table.setCurrentIndex(rows[0])
+            if eid is None and hasattr(self, "_current_rows"):
+                try:
+                    eid = int(self._current_rows[idx.row()][0])
+                except Exception:
+                    pass
+
+            if eid is not None and eid not in seen:
+                seen.add(eid)
+                ids.append(eid)
+
         return ids
+
 
     def reload(self):
         try:

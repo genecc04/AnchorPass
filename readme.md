@@ -42,8 +42,8 @@ status badges, multi-select actions, sortable columns, and automatic backups.
 
 - **PySide6** for the UI.
 - **SQLite** for storage.
-- **Cryptography** for encryption (via your `cipher` pipeline).
-- **zxcvbn** (or `_zxcvbn` port) for strength estimation.
+- **Cryptography** for encryption.
+- **zxcvbn** for strength estimation.
 - **EFF Short Wordlist #1** for passphrase generation.
 
 Third-party attributions are in **THIRD_PARTY_NOTICES.md** (MIT for zxcvbn; CC-BY-4.0 for the EFF list).  

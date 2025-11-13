@@ -12,7 +12,7 @@ class AuthMixin:
         while True:
             db_dlg = DatabaseDialog()
             if not db_dlg.exec():
-                sys.exit(0)
+                return False
             db_path, is_new_db = db_dlg.values()
             if not db_path:
                 QMessageBox.warning(self, "Error", "Create a database first.")
@@ -39,21 +39,25 @@ class AuthMixin:
             self._ensure_backup_path_default()
         except Exception:
             pass
+        
+        while True:
+            dlg = MasterDialog(setup=is_new_db, icon_family=getattr(self, "icon_family", None))
+            if dlg.exec() != QDialog.Accepted:
+                return False
 
-        dlg = MasterDialog(setup=is_new_db, icon_family=getattr(self, "icon_family", None))
-        if not dlg.exec():
-            sys.exit(0)
+            p1, p2, minutes = dlg.values()
 
-        p1, p2, minutes = dlg.values()
-
-        if is_new_db:
-            if not p1 or p1 != p2:
-                QMessageBox.warning(self, "Error", "Passwords do not match.")
-                sys.exit(1)
-            security.set_master(p1)
-        elif not security.verify_master(p1):
-            QMessageBox.critical(self, "Error", "Incorrect master password.")
-            sys.exit(1)
+            if is_new_db:
+                if not p1 or p1 != p2:
+                    QMessageBox.warning(self, "Error", "Passwords do not match.")
+                    continue
+                security.set_master(p1)
+                break
+            else:
+                if not security.verify_master(p1):
+                    QMessageBox.critical(self, "Error", "Incorrect master password.")
+                    continue
+                break
 
         salt = security.get_salt()
         self.cipher = crypto.make_cipher(p1, salt)

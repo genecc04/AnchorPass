@@ -7,7 +7,7 @@ from ui.widgets.status_badge import StatusBadgeTableWidget
 from core import db
 from core import totp as totp_util
 from core.settings_manager import SettingsManager
-
+from ui.mixins.tree_mixin import TreeMixin
 
 class TableMixin:
     def setup_table(self):
@@ -101,24 +101,40 @@ class TableMixin:
             self.table.setCellWidget(r, 3, badge)
             it_status.setSizeHint(badge.sizeHint())
 
-        if rows:
-            self.table.setCurrentCell(0, 0)
-
         self.table.setSortingEnabled(True)
         if prev_col >= 0:
             self.table.sortItems(prev_col, prev_order)
 
     def reload(self):
+        prev_ids = self._remember_selected_ids()
+
         try:
             db.check_and_expire_entries()
         except Exception:
             pass
-            
-        if getattr(self, "current_category", None):
-            rows = db.fetch_by_category(self.current_category, include_descendants=False)
-        else:
+
+        cat = getattr(self, "current_category", None)
+        try:
+            if cat == getattr(TreeMixin, "SPECIAL_DELETED", "__SPECIAL_DELETED__"):
+                rows = db.fetch_by_status("deleted")
+            elif cat == getattr(TreeMixin, "SPECIAL_EXPIRED", "__SPECIAL_EXPIRED__"):
+                rows = db.fetch_by_status("expired")
+            elif cat == getattr(TreeMixin, "SPECIAL_ARCHIVED", "__SPECIAL_ARCHIVED__"):
+                rows = db.fetch_by_status("archived")
+            elif cat:
+                rows = db.fetch_by_category(cat, include_descendants=False)
+            else:
+                rows = db.fetch_all()
+        except Exception:
             rows = db.fetch_all()
+
         self._load_table(rows)
+
+        if prev_ids:
+            self._select_rows_by_ids(prev_ids)
+        elif rows:
+            self.table.setCurrentCell(0, 0)
+
 
     def filter_table(self, text: str):
         text = (text or "").strip()
@@ -377,7 +393,7 @@ class TableMixin:
             return
         
         try:
-            from ui.mixins.tree_mixin import TreeMixin
+            
             SPECIAL_DELETED = TreeMixin.SPECIAL_DELETED
             SPECIAL_ARCHIVED = TreeMixin.SPECIAL_ARCHIVED
             SPECIAL_EXPIRED = TreeMixin.SPECIAL_EXPIRED
@@ -419,3 +435,42 @@ class TableMixin:
                 self._log_status("Entry permanently deleted", 1500)
             except Exception as e:
                 QMessageBox.critical(self, "Error", f"Failed to permanently delete entry:\n{e}")
+
+    def _remember_selected_ids(self) -> list[int]:
+        ids = []
+        sm = self.table.selectionModel()
+        if not sm:
+            return ids
+        for idx in sm.selectedRows():
+            try:
+                it0 = self.table.item(idx.row(), 0)
+                val = it0.data(Qt.UserRole) if it0 else None
+                if val is not None:
+                    ids.append(int(val))
+            except Exception:
+                pass
+        return ids
+
+    def _select_rows_by_ids(self, ids: list[int]) -> None:
+        if not ids:
+            return
+        sm = self.table.selectionModel()
+        if not sm:
+            return
+        sm.clearSelection()
+        first_row = None
+        for r in range(self.table.rowCount()):
+            it0 = self.table.item(r, 0)
+            if not it0:
+                continue
+            try:
+                val = it0.data(Qt.UserRole)
+                if val is not None and int(val) in ids:
+                    self.table.selectRow(r)
+                    if first_row is None:
+                        first_row = r
+            except Exception:
+                pass
+        # keep keyboard focus sensible
+        if first_row is not None:
+            self.table.setCurrentCell(first_row, 0)

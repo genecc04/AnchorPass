@@ -226,6 +226,8 @@ class PreviewMixin:
         self._preview_panel.setMinimumHeight(0)
         self._preview_panel.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
 
+        self._preview_panel._show_empty(True)
+
         if self.splitter_r.count() == 0:
             self.splitter_r.addWidget(QWidget())
         self.splitter_r.addWidget(self._preview_panel)
