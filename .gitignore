@@ -1,0 +1,44 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+*.pyd
+*.egg-info/
+.buildozer/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Qt / PySide / UI artifacts
+*.qm
+*.qrc
+*.pyc
+*.pyo
+__pycache__/
+
+# Packaging / build output
+build/
+dist/
+*.spec
+
+# Logs & misc
+*.log
+.cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.pytest_cache/
+
+# Local settings / secrets
+*.env
+.env.*

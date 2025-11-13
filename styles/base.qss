@@ -1,0 +1,41 @@
+/* Keep only non-theme, structural defaults here. Colors live in dark.qss. */
+
+QWidget {
+    font-family: "Segoe UI", "Inter", "Roboto", Arial, sans-serif;
+    font-size: 13px;
+    outline: none;
+}
+* { outline: none; }
+/* Hide dropdown arrows/buttons globally */
+
+/* QComboBox */
+QComboBox::drop-down {
+    width: 0;
+    border: none;
+    padding: 0;
+}
+QComboBox::down-arrow {
+    width: 0;
+    height: 0;
+    image: none;
+}
+/* remove the space usually reserved for the arrow */
+QComboBox {
+    padding-right: 8px;  /* keep your existing padding; just ensure it's not huge */
+}
+
+/* Date/Time edits that show a drop-down (e.g., calendar) */
+QDateEdit::drop-down,
+QTimeEdit::drop-down,
+QDateTimeEdit::drop-down {
+    width: 0;
+    border: none;
+    padding: 0;
+}
+QDateEdit::down-arrow,
+QTimeEdit::down-arrow,
+QDateTimeEdit::down-arrow {
+    width: 0;
+    height: 0;
+    image: none;
+}

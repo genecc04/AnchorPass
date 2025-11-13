@@ -1,0 +1,9 @@
+# GUI
+PySide6>=6.5
+
+# Crypto
+cryptography>=42.0
+bcrypt>=4.0
+
+# Password strength estimator (used as: from zxcvbn import zxcvbn)
+zxcvbn>=4.4.28

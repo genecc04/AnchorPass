@@ -1,0 +1,5 @@
+duplicate entry
+
+color customization
+
+lock database, change database icon

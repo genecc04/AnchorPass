@@ -1,0 +1,370 @@
+/* ===== Global ===== */
+QWidget {
+    background-color: #121212;
+    color: #e6e6e6;
+    font-family: "Segoe UI", "Inter", "Roboto", Arial, sans-serif;
+    font-size: 13px;
+    outline: none;
+}
+* { outline: none; }
+
+QLineEdit { color: #ffffff; }
+#totpcopy { color: #ffffff; }
+
+#topelements{
+    background-color: #121212;
+    border-radius: 0px;
+}
+
+QPushButton#topelements{
+    color: #ffffff;
+    background: #1f1f1f;
+    min-height: 15px;
+    max-height: 15px;
+}
+
+QPushButton#topelements:hover   { background: #061019; color: #fff; }
+QPushButton#topelements:pressed { background: #075cb2; color: #fff; border-color:#075cb2; }
+QPushButton#topelements:disabled{ background: #1a1a1a; color: #777; border-color:#2a2a2a; }
+
+QToolTip {
+    background-color: #262626;
+    color: #fafafa;
+    border: 1px solid #3a3a3a;
+    padding: 6px;
+    border-radius: 6px;
+}
+
+/* ===== ModernTable (Dark Theme Integration) ===== */
+#ModernTable {
+    background-color: #121212;                  /* matches QWidget base */
+    alternate-background-color: #181818;        /* matches QTableView alt */
+    color: #e6e6e6;                             /* consistent with global text */
+    border: 1px solid #333333;                  /* same border tone as inputs */
+    border-radius: 0px;
+    gridline-color: #2a2a2a;                    /* same as QTableView gridline */
+    selection-background-color: #075cb2;        /* global blue highlight */
+    selection-color: #ffffff;
+    font-family: "Segoe UI", "Inter", "Roboto", Arial, sans-serif;
+    font-size: 13px;
+}
+
+/* Header styling to match global QHeaderView colors */
+#ModernTable QHeaderView::section {
+    background-color: #1f1f1f;                  /* same as global header bg */
+    color: #dcdcdc;                             /* soft header text */
+    border: none;
+    border-bottom: 1px solid #2a2a2a;           /* same divider as grid */
+    padding: 6px 8px;
+    font-weight: 600;
+    font-size: 13px;
+}
+#ModernTable QHeaderView {
+    border-top-left-radius: 0px;
+    border-top-right-radius: 0px;
+}
+#ModernTable QHeaderView::section:hover {
+    background-color: #061019;
+}
+/* Hover and selected rows — consistent with global table behavior */
+#ModernTable QTableView::item:hover,
+#ModernTable::item:hover {
+    background-color: transparent;                  /* global hover color */
+    color: #ffffff;
+}
+#ModernTable QTableView::item:selected,
+#ModernTable::item:selected {
+    background-color: #075cb2;                  /* bright blue active */
+    color: #ffffff;
+}
+
+/* Scrollbars matching global scrollbar design */
+#ModernTable QScrollBar:vertical {
+    background: #171717;
+    width: 12px;
+}
+#ModernTable QScrollBar::handle:vertical {
+    background: #343434;
+    min-height: 20px;
+    border-radius: 6px;
+}
+#ModernTable QScrollBar::handle:vertical:hover {
+    background: #4a4a4a;
+}
+#ModernTable QScrollBar:horizontal {
+    background: #171717;
+    height: 12px;
+}
+#ModernTable QScrollBar::handle:horizontal {
+    background: #343434;
+    min-width: 20px;
+    border-radius: 6px;
+}
+#ModernTable QScrollBar::handle:horizontal:hover {
+    background: #4a4a4a;
+}
+
+/* Corner section to blend with header */
+#ModernTable QTableCornerButton::section {
+    background-color: #1f1f1f;
+    border: none;
+}
+
+/* ===== Inputs ===== */
+QLineEdit, QTextEdit, QPlainTextEdit, QComboBox, QSpinBox {
+    background-color: #1a1a1a;
+    border: 1px solid #333333;
+    border-radius: 6px;
+    padding: 6px 8px;
+    selection-background-color: #075cb2;
+    selection-color: #ffffff;
+}
+
+/* ===== QSpinBox / Auto-lock field ===== */
+QAbstractSpinBox {
+    background-color: #1a1a1a;
+    border: 1px solid #333333;
+    border-radius: 6px;
+    padding-right: 28px;
+    color: #e6e6e6;
+}
+QAbstractSpinBox::up-button,
+QAbstractSpinBox::down-button {
+    background: #1a1a1a;
+    border: none;
+    width: 24px;
+    border-radius: 6px;
+}
+QAbstractSpinBox::up-button:hover,
+QAbstractSpinBox::down-button:hover {
+    background-color: rgba(7, 92, 178, 0.15);
+}
+
+/* ===== Buttons ===== */
+QPushButton {
+    background-color: #1f1f1f;
+    border: 1px solid #333333;
+    padding: 8px 14px;
+    border-radius: 6px;
+    color: #e6e6e6;
+}
+QPushButton:hover {
+    background-color: #061019;  /* subtle dark hover */
+    color: #ffffff;
+}
+QPushButton:pressed {
+    background-color: #075cb2;  /* bright blue active */
+    color: #ffffff;
+}
+QPushButton:disabled {
+    background-color: #1a1a1a;
+    color: #777777;
+    border-color: #2a2a2a;
+}
+
+QDialogButtonBox QPushButton {
+    padding: 6px 12px;
+    min-width: 88px;
+}
+
+/* ===== Checkboxes ===== */
+QCheckBox {
+    spacing: 6px;
+    color: #e6e6e6;
+}
+QCheckBox::indicator {
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+    border: 1px solid #333333;
+    background-color: #1a1a1a;
+}
+QCheckBox::indicator:hover {
+    border-color: #075cb2;
+    background-color: rgba(7, 92, 178, 0.15);
+}
+QCheckBox::indicator:checked {
+    background-color: #075cb2;
+    border: 1px solid #075cb2;
+    image: url(:/qt-project.org/styles/commonstyle/images/checkboxindicatorcheck.png);
+}
+QCheckBox::indicator:disabled {
+    background-color: #222222;
+    border-color: #2a2a2a;
+}
+
+/* ===== Menus ===== */
+QMenuBar {
+    background-color: #1b1b1b;
+    color: #ffffff;
+    padding: 4px;
+}
+QMenuBar::item {
+    background: transparent;
+    padding: 6px 12px;
+    border-radius: 6px;
+}
+QMenuBar::item:selected {
+    background-color: #061019;
+    color: #ffffff;
+}
+QMenu {
+    background-color: #1b1b1b;
+    color: #ffffff;
+    border: 1px solid #333333;
+    border-radius: 6px;
+    padding: 4px;
+}
+QMenu::item {
+    padding: 6px 20px 6px 12px;
+    border-radius: 6px;
+}
+QMenu::item:selected {
+    background-color: #061019;
+    color: #ffffff;
+}
+QMenu::item:disabled {
+    color: #7a7a7a;
+}
+
+/* ===== Tables & Trees ===== */
+QTreeWidget, QTableWidget, QTableView {
+    background-color: #121212;
+    alternate-background-color: #181818;
+    gridline-color: #2a2a2a;
+    outline: none;
+    border: none;
+}
+QWidget#prefsTabs{
+    background: #181818;
+}
+
+/* Make all text-ish widgets inside the prefs card inherit the card bg */
+#prefsTabs QLabel,
+#prefsTabs QCheckBox,
+#prefsTabs QRadioButton,
+#prefsTabs QGroupBox {
+    background-color: #181818;
+}
+
+QTabWidget::pane {
+    border: 1px solid #333333;     /* dark: #333333 */
+    border-top-color: #181818;     /* ensure all sides same color */
+    border-right-color: #333333;
+    border-bottom-color: #333333;
+    border-left-color: #333333;
+    outline: none;
+    /* Prevent native bevels */
+    border-image: none;                      /* inner gap to pages */
+}
+
+/* === Tree hover & selected === */
+QTreeView::item {
+    background-color: transparent;
+    color: #e6e6e6;
+    padding: 4px 6px;
+}
+QTreeView::item:hover {
+    background-color: #061019;  /* uniform hover color */
+    color: #ffffff;
+}
+QTreeView::item:selected {
+    background-color: #075cb2;  /* uniform highlight color */
+    color: #ffffff;
+}
+
+/* === Table hover & selected === */
+QTableView::item {
+    border-radius: 0px;
+    padding: 4px 6px;
+}
+QTableView::item:hover {
+    background-color: #061019;
+    color: #ffffff;
+}
+QTableView::item:selected {
+    background-color: #075cb2;
+    color: #ffffff;
+    border-radius: 0px;
+}
+
+/* ===== Headers ===== */
+QHeaderView::section {
+    background-color: #1f1f1f;
+    color: #dcdcdc;
+    border: 0;
+    padding: 6px 8px;
+    font-weight: normal;
+}
+QTableView:focus QHeaderView::section {
+    font-weight: normal;
+}
+
+/* ===== Status bar ===== */
+QStatusBar {
+    background: #1b1b1b;
+    color: #cfcfcf;
+}
+
+/* ===== Splitter ===== */
+QSplitter::handle {
+    background-color: #232323;
+    margin: 0 2px;
+}
+
+/* ===== Scrollbars ===== */
+QScrollBar:vertical {
+    background: #171717;
+    width: 12px;
+}
+QScrollBar::handle:vertical {
+    background: #343434;
+    min-height: 20px;
+    border-radius: 6px;
+}
+QScrollBar:horizontal {
+    background: #171717;
+    height: 12px;
+}
+QScrollBar::handle:horizontal {
+    background: #343434;
+    min-width: 20px;
+    border-radius: 6px;
+}
+QScrollBar::add-line:vertical,
+QScrollBar::sub-line:vertical,
+QScrollBar::add-line:horizontal,
+QScrollBar::sub-line:horizontal {
+    height: 0; width: 0;
+}
+
+/* ===== Hints ===== */
+QLabel#hint {
+    color: #9b9b9b;
+    font-size: 12px;
+    margin-top: 6px;
+}
+
+/* ===== Global focus removal ===== */
+QTreeView, QTableView, QLineEdit, QTextEdit, QPlainTextEdit,
+QComboBox, QSpinBox, QAbstractSpinBox, QPushButton, QScrollBar,
+QMenu, QMenuBar, QHeaderView, QSplitter {
+    outline: none;
+}
+
+/* Optional per-widget tweak */
+QAbstractSpinBox#autoLockSpin {
+    /* relies on dark palette; override spacing only */
+    padding-right: 28px;
+}
+QAbstractSpinBox#autoLockSpin::up-button,
+QAbstractSpinBox#autoLockSpin::down-button {
+    width: 24px;
+}
+
+TotpRingWidget {
+    qproperty-ringColor: #075cb2;   /* progress ring */
+    qproperty-trackColor: #343434;  /* track */
+    qproperty-bgColor: transparent;     /* inner disk */
+    qproperty-thickness: 4;         /* optional */
+}
