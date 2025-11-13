@@ -38,7 +38,7 @@ status badges, multi-select actions, sortable columns, and automatic backups.
     - `Alt+A` Copy App Password
   - Auto-clears clipboard after a configurable timeout.
 
-## 🧰 Tech
+## Tech
 
 - **PySide6** for the UI.
 - **SQLite** for storage.
