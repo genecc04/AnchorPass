@@ -160,7 +160,7 @@ class TotpPreviewWidget(QWidget):
             self.ring.stop()
         except Exception:
             pass
-            
+        
     def handle_theme_change(self, event):
         watched = {QEvent.PaletteChange, QEvent.ApplicationPaletteChange}
         THEME_CHANGE = getattr(QEvent, "ThemeChange", None)
@@ -170,3 +170,7 @@ class TotpPreviewWidget(QWidget):
         if event.type() in watched:
             self._copy_icon, self._check_icon = self._build_icons()
             self.copy_btn.setIcon(self._copy_icon)
+
+    def changeEvent(self, event):
+        super().changeEvent(event)
+        self.handle_theme_change(event)

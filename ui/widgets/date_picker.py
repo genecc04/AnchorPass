@@ -1,7 +1,7 @@
 from typing import Optional
 
-from PySide6.QtCore import Qt, QDate, QSize, Signal
-from PySide6.QtGui import QIcon, QPainter, QPixmap, QFont, QFontMetrics, QPalette
+from PySide6.QtCore import Qt, QDate, QSize, Signal, QEvent
+from PySide6.QtGui import QIcon, QPainter, QPixmap, QFont, QFontMetrics, QPalette, QColor
 from PySide6.QtWidgets import ( QWidget, QLineEdit, QToolButton, QCalendarWidget, QHBoxLayout )
 
 class _CalendarPopup(QCalendarWidget):
@@ -76,6 +76,9 @@ class DatePicker(QWidget):
         self._btn.clicked.connect(self.clearDate)
         self._edit.mousePressEvent = self._wrap_edit_click(self._edit.mousePressEvent)
         self._edit.keyPressEvent  = self._wrap_edit_key(self._edit.keyPressEvent)
+
+        for w in (self, self._btn, self._edit):
+            w.installEventFilter(self)
 
     def setDisplayFormat(self, fmt: str):
         self._display_format = fmt
@@ -177,9 +180,41 @@ class DatePicker(QWidget):
         painter.setRenderHint(QPainter.Antialiasing, True)
         painter.setRenderHint(QPainter.TextAntialiasing, True)
         painter.setFont(f)
-        color = self.palette().color(QPalette.ButtonText)
-        painter.setPen(color)
+        painter.setPen(self._current_icon_color())   # <-- changed
         painter.drawText(pm.rect(), Qt.AlignCenter, text)
         painter.end()
 
         return QIcon(pm)
+
+    def _current_icon_color(self) -> QColor:
+        pal = self._edit.palette()
+        if not self.isEnabled():
+            group = QPalette.Disabled
+        else:
+            group = QPalette.Active
+        color = pal.color(group, QPalette.Text)
+        if not color.isValid():
+            color = pal.color(group, QPalette.WindowText)
+        return color
+
+    def eventFilter(self, obj, ev):
+        if ev.type() in (
+            QEvent.PaletteChange,
+            QEvent.ApplicationPaletteChange,
+            QEvent.StyleChange,
+            QEvent.EnabledChange,
+            getattr(QEvent, "ThemeChange", -1),
+        ):
+            if isinstance(self._icon_font, QFont):
+                self._apply_icon("event_busy")
+        return super().eventFilter(obj, ev)
+
+    def showEvent(self, ev):
+        super().showEvent(ev)
+        if isinstance(self._icon_font, QFont):
+            self._apply_icon("event_busy")
+
+    def setEnabled(self, enabled: bool):
+        super().setEnabled(enabled)
+        if isinstance(self._icon_font, QFont):
+            self._apply_icon("event_busy")
