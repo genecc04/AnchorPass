@@ -61,6 +61,7 @@ jobs:
         run: |
           pyinstaller .\main.py `
             --noconsole --onefile --name SecurePasswordManager `
+            --icon ".\assets\icon.ico" `
             --clean `
             --collect-all PySide6 `
             --collect-all cryptography `
@@ -94,7 +95,6 @@ jobs:
           files: |
             build_out/SecurePasswordManager.exe
           generate_release_notes: true
-          # Mark as prerelease if tag includes a hyphen (e.g., v1.2.0-alpha)
           prerelease: ${{ contains(github.ref_name, '-') }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
