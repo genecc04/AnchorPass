@@ -93,7 +93,7 @@ class PreferencesDialog(QDialog):
         form.setLabelAlignment(Qt.AlignLeft)
 
         self.theme_combo = QComboBox()
-        self.theme_combo.addItems(["dark", "light"])
+        self.theme_combo.addItems(["dark", "light", "galaxy", "obsidian", "summer", "winter"])
         self.theme_combo.setCurrentText(self.settings.get("theme", "dark"))
         form.addRow("Theme:", self.theme_combo)
 
