@@ -11,8 +11,12 @@ QWidget {
 QLineEdit { color: #111111; }
 #totpcopy { color: #111111; }
 
+#TopBar {
+    background-color: #ededed;
+}
+
 #topelements{
-    background-color: #f5f5f7;  /* light container strip */
+    background-color: #f5f5f7;
     border-radius: 0px;
 }
 
@@ -24,13 +28,13 @@ QPushButton#topelements{
 }
 
 QPushButton#topelements:hover {
-    background: #eaf3ff;        /* light blue hover */
+    background: #eaf3ff;
     color: #0a0a0a;
     border-color: #c2c2c2;
 }
 
 QPushButton#topelements:pressed {
-    background: #075cb2;        /* bright blue active */
+    background: #075cb2;
     color: #cccccc;
     border-color: #075cb2;
 }
@@ -49,26 +53,84 @@ QToolTip {
     border-radius: 6px;
 }
 
+/* ===== Settings Tabs (Light / Neutral Theme) ===== */
+
+/* Main tab widget */
+#SettingsTabs {
+    background: transparent;
+}
+
+/* Frame / page area */
+#SettingsTabs::pane {
+    border: 1px solid #d0d0d0;
+    background: #f5f5f7;
+    border-radius: 0px;
+    padding: 4px;
+}
+
+/* Tab bar */
+#SettingsTabs QTabBar {
+    background: transparent;
+}
+
+/* Default (unselected) tab */
+#SettingsTabs QTabBar::tab {
+    background: #f5f5f7;
+    color: #333333;
+    border: 1px solid #d0d0d0;
+    padding: 6px 14px;
+    margin-right: 2px;
+    margin-top: 2px;
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+}
+
+/* Selected tab */
+#SettingsTabs QTabBar::tab:selected {
+    background: #ffffff;
+    color: #1a1a1a;
+    border-color: #d0d0d0;
+    border-bottom-color: #ffffff;
+}
+
+/* Hover (unselected) */
+#SettingsTabs QTabBar::tab:hover:!selected {
+    background-color: #eaf3ff;
+    color: #0a0a0a;
+}
+
+/* Disabled tab */
+#SettingsTabs QTabBar::tab:disabled {
+    background-color: #f2f2f2;
+    color: #9a9a9a;
+    border-color: #e6e6e6;
+}
+
+/* Optional: page content background inside settings tabs */
+#SettingsTabs QWidget {
+    background-color: #ffffff;
+}
+
 /* ===== ModernTable (Light Theme Integration) ===== */
 #ModernTable {
-    background-color: #ffffff;                /* matches QWidget / QTableWidget base */
-    alternate-background-color: #f7f7f7;      /* same as global QTableWidget alt rows */
-    color: #1a1a1a;                           /* consistent with global text */
-    border: 1px solid #d0d0d0;                /* matches input borders */
+    background-color: #ffffff;
+    alternate-background-color: #f7f7f7;
+    color: #1a1a1a;
+    border: 1px solid #d0d0d0;
     border-radius: 0px;
-    gridline-color: #e3e3e3;                  /* consistent with QTable gridlines */
-    selection-background-color: #075cb2;      /* global accent blue */
-    selection-color: #cccccc;                 /* global selected text */
+    gridline-color: #e3e3e3;
+    selection-background-color: #075cb2;    
+    selection-color: #cccccc;
     font-family: "Segoe UI", "Inter", "Roboto", Arial, sans-serif;
     font-size: 13px;
 }
 
 /* Headers */
 #ModernTable QHeaderView::section {
-    background-color: #f5f5f7;                /* same as global QHeaderView background */
-    color: #333333;                           /* global header text color */
+    background-color: #f5f5f7;
+    color: #333333;
     border: none;
-    border-bottom: 1px solid #e0e0e0;         /* subtle divider like inputs */
+    border-bottom: 1px solid #e0e0e0;
     padding: 6px 8px;
     font-weight: 600;
     font-size: 13px;

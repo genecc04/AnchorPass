@@ -326,3 +326,21 @@ def category_exists(name: str) -> bool:
         c = conn.cursor()
         c.execute("SELECT 1 FROM categories WHERE name = ? LIMIT 1;", (norm,))
         return c.fetchone() is not None
+    
+def duplicate_entry(id_: int) -> int:
+    original = fetch_entry_dict(id_)
+    if not original:
+        raise ValueError(f"Entry {id_} not found")
+
+    d = dict(original)
+    d.pop("id", None)
+    d.pop("date_created", None)
+    d.pop("date_modified", None)
+    d.pop("deleted_at", None)
+
+    d["status"] = "active"
+    if d.get("site"):
+        d["site"] = f"{d['site']} (copy)"
+
+    new_id = add_entry_full(d)
+    return new_id

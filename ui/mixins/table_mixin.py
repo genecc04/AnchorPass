@@ -279,6 +279,7 @@ class TableMixin:
         menu = QMenu(self)
 
         menu.addAction("Edit…", lambda: QTimer.singleShot(0, self.edit_entry))
+        menu.addAction("Duplicate Entry",lambda: QTimer.singleShot(0, lambda: self._duplicate_single_entry(entry_id)))
         menu.addSeparator()
 
         a_site = menu.addAction("Copy Site", lambda: QTimer.singleShot(0, lambda: self._copy_to_clipboard("site", site)))

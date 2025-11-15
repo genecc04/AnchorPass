@@ -76,7 +76,10 @@ class UIBuilder:
         self.window.statusBar().addPermanentWidget(self.window.status_label)
     
     def _build_top_bar(self, parent_layout):
-        top = QHBoxLayout()
+        top_bar = QWidget()
+        top_bar.setFixedHeight(35) 
+        top_bar.setObjectName("TopBar")
+        top = QHBoxLayout(top_bar)
         top.setContentsMargins(0, 0, 0, 0)
         top.setSpacing(0)
         GAP = 4
@@ -86,14 +89,16 @@ class UIBuilder:
 
         self.window.add_btn  = FontIconButton("add",  tooltip="Add",  size=14, min_button_side=40,
                                             hover_enabled=False, border_enabled=False)
+        self.window.duplicate_btn = FontIconButton("content_copy", tooltip="Duplicate", size=14, min_button_side=40,
+                                                hover_enabled=False, border_enabled=False)
         self.window.edit_btn = FontIconButton("edit", tooltip="Edit", size=14, min_button_side=40,
                                             hover_enabled=False, border_enabled=False)
 
-        self.window.copy_email_btn = FontIconButton("mail",           tooltip="Copy Email",    size=14, min_button_side=40,
+        self.window.copy_email_btn = FontIconButton("mail",   tooltip="Copy Email",    size=14, min_button_side=40,
                                                     hover_enabled=False, border_enabled=False)
-        self.window.copy_user_btn  = FontIconButton("person",         tooltip="Copy Username", size=14, min_button_side=40,
+        self.window.copy_user_btn  = FontIconButton("person", tooltip="Copy Username", size=14, min_button_side=40,
                                                     hover_enabled=False, border_enabled=False)
-        self.window.copy_pass_btn  = FontIconButton("key",            tooltip="Copy Password", size=14, min_button_side=40,
+        self.window.copy_pass_btn  = FontIconButton("key",    tooltip="Copy Password", size=14, min_button_side=40,
                                                     hover_enabled=False, border_enabled=False)
         
         self.window.archive_btn = FontIconButton("archive", tooltip="Archive", size=14, min_button_side=40,
@@ -104,7 +109,7 @@ class UIBuilder:
                                                 hover_enabled=False, border_enabled=False)
 
         for btn in (
-            self.window.add_btn, self.window.edit_btn,
+            self.window.add_btn, self.window.duplicate_btn, self.window.edit_btn,
             self.window.copy_email_btn, self.window.copy_user_btn, self.window.copy_pass_btn,
             self.window.archive_btn, self.window.expire_btn, self.window.del_btn
         ):
@@ -116,6 +121,7 @@ class UIBuilder:
         top.addSpacing(GAP)
 
         top.addWidget(self.window.add_btn)
+        top.addWidget(self.window.duplicate_btn)
         top.addWidget(self.window.edit_btn)
 
         top.addSpacing(GAP)
@@ -130,7 +136,7 @@ class UIBuilder:
         top.addWidget(self.window.expire_btn)
         top.addWidget(self.window.del_btn)
 
-        parent_layout.addLayout(top)
+        parent_layout.addWidget(top_bar)
 
         
     def _build_content_area(self, parent_layout):
@@ -172,6 +178,7 @@ class UIBuilder:
     
     def wire_connections(self):
         self.window.add_btn.clicked.connect(self.window.add_entry)
+        self.window.duplicate_btn.clicked.connect(self.window.duplicate_entry)
         self.window.edit_btn.clicked.connect(self.window.edit_entry)
         self.window.del_btn.clicked.connect(self.window.delete_entry)
         self.window.archive_btn.clicked.connect(self.window._on_archive_clicked)

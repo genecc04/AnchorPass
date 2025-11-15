@@ -11,6 +11,10 @@ QWidget {
 QLineEdit { color: #ffffff; }
 #totpcopy { color: #ffffff; }
 
+#TopBar {
+    background-color: #232323;
+}
+
 #topelements{
     background-color: #121212;
     border-radius: 0px;
@@ -35,15 +39,73 @@ QToolTip {
     border-radius: 6px;
 }
 
+/* ===== Settings Tabs (Dark Theme) ===== */
+
+/* Main tab widget */
+#SettingsTabs {
+    background: transparent;
+}
+
+/* Frame / page area */
+#SettingsTabs::pane {
+    border: 1px solid #333333;
+    background: #181818;
+    border-radius: 0px;
+    padding: 4px;
+}
+
+/* Tab bar */
+#SettingsTabs QTabBar {
+    background: transparent;
+}
+
+/* Default (unselected) tab */
+#SettingsTabs QTabBar::tab {
+    background: #1f1f1f;
+    color: #dcdcdc;
+    border: 1px solid #333333;
+    padding: 6px 14px;
+    margin-right: 2px;
+    margin-top: 2px;
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+}
+
+/* Selected tab */
+#SettingsTabs QTabBar::tab:selected {
+    background: #121212;
+    color: #ffffff;
+    border-color: #333333;
+    border-bottom-color: #121212;
+}
+
+/* Hover (unselected) */
+#SettingsTabs QTabBar::tab:hover:!selected {
+    background-color: #061019;
+    color: #ffffff;
+}
+
+/* Disabled tab */
+#SettingsTabs QTabBar::tab:disabled {
+    background-color: #1a1a1a;
+    color: #777777;
+    border-color: #2a2a2a;
+}
+
+/* Optional: inner page content background inside settings tabs */
+#SettingsTabs QWidget {
+    background-color: #181818;
+}
+
 /* ===== ModernTable (Dark Theme Integration) ===== */
 #ModernTable {
-    background-color: #121212;                  /* matches QWidget base */
-    alternate-background-color: #181818;        /* matches QTableView alt */
-    color: #e6e6e6;                             /* consistent with global text */
-    border: 1px solid #333333;                  /* same border tone as inputs */
+    background-color: #121212;
+    alternate-background-color: #181818;
+    color: #e6e6e6;
+    border: 1px solid #333333;
     border-radius: 0px;
-    gridline-color: #2a2a2a;                    /* same as QTableView gridline */
-    selection-background-color: #075cb2;        /* global blue highlight */
+    gridline-color: #2a2a2a;
+    selection-background-color: #075cb2;
     selection-color: #ffffff;
     font-family: "Segoe UI", "Inter", "Roboto", Arial, sans-serif;
     font-size: 13px;
@@ -51,10 +113,10 @@ QToolTip {
 
 /* Header styling to match global QHeaderView colors */
 #ModernTable QHeaderView::section {
-    background-color: #1f1f1f;                  /* same as global header bg */
-    color: #dcdcdc;                             /* soft header text */
+    background-color: #1f1f1f;
+    color: #dcdcdc;
     border: none;
-    border-bottom: 1px solid #2a2a2a;           /* same divider as grid */
+    border-bottom: 1px solid #2a2a2a;
     padding: 6px 8px;
     font-weight: 600;
     font-size: 13px;
@@ -69,12 +131,12 @@ QToolTip {
 /* Hover and selected rows — consistent with global table behavior */
 #ModernTable QTableView::item:hover,
 #ModernTable::item:hover {
-    background-color: transparent;                  /* global hover color */
+    background-color: transparent;
     color: #ffffff;
 }
 #ModernTable QTableView::item:selected,
 #ModernTable::item:selected {
-    background-color: #075cb2;                  /* bright blue active */
+    background-color: #075cb2;
     color: #ffffff;
 }
 

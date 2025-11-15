@@ -11,6 +11,10 @@ QWidget {
 QLineEdit { color: #ffffff; }
 #totpcopy { color: #ffffff; }
 
+#TopBar {
+    background-color: #1a2028;
+}
+
 #topelements{
     background-color: #0c0f14;
     border-radius: 0px;
@@ -33,6 +37,64 @@ QToolTip {
     border: 1px solid #313b47;
     padding: 6px;
     border-radius: 6px;
+}
+
+/* ===== Settings Tabs (Obsidian Theme) ===== */
+
+/* Main tab widget */
+#SettingsTabs {
+    background: transparent;
+}
+
+/* The frame / page area */
+#SettingsTabs::pane {
+    border: 1px solid #313b47;
+    background: #141920;
+    border-radius: 0px;
+    padding: 4px;
+}
+
+/* Tab bar */
+#SettingsTabs QTabBar {
+    background: transparent;
+}
+
+/* Default tab appearance */
+#SettingsTabs QTabBar::tab {
+    background: #171b23;
+    color: #dde3ea;
+    border: 1px solid #313b47;
+    padding: 6px 14px;
+    margin-right: 2px;
+    margin-top: 2px;
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+}
+
+/* Selected tab */
+#SettingsTabs QTabBar::tab:selected {
+    background: #0c0f14;
+    color: #ffffff;
+    border-color: #313b47;
+    border-bottom-color: #0c0f14;
+}
+
+/* Hover (unselected) */
+#SettingsTabs QTabBar::tab:hover:!selected {
+    background: #0b2529;
+    color: #ffffff;
+}
+
+/* Disabled tab */
+#SettingsTabs QTabBar::tab:disabled {
+    background: #151920;
+    color: #7b858f;
+    border-color: #262c36;
+}
+
+/* Optional: inner pages inside settings tabs */
+#SettingsTabs QWidget {
+    background-color: #141920;
 }
 
 /* ===== ModernTable (Obsidian Theme Integration) ===== */

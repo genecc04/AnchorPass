@@ -189,4 +189,34 @@ class CrudMixin:
                 self.reload()
             QMessageBox.information(self, "Success", "Entry permanently deleted.")
 
-    
+    def _duplicate_single_entry(self, entry_id: int):
+        try:
+            new_id = db.duplicate_entry(entry_id)
+
+            if hasattr(self, 'populate_tree'):
+                self.populate_tree()
+            self._refresh_current_view()
+
+            row = self._find_row_by_id(new_id)
+            if row is not None:
+                self.table.setCurrentCell(row, 0)
+                self.table.selectRow(row)
+
+            self._log_status("Entry duplicated", 1500)
+        except Exception as e:
+            QMessageBox.critical(self, "Error", f"Failed to duplicate entry:\n{e}")
+
+    def duplicate_entry(self):
+        sel_model = self.table.selectionModel()
+        if not sel_model:
+            return
+
+        selected_rows = sel_model.selectedRows()
+        if len(selected_rows) != 1:
+            return
+
+        entry_id = self._current_entry_id_from_table()
+        if entry_id is None:
+            return
+
+        self._duplicate_single_entry(entry_id)

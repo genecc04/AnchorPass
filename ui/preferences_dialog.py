@@ -1,8 +1,8 @@
-from PySide6.QtWidgets import ( QDialog, QVBoxLayout, QTabWidget, QWidget, QFormLayout, QLineEdit, QSpinBox, QComboBox, QCheckBox, 
+from PySide6.QtWidgets import ( QDialog, QVBoxLayout, QTabWidget, QWidget, QFormLayout, QLineEdit, QComboBox, QCheckBox, 
                                QPushButton, QFileDialog, QHBoxLayout, QDialogButtonBox, QTimeEdit )
 from PySide6.QtCore import Qt, QTime
 from core.settings_manager import SettingsManager
-
+from ui.widgets.plusminus_spinbox import PlusMinusSpinBox
 
 class PreferencesDialog(QDialog):
 
@@ -23,6 +23,7 @@ class PreferencesDialog(QDialog):
 
         layout = QVBoxLayout(self)
         self.tabs = QTabWidget()
+        self.tabs.setObjectName("SettingsTabs")
         layout.addWidget(self.tabs)
 
         # Tabs 
@@ -50,7 +51,7 @@ class PreferencesDialog(QDialog):
             self.change_pw_btn.clicked.connect(self.main_window.change_master_password)
         form.addRow("Change Password:", self.change_pw_btn)
 
-        self.auto_lock_spin = QSpinBox()
+        self.auto_lock_spin = PlusMinusSpinBox()
         self.auto_lock_spin.setRange(0, 120)
         self.auto_lock_spin.setValue(self.settings.get("auto_lock_minutes", 10))
         form.addRow("Auto-lock after (minutes):", self.auto_lock_spin)
@@ -69,7 +70,7 @@ class PreferencesDialog(QDialog):
         form.setObjectName("prefsTabs")
         form.setLabelAlignment(Qt.AlignLeft)
 
-        self.clipboard_spin = QSpinBox()
+        self.clipboard_spin = PlusMinusSpinBox()
         self.clipboard_spin.setRange(1, 300)
         self.clipboard_spin.setValue(self.settings.get("clipboard_clear_seconds", 15))
         form.addRow("Clear clipboard after (seconds):", self.clipboard_spin)
@@ -82,7 +83,7 @@ class PreferencesDialog(QDialog):
         self.copy_notify_chk.setChecked(self.settings.get("copy_notifications", True))
         form.addRow("", self.copy_notify_chk)
 
-        self.tabs.addTab(tab, "Additional Security")
+        self.tabs.addTab(tab, "Security")
 
     # UI TAB
     def _init_ui_tab(self):
@@ -162,7 +163,7 @@ class PreferencesDialog(QDialog):
         form.addRow("Scheduled:", sched_row)
 
         #Retention (0 = unlimited)
-        self.backup_retention_spin = QSpinBox()
+        self.backup_retention_spin = PlusMinusSpinBox()
         self.backup_retention_spin.setRange(0, 500)
         self.backup_retention_spin.setToolTip("How many backups to keep (0 = unlimited)")
         self.backup_retention_spin.setValue(int(self.settings.get("backup_retention",

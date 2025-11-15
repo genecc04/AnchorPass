@@ -178,6 +178,7 @@ class MainWindow(PreviewMixin, BackupMixin, LockMixin, CrudMixin, TableMixin, Tr
             count = 0
 
         self.edit_btn.setEnabled(count == 1)
+        self.duplicate_btn.setEnabled(count == 1)
         self.del_btn.setEnabled(count >= 1)
 
         outside_deleted = not self._in_deleted_folder()

@@ -11,6 +11,10 @@ QWidget {
 QLineEdit { color: #ffffff; }
 #totpcopy { color: #ffffff; }
 
+#TopBar {
+    background-color: #221632;
+}
+
 #topelements{
     background-color: #0b0614;
     border-radius: 0px;
@@ -33,6 +37,64 @@ QToolTip {
     border: 1px solid #3a2a54;
     padding: 6px;
     border-radius: 6px;
+}
+
+/* ===== Settings Tabs (Galaxy Theme) ===== */
+
+/* Main tab widget */
+#SettingsTabs {
+    background: transparent;
+}
+
+/* Frame / page area */
+#SettingsTabs::pane {
+    border: 1px solid #3a2a54;
+    background: #140b24;
+    border-radius: 0px;
+    padding: 4px;
+}
+
+/* Tab bar */
+#SettingsTabs QTabBar {
+    background: transparent;
+}
+
+/* Default (unselected) tab */
+#SettingsTabs QTabBar::tab {
+    background: #191024;
+    color: #e1d7ff;
+    border: 1px solid #3a2a54;
+    padding: 6px 14px;
+    margin-right: 2px;
+    margin-top: 2px;
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+}
+
+/* Selected tab */
+#SettingsTabs QTabBar::tab:selected {
+    background: #0b0614;
+    color: #ffffff;
+    border-color: #3a2a54;
+    border-bottom-color: #0b0614;
+}
+
+/* Hover (unselected) */
+#SettingsTabs QTabBar::tab:hover:!selected {
+    background-color: #251338;
+    color: #ffffff;
+}
+
+/* Disabled tab */
+#SettingsTabs QTabBar::tab:disabled {
+    background-color: #161020;
+    color: #7b7191;
+    border-color: #2a213d;
+}
+
+/* Optional: inner page content background inside settings tabs */
+#SettingsTabs QWidget {
+    background-color: #140b24;
 }
 
 /* ===== ModernTable (Galaxy Theme Integration) ===== */

@@ -11,8 +11,12 @@ QWidget {
 QLineEdit { color: #1f1a19; }
 #totpcopy { color: #1f1a19; }
 
+#TopBar {
+    background-color: #f0e4d6;
+}
+
 #topelements{
-    background-color: #fff7e6;                /* light sunny strip */
+    background-color: #fff7e6;
     border-radius: 0px;
 }
 
@@ -24,13 +28,13 @@ QPushButton#topelements{
 }
 
 QPushButton#topelements:hover {
-    background: #ffe9c7;                      /* warmer hover */
+    background: #ffe9c7;
     color: #332018;
     border-color: #e0c59b;
 }
 
 QPushButton#topelements:pressed {
-    background: #ff9800;                      /* bright summer orange */
+    background: #ff9800;
     color: #fff7ec;
     border-color: #ff9800;
 }
@@ -49,6 +53,64 @@ QToolTip {
     border-radius: 6px;
 }
 
+/* ===== Settings Tabs (Summer Theme) ===== */
+
+/* Main tab widget */
+#SettingsTabs {
+    background: transparent;
+}
+
+/* The frame / page area */
+#SettingsTabs::pane {
+    border: 1px solid #e3d7c7;
+    background: #fff7e6;
+    border-radius: 0px;
+    padding: 4px;
+}
+
+/* Tab bar */
+#SettingsTabs QTabBar {
+    background: transparent;
+}
+
+/* Default (unselected) tab */
+#SettingsTabs QTabBar::tab {
+    background: #fff7e6;
+    color: #5b4332;
+    border: 1px solid #e3d7c7;
+    padding: 6px 14px;
+    margin-right: 2px;
+    margin-top: 2px;
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+}
+
+/* Selected tab */
+#SettingsTabs QTabBar::tab:selected {
+    background: #ffffff;
+    color: #1f1a19;
+    border-color: #e3d7c7;
+    border-bottom-color: #ffffff;
+}
+
+/* Hover (unselected) */
+#SettingsTabs QTabBar::tab:hover:!selected {
+    background: #ffe9c7;
+    color: #332018;
+}
+
+/* Disabled tab */
+#SettingsTabs QTabBar::tab:disabled {
+    background: #f7efe3;
+    color: #b7a89a;
+    border-color: #e3d7c7;
+}
+
+/* Optional: inner page background inside settings tabs */
+#SettingsTabs QWidget {
+    background-color: #fffdf8;
+}
+
 /* ===== ModernTable (Summer Theme Integration) ===== */
 #ModernTable {
     background-color: #ffffff;
@@ -57,7 +119,7 @@ QToolTip {
     border: 1px solid #e3d7c7;
     border-radius: 0px;
     gridline-color: #f0e4d6;
-    selection-background-color: #ff9800;      /* warm accent */
+    selection-background-color: #ff9800;
     selection-color: #fff7ec;
     font-family: "Segoe UI", "Inter", "Roboto", Arial, sans-serif;
     font-size: 13px;

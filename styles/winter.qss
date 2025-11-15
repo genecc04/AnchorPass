@@ -1,5 +1,3 @@
-/* ===== Winter Theme (Light + Cool) ===== */
-
 /* ===== Global ===== */
 QWidget {
     background-color: #f7fafc;                 /* cool off-white */
@@ -12,6 +10,10 @@ QWidget {
 
 QLineEdit { color: #141821; }
 #totpcopy { color: #141821; }
+
+#TopBar {
+    background-color: #dde4f1;
+}
 
 #topelements{
     background-color: #eef3fb;                /* pale icy strip */
@@ -49,6 +51,64 @@ QToolTip {
     border: 1px solid #c0cde0;
     padding: 6px;
     border-radius: 6px;
+}
+
+/* ===== Settings Tabs (Winter Theme) ===== */
+
+/* Base tab widget */
+#SettingsTabs {
+    background: transparent;
+}
+
+/* The frame around the pages */
+#SettingsTabs::pane {
+    border: 1px solid #cfd7e6;
+    background: #dde4f1;
+    border-radius: 0px;
+    padding: 4px; 
+}
+
+/* Tab bar itself */
+#SettingsTabs QTabBar {
+    background: transparent;
+}
+
+/* Normal tab */
+#SettingsTabs QTabBar::tab {
+    background: #eef3fb;
+    color: #283347;
+    border: 1px solid #cfd7e6;
+    padding: 6px 14px;
+    margin-right: 2px;
+    margin-top: 2px;
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+}
+
+/* Selected tab */
+#SettingsTabs QTabBar::tab:selected {
+    background: #ffffff;
+    color: #141821;
+    border-color: #cfd7e6;
+    border-bottom-color: #ffffff;
+}
+
+/* Hover on unselected tabs */
+#SettingsTabs QTabBar::tab:hover:!selected {
+    background: #e0ecff;
+    color: #11151e;
+}
+
+/* Disabled tab */
+#SettingsTabs QTabBar::tab:disabled {
+    background: #edf1f7;
+    color: #9aa4b6;
+    border-color: #dde2ec;
+}
+
+/* Optional: page background inside the settings tabs */
+#SettingsTabs QWidget {
+    background-color: #f7fafc;
 }
 
 /* ===== ModernTable (Winter Theme Integration) ===== */
