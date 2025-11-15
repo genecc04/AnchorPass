@@ -437,7 +437,6 @@ class MainWindow(PreviewMixin, BackupMixin, LockMixin, CrudMixin, TableMixin, Tr
         )
 
     def archive_selected_entries(self, checked: bool = False):
-        """Soft-delete all selected entries (move to Trash/Deleted)."""
         ids = self._get_all_selected_entry_ids()
         if not ids:
             self._log_status("No entries selected.", 1500)
@@ -462,7 +461,6 @@ class MainWindow(PreviewMixin, BackupMixin, LockMixin, CrudMixin, TableMixin, Tr
             QMessageBox.warning(self, "Archive Selected", f"Archived {ok}; {errors} failed.")
 
     def expire_selected_entries(self, checked: bool = False):
-        """Mark all selected entries as expired."""
         ids = self._get_all_selected_entry_ids()
         if not ids:
             self._log_status("No entries selected.", 1500)
@@ -735,7 +733,6 @@ class MainWindow(PreviewMixin, BackupMixin, LockMixin, CrudMixin, TableMixin, Tr
         return getattr(self, "current_category", None) == getattr(TreeMixin, "SPECIAL_ARCHIVED", "__SPECIAL_ARCHIVED__")
     
     def _selected_entry_record(self):
-        """Return (entry_id, entry, plain) for the single selected row, else (None, {}, {})."""
         try:
             count = len(self.table.selectionModel().selectedRows())
         except Exception:

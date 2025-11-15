@@ -1,6 +1,6 @@
 /* ===== Global ===== */
 QWidget {
-    background-color: #fffdf8;                 /* warm off-white */
+    background-color: #fffdf8;
     color: #1f1a19;
     font-family: "Segoe UI", "Inter", "Roboto", Arial, sans-serif;
     font-size: 13px;

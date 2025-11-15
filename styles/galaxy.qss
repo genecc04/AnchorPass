@@ -94,9 +94,12 @@ QToolTip {
 
 /* Optional: inner page content background inside settings tabs */
 #SettingsTabs QWidget {
-    background-color: #140b24;
+    background-color: #0b0614;
 }
 
+#SettingsTabs PlusMinusSpinBox, #SettingsTabs QPushButton, #SettingsTabs QComboBox, #SettingsTabs QLineEdit, #SettingsTabs QTimeEdit{
+    background-color: #140b24;
+}
 /* ===== ModernTable (Galaxy Theme Integration) ===== */
 #ModernTable {
     background-color: #0b0614;

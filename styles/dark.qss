@@ -94,6 +94,10 @@ QToolTip {
 
 /* Optional: inner page content background inside settings tabs */
 #SettingsTabs QWidget {
+    background-color: #121212;
+}
+
+#SettingsTabs PlusMinusSpinBox, #SettingsTabs QPushButton, #SettingsTabs QComboBox, #SettingsTabs QLineEdit, #SettingsTabs QTimeEdit{
     background-color: #181818;
 }
 

@@ -51,7 +51,7 @@ QToolTip {
     border: 1px solid #313b47;
     background: #141920;
     border-radius: 0px;
-    padding: 4px;
+    padding: 0px;
 }
 
 /* Tab bar */
@@ -94,6 +94,10 @@ QToolTip {
 
 /* Optional: inner pages inside settings tabs */
 #SettingsTabs QWidget {
+    background-color: #0c0f14;
+}
+
+#SettingsTabs PlusMinusSpinBox, #SettingsTabs QPushButton, #SettingsTabs QComboBox, #SettingsTabs QLineEdit, #SettingsTabs QTimeEdit{
     background-color: #141920;
 }
 
