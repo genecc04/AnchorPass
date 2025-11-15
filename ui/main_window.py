@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from PySide6.QtWidgets import QMainWindow, QMessageBox, QFileDialog, QApplication, QMenu
 from PySide6.QtCore import Qt, QTimer, QEvent, QPoint, QItemSelectionModel
+from PySide6.QtGui import QIcon
 
 from ui.mixins.tree_mixin import TreeMixin
 from ui.mixins.table_mixin import TableMixin
@@ -22,6 +23,12 @@ from ui.builders.ui_builder import UIBuilder
 
 import time
 from datetime import datetime
+from ui.widgets.tray_icon_widget import TrayIconWidget
+from pathlib import Path
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+ICON_PATH = BASE_DIR / "assets" / "icon.ico"
+LOCKED_ICON_PATH = BASE_DIR / "assets" / "bwicon.ico"
 
 class MainWindow(PreviewMixin, BackupMixin, LockMixin, CrudMixin, TableMixin, TreeMixin, AuthMixin, QMainWindow):
             
@@ -34,6 +41,12 @@ class MainWindow(PreviewMixin, BackupMixin, LockMixin, CrudMixin, TableMixin, Tr
         self.setFixedSize(self.size())
         self.setWindowFlag(Qt.WindowMaximizeButtonHint, False)
         self.setWindowFlag(Qt.MSWindowsFixedSizeDialogHint, True)
+
+        self.normal_icon = QIcon(str(ICON_PATH))
+        self.locked_icon = QIcon(str(LOCKED_ICON_PATH))
+
+        if not self.normal_icon.isNull():
+            self.setWindowIcon(self.normal_icon)
 
         self.settings = SettingsManager()
         self.master = None
@@ -56,6 +69,14 @@ class MainWindow(PreviewMixin, BackupMixin, LockMixin, CrudMixin, TableMixin, Tr
         self.ui_builder.wire_connections()
 
         self.prompt_login(force=True)
+
+        self.tray_icon = TrayIconWidget(
+            parent=self,
+            on_open=self._tray_open_from_tray,
+            on_lock_db=self._lock_database_from_tray,
+            icon=self.normal_icon,
+            tooltip="Secure Password Manager",
+        )
         
     def _cache_active_db_path_safely(self):
         try:
@@ -104,6 +125,17 @@ class MainWindow(PreviewMixin, BackupMixin, LockMixin, CrudMixin, TableMixin, Tr
             self._stop_preview_timers()
         except Exception:
             pass
+        
+        try:
+            minimize_to_tray = bool(self.settings.get("minimize_to_tray_on_exit", False))
+        except Exception:
+            minimize_to_tray = False
+
+        if minimize_to_tray and hasattr(self, "tray_icon") and self.tray_icon is not None:
+            self.hide()
+            ev.ignore()
+            return
+
         super().closeEvent(ev)
 
     def _start_expiration_checker(self):
@@ -757,3 +789,29 @@ class MainWindow(PreviewMixin, BackupMixin, LockMixin, CrudMixin, TableMixin, Tr
         mb = self.menuBar()
         if mb:
             mb.setEnabled(not locked)
+
+    def _tray_open_from_tray(self):
+        self.show()
+        self.raise_()
+        self.activateWindow()
+
+    def _lock_database_from_tray(self):
+        if hasattr(self, "lock"):
+            self.lock()
+        else:
+            pass
+
+    def _update_tray_icon_locked_state(self, locked: bool):
+        if not hasattr(self, "tray_icon") or self.tray_icon is None:
+            return
+
+        icon = self.locked_icon if locked else self.normal_icon
+
+        if icon is None or icon.isNull():
+            return
+
+        self.tray_icon.set_icon(icon)
+        try:
+            self.setWindowIcon(icon)
+        except Exception:
+            pass

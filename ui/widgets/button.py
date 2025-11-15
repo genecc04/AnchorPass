@@ -11,7 +11,7 @@ def _material_symbols_font(point_size: int) -> QFont:
     f.setPointSize(point_size)
     return f
 
-def _glyph_to_icon(glyph: str, size: int, color: QColor) -> QIcon:
+def _glyph_to_icon(glyph: str, size: int, color: QColor, y_offset: int = 0) -> QIcon:
     px_side = int(size * 1.8)
     screen = QGuiApplication.primaryScreen()
     dpr = screen.devicePixelRatio() if screen else 1.0
@@ -25,7 +25,12 @@ def _glyph_to_icon(glyph: str, size: int, color: QColor) -> QIcon:
     p.setRenderHint(QPainter.TextAntialiasing)
     p.setFont(_material_symbols_font(size))
     p.setPen(color)
-    p.drawText(pm.rect(), Qt.AlignCenter, glyph)
+
+    rect = pm.rect()
+    if y_offset != 0:
+        rect = rect.adjusted(0, y_offset, 0, y_offset)
+
+    p.drawText(rect, Qt.AlignCenter, glyph)
     p.end()
     return QIcon(pm)
 

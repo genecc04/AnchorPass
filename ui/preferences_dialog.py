@@ -97,7 +97,13 @@ class PreferencesDialog(QDialog):
         self.theme_combo.setCurrentText(self.settings.get("theme", "dark"))
         form.addRow("Theme:", self.theme_combo)
 
-        self.tabs.addTab(tab, "UI")
+        self.minimize_to_tray_chk = QCheckBox("Minimize to tray on exit")
+        self.minimize_to_tray_chk.setChecked(
+            bool(self.settings.get("minimize_to_tray_on_exit", False))
+        )
+        form.addRow("", self.minimize_to_tray_chk)
+
+        self.tabs.addTab(tab, "App Settings")
 
     # BACKUP TAB
     def _init_backup_tab(self):
@@ -206,7 +212,7 @@ class PreferencesDialog(QDialog):
         self.settings.set("copy_notifications", self.copy_notify_chk.isChecked())
 
         self.settings.set("theme", self.theme_combo.currentText())
-
+        self.settings.set("minimize_to_tray_on_exit", self.minimize_to_tray_chk.isChecked())
         path_val = self.backup_path_edit.text().strip()
         self.settings.set("backup_disabled", self.backup_disabled_chk.isChecked())
         self.settings.set("backup_dir", path_val)            # legacy kept in sync

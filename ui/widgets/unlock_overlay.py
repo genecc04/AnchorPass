@@ -114,34 +114,3 @@ class UnlockOverlay(QWidget):
 
     def _on_cancel(self):
         self.canceled.emit()
-
-class LockOverlay(QWidget):
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self.setAttribute(Qt.WA_StyledBackground, True)
-        self.setStyleSheet("background: rgba(0,0,0,0.45);")
-        self.setFocusPolicy(Qt.StrongFocus)
-
-        lay = QVBoxLayout(self)
-        lay.setContentsMargins(0, 0, 0, 0)
-        lay.setAlignment(Qt.AlignCenter)
-
-        msg = QLabel("Vault is locked")
-        msg.setStyleSheet("color: white; font-size: 18px;")
-        btn = QPushButton("Unlock")
-        btn.setFixedWidth(140)
-        btn.clicked.connect(lambda: getattr(self.parent(), "prompt_login", lambda **_: None)(force=True))
-
-        lay.addWidget(msg, 0, Qt.AlignHCenter)
-        lay.addWidget(btn, 0, Qt.AlignHCenter)
-
-    def attach_to_parent(self):
-        if self.parent():
-            self.parent().installEventFilter(self)
-            self.setGeometry(self.parent().rect())
-
-    def eventFilter(self, obj, ev):
-        if obj is self.parent() and ev.type() in (QEvent.Resize, QEvent.Show, QEvent.LayoutRequest, QEvent.Move):
-            self.setGeometry(obj.rect())
-            self.raise_()
-        return super().eventFilter(obj, ev)

@@ -1,10 +1,12 @@
-from PySide6.QtWidgets import QMessageBox, QDialog, QWidget, QVBoxLayout, QLabel, QPushButton
-from PySide6.QtCore import QEventLoop, Qt
+from PySide6.QtWidgets import QMessageBox, QDialog, QWidget, QVBoxLayout, QPushButton
+from PySide6.QtCore import QEventLoop, Qt, QSize
+from PySide6.QtGui import QPalette
 from core import db, crypto, security
 from ui.dialogs import DatabaseDialog, MasterDialog, ChangePasswordDialog
-from ui.widgets.unlock_overlay import UnlockOverlay, LockOverlay
+from ui.widgets.unlock_overlay import UnlockOverlay
 from pathlib import Path
 from core.db_paths import get_user_documents_dir
+from ui.widgets.button import _glyph_to_icon
 
 class AuthMixin:
     def _login(self) -> bool:
@@ -205,6 +207,8 @@ class AuthMixin:
     def unlock(self):
         self.show_lock_overlay(False)
         self._set_menu_locked_state(False)
+        self._update_tray_icon_locked_state(False)
+        
         if hasattr(self, "show_lock_overlay"):
             self.show_lock_overlay(False)
         if hasattr(self, "_cache_active_db_path_safely"):
@@ -226,6 +230,7 @@ class AuthMixin:
     def _init_lock_overlay(self):
         if hasattr(self, "_lock_overlay"):
             return
+
         cw = self.centralWidget()
         self._lock_overlay = QWidget(cw)
         self._lock_overlay.setObjectName("LockOverlay")
@@ -237,8 +242,16 @@ class AuthMixin:
         lay.setContentsMargins(24, 24, 24, 24)
         lay.setSpacing(16)
 
+        glyph = chr(0xE898)
+
+        color = self.palette().color(QPalette.ButtonText)
+        icon = _glyph_to_icon(glyph, size=50, color=color, y_offset=3)
+
         btn = QPushButton("Unlock")
         btn.setDefault(True)
+        btn.setIcon(icon)
+        btn.setIconSize(QSize(50, 50))
+
         btn.clicked.connect(lambda: self.prompt_login(force=True))
         lay.addWidget(btn, 0, Qt.AlignCenter)
 

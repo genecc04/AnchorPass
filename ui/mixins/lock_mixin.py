@@ -11,7 +11,7 @@ class LockMixin:
         self.cipher = None
         self._set_menu_locked_state(True)
         self.show_lock_overlay(True)
-
+        self._update_tray_icon_locked_state(True)
         try:
             if hasattr(self, "table"):
                 self.table.blockSignals(True)

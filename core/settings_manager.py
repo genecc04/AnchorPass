@@ -29,7 +29,7 @@ DEFAULT_SETTINGS: Dict[str, Any] = {
     "copy_notifications": True,
 
     "theme": "dark",
-
+    "minimize_to_tray_on_exit": False,
     "enable_backup": True,
     "backup_schedule": "Daily",
     "backup_time": "02:00",
