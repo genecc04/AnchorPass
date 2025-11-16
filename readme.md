@@ -30,13 +30,14 @@ status badges, multi-select actions, sortable columns, and automatic backups.
   - **Auto-backup on close** (configurable).
   - **Retention**: keep the newest *N* backups (uses `backup_retention`; falls back to `backup_number`).
 
-- **Clipboard workflow**
-  - Keyboard shortcuts:
-    - `Alt+Z` Copy Email
-    - `Alt+X` Copy Username
-    - `Alt+C` Copy Password
-    - `Alt+A` Copy App Password
+- **Hotkey copy / actions**
+  - Hotkeys can copy fields (site, email, username, password, app password, TOTP, security code) or trigger actions (add, edit, duplicate, archive, expire, delete, lock vault).
+  - All shortcuts are configurable or can be left blank in Preferences > Hotkeys.
   - Auto-clears clipboard after a configurable timeout.
+
+- **Tray & startup**
+  - Optional **minimize to tray on exit**.
+  - Optional **Start with Windows** toggle (uses a Startup-folder shortcut, no services/registry).
 
 ## Tech
 
@@ -45,6 +46,7 @@ status badges, multi-select actions, sortable columns, and automatic backups.
 - **Cryptography** for encryption.
 - **zxcvbn** for strength estimation.
 - **EFF Short Wordlist #1** for passphrase generation.
+- **pywin32** for Windows startup integration.
 
 Third-party attributions are in **THIRD_PARTY_NOTICES.md** (MIT for zxcvbn; CC-BY-4.0 for the EFF list).  
 Please read those notices for details.
