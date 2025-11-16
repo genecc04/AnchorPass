@@ -137,24 +137,86 @@ class TableMixin:
 
 
     def filter_table(self, text: str):
-        text = (text or "").strip()
-        if not text:
+        raw = (text or "").strip()
+        if not raw:
             self.tree.clearSelection()
             self.reload()
             return
 
-        rows = db.search_entries(text)
+        tokens = raw.split()
+        status_from_query: str | None = None
+        remaining_tokens: list[str] = []
 
-        if getattr(self, "cipher", None):
+        for t in tokens:
+            tl = t.lower()
+            if tl.startswith("is:"):
+                val = tl[3:]
+                if val in {"active", "archived", "deleted", "expired"}:
+                    status_from_query = val
+                    continue
+            remaining_tokens.append(t)
+
+        text = " ".join(remaining_tokens)
+
+        status_filter: str | None = None
+        category_filter: str | None = None
+
+        cat = getattr(self, "current_category", None)
+
+        try:
+            SPECIAL_DELETED = TreeMixin.SPECIAL_DELETED
+            SPECIAL_ARCHIVED = TreeMixin.SPECIAL_ARCHIVED
+            SPECIAL_EXPIRED = TreeMixin.SPECIAL_EXPIRED
+        except Exception:
+            SPECIAL_DELETED = "__SPECIAL_DELETED__"
+            SPECIAL_ARCHIVED = "__SPECIAL_ARCHIVED__"
+            SPECIAL_EXPIRED = "__SPECIAL_EXPIRED__"
+
+        if cat == SPECIAL_DELETED:
+            status_filter = "deleted"
+        elif cat == SPECIAL_ARCHIVED:
+            status_filter = "archived"
+        elif cat == SPECIAL_EXPIRED:
+            status_filter = "expired"
+        elif cat:
+            category_filter = cat
+
+        if status_from_query is not None:
+            status_filter = status_from_query
+
+        cipher = getattr(self, "cipher", None)
+
+        search_kwargs = {}
+        if status_filter:
+            search_kwargs["status"] = status_filter
+        if category_filter:
+            search_kwargs["category"] = category_filter
+
+        if cipher:
+            rows = db.search_entries(text or "", exclude_fields=("email",), **search_kwargs)
+        else:
+            rows = db.search_entries(text or "", **search_kwargs)
+
+        if cipher and text:
             text_low = text.lower()
             present_ids = {int(r[0]) for r in rows}
-            for r in db.fetch_all():
+
+            if status_filter:
+                base_rows = db.fetch_by_status(status_filter)
+            elif category_filter:
+                base_rows = db.fetch_by_category(category_filter, include_descendants=False)
+            else:
+                base_rows = db.fetch_all()
+
+            for r in base_rows:
                 rid = int(r[0])
                 if rid in present_ids:
                     continue
+
                 entry_full = db.fetch_entry_dict(rid) or {}
-                plain = db.decrypt_row_to_plain(entry_full, self.cipher)
+                plain = db.decrypt_row_to_plain(entry_full, cipher)
                 dec_email = plain.get("email", "") or ""
+
                 if dec_email and text_low in dec_email.lower():
                     rows.append(
                         (

@@ -86,6 +86,7 @@ class UIBuilder:
 
         self.window.search = QLineEdit(placeholderText="Search...")
         self.window.search.setObjectName("topelements")
+        self.window.search.installEventFilter(self.window)
 
         self.window.add_btn  = FontIconButton("add",  tooltip="Add",  size=14, min_button_side=40,
                                             hover_enabled=False, border_enabled=False)

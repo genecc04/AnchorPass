@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from PySide6.QtWidgets import QMainWindow, QMessageBox, QFileDialog, QApplication, QMenu
-from PySide6.QtCore import Qt, QTimer, QEvent, QPoint, QItemSelectionModel
+from PySide6.QtCore import Qt, QTimer, QEvent, QPoint, QItemSelectionModel, QObject
 from PySide6.QtGui import QIcon
 
 from ui.mixins.tree_mixin import TreeMixin
@@ -813,3 +813,25 @@ class MainWindow(PreviewMixin, BackupMixin, LockMixin, CrudMixin, TableMixin, Tr
             self.setWindowIcon(icon)
         except Exception:
             pass
+
+    def searchEventFilter(self, obj: QObject, event: QEvent) -> bool:
+        if obj is getattr(self, "search", None):
+            if event.type() in (QEvent.FocusIn, QEvent.MouseButtonPress):
+                table = getattr(self, "table", None)
+                if table is not None:
+                    try:
+                        sm = table.selectionModel()
+                        if sm:
+                            sm.clearSelection()
+                        table.setCurrentItem(None)
+                    except Exception:
+                        pass
+
+                tree = getattr(self, "tree", None)
+                if tree is not None:
+                    try:
+                        tree.clearSelection()
+                    except Exception:
+                        pass
+
+        return False

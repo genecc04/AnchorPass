@@ -51,12 +51,18 @@ class LockMixin:
         return AuthMixin.change_master_password(self)
 
     def eventFilter(self, obj, event):
+        if hasattr(self, "searchEventFilter"):
+            handled = self.searchEventFilter(obj, event)
+            if handled:
+                return True
+
         if event.type() in (
             QEvent.MouseButtonPress,
             QEvent.KeyPress,
             QEvent.MouseMove,
         ):
             self.last_activity = time.time()
+
         return super().eventFilter(obj, event)
 
     def _auto_lock_check(self):
