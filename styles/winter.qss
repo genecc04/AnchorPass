@@ -111,6 +111,41 @@ QToolTip {
     background-color: #f7fafc;
 }
 
+/* The container for all hotkey controls */
+QWidget#HotkeysPanel {
+    background: transparent;
+    border: none;
+}
+
+/* Labels inside the hotkey panel */
+QWidget#HotkeysPanel QLabel {
+    color: #141821;
+    padding-right: 6px;
+}
+
+/* QKeySequenceEdit fields inside the hotkey panel */
+QWidget#HotkeysPanel QKeySequenceEdit {
+    min-width: 130px;
+    padding: 4px 8px;
+    border-radius: 6px;
+    border: 1px solid #cfd7e6;
+    background-color: #ffffff;
+    color: #141821;
+}
+
+/* Focus / hover states */
+QWidget#HotkeysPanel QKeySequenceEdit:focus {
+    border: 1px solid #1f65d6;   /* winter blue accent */
+}
+
+/* Optional: disabled state */
+QWidget#HotkeysPanel QKeySequenceEdit:disabled {
+    background-color: #edf1f7;
+    border-color: #dde2ec;
+    color: #9aa4b6;
+}
+
+
 /* ===== ModernTable (Winter Theme Integration) ===== */
 #ModernTable {
     background-color: #ffffff;

@@ -1,6 +1,7 @@
 from PySide6.QtWidgets import ( QDialog, QVBoxLayout, QTabWidget, QWidget, QFormLayout, QLineEdit, QComboBox, QCheckBox, 
-                               QPushButton, QFileDialog, QHBoxLayout, QDialogButtonBox, QTimeEdit )
-from PySide6.QtCore import Qt, QTime
+                               QPushButton, QFileDialog, QHBoxLayout, QDialogButtonBox, QTimeEdit, QKeySequenceEdit, QLabel, QGridLayout )
+from PySide6.QtGui import QKeySequence, QKeyEvent
+from PySide6.QtCore import Qt, QTime, QEvent
 from core.settings_manager import SettingsManager
 from ui.widgets.plusminus_spinbox import PlusMinusSpinBox
 
@@ -30,6 +31,7 @@ class PreferencesDialog(QDialog):
         self._init_database_tab()
         self._init_security_tab()
         self._init_ui_tab()
+        self._init_hotkeys_tab()
         self._init_backup_tab()
 
         # Dialog Buttons 
@@ -37,6 +39,15 @@ class PreferencesDialog(QDialog):
         buttons.accepted.connect(self.accept)
         buttons.rejected.connect(self.reject)
         layout.addWidget(buttons)
+
+    def eventFilter(self, obj, event):
+        if isinstance(obj, QKeySequenceEdit) and event.type() == QEvent.KeyPress:
+            key_event: QKeyEvent = event
+            if key_event.key() in (Qt.Key_Backspace, Qt.Key_Delete) and key_event.modifiers() == Qt.NoModifier:
+                obj.clear()
+                return True
+
+        return super().eventFilter(obj, event)
 
     # DATABASE TAB
     def _init_database_tab(self):
@@ -85,7 +96,7 @@ class PreferencesDialog(QDialog):
 
         self.tabs.addTab(tab, "Security")
 
-    # UI TAB
+    # App settings Tab
     def _init_ui_tab(self):
         tab = QWidget()
         tab.setObjectName("prefsTabs")
@@ -105,6 +116,124 @@ class PreferencesDialog(QDialog):
         form.addRow("", self.minimize_to_tray_chk)
 
         self.tabs.addTab(tab, "App Settings")
+
+    def _init_hotkeys_tab(self):
+        tab = QWidget()
+        tab.setObjectName("prefsTabs")
+
+        # Main vertical layout for the tab
+        vbox = QVBoxLayout(tab)
+        vbox.setContentsMargins(8, 8, 0, 8)
+        vbox.setSpacing(6)
+
+        form = QFormLayout()
+        form.setObjectName("prefsTabs")
+        form.setLabelAlignment(Qt.AlignLeft)
+
+        self.hotkeys_enabled_chk = QCheckBox("Enable keyboard shortcuts")
+        self.hotkeys_enabled_chk.setChecked(
+            bool(self.settings.get("hotkeys_enabled", True))
+        )
+
+        def _make_key_edit(setting_key: str, default: str = "") -> QKeySequenceEdit:
+            seq_str = self.settings.get(setting_key, default) or ""
+            edit = QKeySequenceEdit()
+            if seq_str:
+                edit.setKeySequence(QKeySequence(seq_str))
+            edit.installEventFilter(self)
+            return edit
+
+        # Copy-related hotkeys
+        self.hk_copy_email        = _make_key_edit("hotkey_copy_email", "")
+        self.hk_copy_username     = _make_key_edit("hotkey_copy_username", "")
+        self.hk_copy_password     = _make_key_edit("hotkey_copy_password", "")
+        self.hk_copy_app_password = _make_key_edit("hotkey_copy_app_password", "")
+
+        self.hk_copy_site         = _make_key_edit("hotkey_copy_site", "")
+        self.hk_copy_totp         = _make_key_edit("hotkey_copy_totp", "")
+        self.hk_copy_sec_code     = _make_key_edit("hotkey_copy_security_code", "")
+
+        # Entry actions
+        self.hk_add_entry         = _make_key_edit("hotkey_add_entry", "")
+        self.hk_edit_entry        = _make_key_edit("hotkey_edit_entry", "")
+        self.hk_duplicate_entry   = _make_key_edit("hotkey_duplicate_entry", "")
+        self.hk_archive_entry     = _make_key_edit("hotkey_archive_entry", "")
+        self.hk_expire_entry      = _make_key_edit("hotkey_expire_entry", "")
+        self.hk_delete_entry      = _make_key_edit("hotkey_delete_entry", "")
+
+        # Lock Vault default Ctrl+L
+        self.hk_lock_vault        = _make_key_edit("hotkey_lock_vault", "Ctrl+L")
+
+        # Build a 2 column grid for hotkeys
+        hotkeys_widget = QWidget()
+        hotkeys_widget.setObjectName("HotkeysPanel")
+        grid = QGridLayout(hotkeys_widget)
+        grid.setContentsMargins(0, 0, 8, 0)
+        grid.setHorizontalSpacing(12)
+        grid.setVerticalSpacing(4)
+
+        # Left column
+        row = 0
+        grid.addWidget(QLabel("Copy Site:"),            row, 0)
+        grid.addWidget(self.hk_copy_site,               row, 1); row += 1
+
+        grid.addWidget(QLabel("Copy TOTP:"),            row, 0)
+        grid.addWidget(self.hk_copy_totp,               row, 1); row += 1
+
+        grid.addWidget(QLabel("Copy Security code:"),   row, 0)
+        grid.addWidget(self.hk_copy_sec_code,           row, 1); row += 1
+
+        grid.addWidget(QLabel("Copy Email:"),           row, 0)
+        grid.addWidget(self.hk_copy_email,              row, 1); row += 1
+
+        grid.addWidget(QLabel("Copy Username:"),        row, 0)
+        grid.addWidget(self.hk_copy_username,           row, 1); row += 1
+
+        grid.addWidget(QLabel("Copy Password:"),        row, 0)
+        grid.addWidget(self.hk_copy_password,           row, 1); row += 1
+
+        grid.addWidget(QLabel("Copy App Password:"),    row, 0)
+        grid.addWidget(self.hk_copy_app_password,       row, 1)
+
+        # Right column
+        row = 0
+        grid.addWidget(QLabel("Add entry:"),            row, 2)
+        grid.addWidget(self.hk_add_entry,               row, 3); row += 1
+
+        grid.addWidget(QLabel("Edit entry:"),           row, 2)
+        grid.addWidget(self.hk_edit_entry,              row, 3); row += 1
+
+        grid.addWidget(QLabel("Duplicate entry:"),      row, 2)
+        grid.addWidget(self.hk_duplicate_entry,         row, 3); row += 1
+
+        grid.addWidget(QLabel("Archive:"),              row, 2)
+        grid.addWidget(self.hk_archive_entry,           row, 3); row += 1
+
+        grid.addWidget(QLabel("Expire:"),               row, 2)
+        grid.addWidget(self.hk_expire_entry,            row, 3); row += 1
+
+        grid.addWidget(QLabel("Delete:"),               row, 2)
+        grid.addWidget(self.hk_delete_entry,            row, 3); row += 1
+
+        grid.addWidget(QLabel("Lock Vault (Ctrl+L):"),  row, 2)
+        grid.addWidget(self.hk_lock_vault,              row, 3)
+
+        # Put the hotkeys grid inside the form
+        form.addRow("Hotkeys:", hotkeys_widget)
+
+        # Add form to main vbox
+        vbox.addLayout(form)
+        vbox.addStretch()
+
+        # Bottom left checkbox row
+        bottom_row = QHBoxLayout()
+        bottom_row.addWidget(self.hotkeys_enabled_chk)
+        bottom_row.addStretch()
+        vbox.addLayout(bottom_row)
+
+        self.tabs.addTab(tab, "Hotkeys")
+
+
 
     # BACKUP TAB
     def _init_backup_tab(self):
@@ -156,6 +285,9 @@ class PreferencesDialog(QDialog):
             t = QTime(2, 0)
         self.sched_time_edit.setTime(t)
         self.sched_time_edit.setDisplayFormat("h:mm AP")
+
+        h = self.sched_interval_combo.sizeHint().height()
+        self.sched_time_edit.setMinimumHeight(h)
 
         sched_row = QHBoxLayout()
         sched_row.addWidget(self.sched_interval_combo)
@@ -214,10 +346,31 @@ class PreferencesDialog(QDialog):
 
         self.settings.set("theme", self.theme_combo.currentText())
         self.settings.set("minimize_to_tray_on_exit", self.minimize_to_tray_chk.isChecked())
+        self.settings.set("hotkeys_enabled", self.hotkeys_enabled_chk.isChecked())
+
+        def _save_hotkey(key: str, editor: QKeySequenceEdit):
+            self.settings.set(key, editor.keySequence().toString())
+        _save_hotkey("hotkey_copy_email",          self.hk_copy_email)
+        _save_hotkey("hotkey_copy_username",       self.hk_copy_username)
+        _save_hotkey("hotkey_copy_password",       self.hk_copy_password)
+        _save_hotkey("hotkey_copy_app_password",   self.hk_copy_app_password)
+
+        _save_hotkey("hotkey_copy_site",           self.hk_copy_site)
+        _save_hotkey("hotkey_copy_totp",           self.hk_copy_totp)
+        _save_hotkey("hotkey_copy_security_code",  self.hk_copy_sec_code)
+
+        _save_hotkey("hotkey_add_entry",           self.hk_add_entry)
+        _save_hotkey("hotkey_edit_entry",          self.hk_edit_entry)
+        _save_hotkey("hotkey_duplicate_entry",     self.hk_duplicate_entry)
+        _save_hotkey("hotkey_archive_entry",       self.hk_archive_entry)
+        _save_hotkey("hotkey_expire_entry",        self.hk_expire_entry)
+        _save_hotkey("hotkey_delete_entry",        self.hk_delete_entry)
+        _save_hotkey("hotkey_lock_vault",          self.hk_lock_vault)
+
         path_val = self.backup_path_edit.text().strip()
         self.settings.set("backup_disabled", self.backup_disabled_chk.isChecked())
-        self.settings.set("backup_dir", path_val)            # legacy kept in sync
-        self.settings.set("backup_path", path_val)           # preferred key (scheduler/engine use this)
+        self.settings.set("backup_dir", path_val)
+        self.settings.set("backup_path", path_val)
         self.settings.set("backup_on_close", self.backup_on_close.isChecked())
         self.settings.set("backup_retention", int(self.backup_retention_spin.value()))
         self.settings.set("backup_sched_enabled", self.sched_enable_chk.isChecked())

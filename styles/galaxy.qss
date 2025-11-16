@@ -100,6 +100,40 @@ QToolTip {
 #SettingsTabs PlusMinusSpinBox, #SettingsTabs QPushButton, #SettingsTabs QComboBox, #SettingsTabs QLineEdit, #SettingsTabs QTimeEdit{
     background-color: #140b24;
 }
+
+/* The container for all hotkey controls */
+QWidget#HotkeysPanel {
+    background: transparent;
+    border: none;
+}
+
+/* Labels inside the hotkey panel */
+QWidget#HotkeysPanel QLabel {
+    color: #ece6ff;
+    padding-right: 6px;
+}
+
+/* QKeySequenceEdit fields inside the hotkey panel */
+QWidget#HotkeysPanel QKeySequenceEdit {
+    min-width: 130px;
+    padding: 4px 8px;
+    border-radius: 6px;
+    border: 1px solid #3a2a54;
+    background-color: #151024;
+}
+
+/* Focus / hover states to make them feel like inputs, not buttons */
+QWidget#HotkeysPanel QKeySequenceEdit:focus {
+    border: 1px solid #b26bff;
+}
+
+/* Optional: when disabled (if you ever disable them via the checkbox) */
+QWidget#HotkeysPanel QKeySequenceEdit:disabled {
+    background-color: #151024;
+    border-color: #2e2343;
+    color: #7b7191;
+}
+
 /* ===== ModernTable (Galaxy Theme Integration) ===== */
 #ModernTable {
     background-color: #0b0614;

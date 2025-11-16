@@ -8,6 +8,7 @@ from PySide6.QtCore import Qt
 from PySide6.QtGui import QAction, QKeySequence, QShortcut
 
 from ui.widgets.button import FontIconButton
+from core.settings_manager import SettingsManager
 
 if TYPE_CHECKING:
     from ui.main_window import MainWindow
@@ -34,9 +35,11 @@ class UIBuilder:
         file_menu.addAction(QAction("Exit", self.window, triggered=self.window.close))
 
         vault_menu = menubar.addMenu("&Vault")
-        vault_menu.addAction(QAction("Lock Vault", self.window, 
-                                     shortcut=QKeySequence("Ctrl+L"), 
-                                     triggered=self.window.lock))
+
+        self.window.lock_action = QAction("Lock Vault", self.window,
+                                        triggered=self.window.lock)
+        
+        vault_menu.addAction(self.window.lock_action)
 
         settings_menu = menubar.addMenu("&Settings")
         settings_menu.addAction(QAction("Preferences", self.window, 
@@ -52,14 +55,67 @@ class UIBuilder:
         )
     
     def build_shortcuts(self):
-        QShortcut(QKeySequence("Alt+Z"), self.window, 
-                 activated=lambda: self.window._copy_selected_field("email"))
-        QShortcut(QKeySequence("Alt+X"), self.window, 
-                 activated=lambda: self.window._copy_selected_field("username"))
-        QShortcut(QKeySequence("Alt+C"), self.window, 
-                 activated=lambda: self.window._copy_selected_field("password"))
-        QShortcut(QKeySequence("Alt+A"), self.window, 
-                 activated=lambda: self.window._copy_selected_field("app_password"))
+        settings = SettingsManager()
+
+        if hasattr(self.window, "_shortcuts"):
+            for sc in self.window._shortcuts:
+                sc.setParent(None)
+            self.window._shortcuts.clear()
+        else:
+            self.window._shortcuts = []
+
+        if not settings.get("hotkeys_enabled", True):
+            if hasattr(self.window, "lock_action"):
+                self.window.lock_action.setShortcut(QKeySequence())
+            return
+
+        def _seq(setting_key: str, default: str) -> QKeySequence | None:
+            s = (settings.get(setting_key, default) or "").strip()
+            if not s:
+                return None
+            return QKeySequence(s)
+
+        def _add_copy_shortcut(setting_key: str, default: str, field: str):
+            seq = _seq(setting_key, default)
+            if not seq:
+                return
+            sc = QShortcut(seq, self.window)
+            sc.activated.connect(lambda f=field: self.window._copy_selected_field(f))
+            self.window._shortcuts.append(sc)
+
+        def _add_action_shortcut(setting_key: str, default: str, handler):
+            if handler is None:
+                return
+            seq = _seq(setting_key, default)
+            if not seq:
+                return
+            sc = QShortcut(seq, self.window)
+            sc.activated.connect(handler)
+            self.window._shortcuts.append(sc)
+
+        # Copy field shortcuts
+        _add_copy_shortcut("hotkey_copy_site",           "",      "site_link")
+        _add_copy_shortcut("hotkey_copy_email",          "Alt+Q", "email")
+        _add_copy_shortcut("hotkey_copy_username",       "Alt+W", "username")
+        _add_copy_shortcut("hotkey_copy_password",       "Alt+Z", "password")
+        _add_copy_shortcut("hotkey_copy_app_password",   "Alt+X", "app_password")
+        _add_copy_shortcut("hotkey_copy_security_code",  "",      "security_code")
+
+        # TOTP uses its own helper, *not* _copy_selected_field
+        _add_action_shortcut("hotkey_copy_totp", "", self.window._copy_totp_for_selection)
+
+        # Entry action shortcuts
+        _add_action_shortcut("hotkey_add_entry",       "", getattr(self.window, "add_entry", None))
+        _add_action_shortcut("hotkey_edit_entry",      "", getattr(self.window, "edit_entry", None))
+        _add_action_shortcut("hotkey_duplicate_entry", "", getattr(self.window, "duplicate_entry", None))
+        _add_action_shortcut("hotkey_archive_entry",   "", getattr(self.window, "_on_archive_clicked", None))
+        _add_action_shortcut("hotkey_expire_entry",    "", getattr(self.window, "_on_expire_clicked", None))
+        _add_action_shortcut("hotkey_delete_entry",    "", getattr(self.window, "delete_entry", None))
+
+        # Lock vault
+        if hasattr(self.window, "lock_action"):
+            seq = _seq("hotkey_lock_vault", "Ctrl+L")
+            self.window.lock_action.setShortcut(seq or QKeySequence())
     
     def build_central_widget(self):
         central = QWidget()

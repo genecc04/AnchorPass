@@ -25,6 +25,7 @@ import time
 from datetime import datetime
 from ui.widgets.tray_icon_widget import TrayIconWidget
 from pathlib import Path
+from core import totp as totp_util
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 ICON_PATH = BASE_DIR / "assets" / "icon.ico"
@@ -267,10 +268,11 @@ class MainWindow(PreviewMixin, BackupMixin, LockMixin, CrudMixin, TableMixin, Tr
             if count == 1:
                 menu.addAction("Edit", self.edit_entry)
             label = "Delete Permanently" if self._in_deleted_folder() else "Delete (to Trash)"
-            menu.addAction(label, self.delete_entry if count <= 1 else self.delete_selected_entries)
+            menu.addAction(
+                label,
+                self.delete_entry if count <= 1 else self.delete_selected_entries,
+            )
             menu.exec(view.viewport().mapToGlobal(pos))
-        finally:
-            QTimer.singleShot(0, lambda: QTimer.singleShot(0, self._post_menu_refresh))
 
     def show_context_menu_multi(self, pos: QPoint):
         view = self.table
@@ -642,6 +644,9 @@ class MainWindow(PreviewMixin, BackupMixin, LockMixin, CrudMixin, TableMixin, Tr
 
         self._cache_active_db_path_safely()
 
+        if hasattr(self, "ui_builder"):
+                self.ui_builder.build_shortcuts()
+
         try:
             load_styles(QApplication.instance(), theme=self.settings.get("theme", "dark"))
         except Exception:
@@ -835,3 +840,35 @@ class MainWindow(PreviewMixin, BackupMixin, LockMixin, CrudMixin, TableMixin, Tr
                         pass
 
         return False
+    
+    def _copy_totp_for_selection(self):
+        entry_id = self._get_selected_entry_id_from_table()
+        if not entry_id:
+            return
+
+        entry = db.fetch_entry_dict(int(entry_id)) or {}
+
+        plain = {}
+        if getattr(self, "cipher", None):
+            try:
+                plain = db.decrypt_row_to_plain(entry, self.cipher) or {}
+            except Exception:
+                plain = {}
+
+        otp_secret = (plain.get("otp_secret") or entry.get("otp_secret") or "").strip()
+        if not otp_secret:
+            try:
+                self.statusBar().showMessage("No TOTP configured for this entry.", 2000)
+            except Exception:
+                pass
+            return
+
+        try:
+            code_now, _, _ = totp_util.totp_from_uri_or_secret(otp_secret)
+        except Exception:
+            return
+
+        if not code_now:
+            return
+
+        self._copy_to_clipboard("TOTP code", code_now)

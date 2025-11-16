@@ -111,6 +111,40 @@ QToolTip {
     background-color: #ffffff;
 }
 
+/* The container for all hotkey controls */
+QWidget#HotkeysPanel {
+    background: transparent;
+    border: none;
+}
+
+/* Labels inside the hotkey panel */
+QWidget#HotkeysPanel QLabel {
+    color: #1a1a1a;
+    padding-right: 6px;
+}
+
+/* QKeySequenceEdit fields inside the hotkey panel */
+QWidget#HotkeysPanel QKeySequenceEdit {
+    min-width: 130px;
+    padding: 4px 8px;
+    border-radius: 6px;
+    border: 1px solid #d0d0d0;
+    background-color: #ffffff;
+    color: #1a1a1a;
+}
+
+/* Focus / hover states to make them feel like inputs, not buttons */
+QWidget#HotkeysPanel QKeySequenceEdit:focus {
+    border: 1px solid #075cb2;
+}
+
+/* Optional: when disabled (if you ever disable them via the checkbox) */
+QWidget#HotkeysPanel QKeySequenceEdit:disabled {
+    background-color: #f2f2f2;
+    border-color: #e6e6e6;
+    color: #9a9a9a;
+}
+
 /* ===== ModernTable (Light Theme Integration) ===== */
 #ModernTable {
     background-color: #ffffff;

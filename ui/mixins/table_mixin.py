@@ -411,7 +411,6 @@ class TableMixin:
 
         QApplication.processEvents(QEventLoop.ExcludeUserInputEvents)
         menu.exec(self.table.viewport().mapToGlobal(pos))
-        self.table.clearFocus()
 
     def _archive_single_entry(self, entry_id: int):
         try:
@@ -448,18 +447,27 @@ class TableMixin:
             QMessageBox.critical(self, "Error", f"Failed to restore entry:\n{e}")
     
     def _refresh_current_view(self):
+        search_widget = getattr(self, "search", None)
+        if search_widget is not None:
+            text = (search_widget.text() or "").strip()
+            if text:
+                try:
+                    self.filter_table(text)
+                    return
+                except Exception:
+                    pass
+
         category = getattr(self, 'current_category', None)
-        
         if not category:
             self.reload()
             return
-        
+
         try:
-            
-            SPECIAL_DELETED = TreeMixin.SPECIAL_DELETED
+            from ui.mixins.tree_mixin import TreeMixin
+            SPECIAL_DELETED  = TreeMixin.SPECIAL_DELETED
             SPECIAL_ARCHIVED = TreeMixin.SPECIAL_ARCHIVED
-            SPECIAL_EXPIRED = TreeMixin.SPECIAL_EXPIRED
-            
+            SPECIAL_EXPIRED  = TreeMixin.SPECIAL_EXPIRED
+
             if category == SPECIAL_DELETED:
                 self._load_special_folder_entries("deleted")
             elif category == SPECIAL_ARCHIVED:
@@ -468,7 +476,7 @@ class TableMixin:
                 self._load_special_folder_entries("expired")
             else:
                 self.reload()
-        except:
+        except Exception:
             self.reload()
     
     def _load_special_folder_entries(self, status: str):
