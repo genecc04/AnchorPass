@@ -4,6 +4,7 @@ from PySide6.QtGui import QKeySequence, QKeyEvent
 from PySide6.QtCore import Qt, QTime, QEvent
 from core.settings_manager import SettingsManager
 from ui.widgets.plusminus_spinbox import PlusMinusSpinBox
+from core.startup_manager import is_startup_enabled, set_startup_enabled
 
 class PreferencesDialog(QDialog):
 
@@ -114,6 +115,14 @@ class PreferencesDialog(QDialog):
             bool(self.settings.get("minimize_to_tray_on_exit", False))
         )
         form.addRow("", self.minimize_to_tray_chk)
+
+        self.start_with_windows_chk = QCheckBox("Start with Windows")
+        stored = self.settings.get("start_with_windows", None)
+        if stored is None:
+            self.start_with_windows_chk.setChecked(is_startup_enabled())
+        else:
+            self.start_with_windows_chk.setChecked(bool(stored))
+        form.addRow("", self.start_with_windows_chk)
 
         self.tabs.addTab(tab, "App Settings")
 
@@ -347,6 +356,12 @@ class PreferencesDialog(QDialog):
         self.settings.set("theme", self.theme_combo.currentText())
         self.settings.set("minimize_to_tray_on_exit", self.minimize_to_tray_chk.isChecked())
         self.settings.set("hotkeys_enabled", self.hotkeys_enabled_chk.isChecked())
+        start_with_windows = self.start_with_windows_chk.isChecked()
+        self.settings.set("start_with_windows", start_with_windows)
+        try:
+            set_startup_enabled(start_with_windows)
+        except Exception:
+            pass
 
         def _save_hotkey(key: str, editor: QKeySequenceEdit):
             self.settings.set(key, editor.keySequence().toString())

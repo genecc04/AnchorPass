@@ -2,11 +2,11 @@ name: CI (Windows only)
 
 on:
   push:
-    branches: [ main, master ]   # lint on branch pushes
-    tags: [ 'v*' ]               # also trigger on tags like v1.2.0 or v1.2.0-alpha
+    branches: [ main, master ]
+    tags: [ 'v*' ]
   pull_request:
-    branches: [ main, master ]   # lint on PRs
-  workflow_dispatch:              # optional manual trigger
+    branches: [ main, master ]
+  workflow_dispatch:
 
 jobs:
   lint:
@@ -56,11 +56,11 @@ jobs:
           if (Test-Path requirements.txt) { pip install -r requirements.txt }
           pip install pyinstaller
 
-      - name: Build (PyInstaller)
+      - name: Build (PyInstaller onedir)
         shell: pwsh
         run: |
           pyinstaller .\main.py `
-            --noconsole --onefile --name SecurePasswordManager `
+            --noconsole --onedir --name SecurePasswordManager `
             --icon ".\assets\icon.ico" `
             --clean `
             --collect-all PySide6 `
@@ -68,11 +68,19 @@ jobs:
             --add-data "styles;styles" `
             --add-data "assets;assets"
 
-      - name: Upload artifact (exe)
+      - name: Package onedir build as zip
+        shell: pwsh
+        run: |
+          $version = "${{ github.ref_name }}"
+          $outDir = "dist/SecurePasswordManager"
+          $zipPath = "dist/SecurePasswordManager-win-x64-$version.zip"
+          Compress-Archive -Path "$outDir\*" -DestinationPath $zipPath -Force
+
+      - name: Upload artifact (zip)
         uses: actions/upload-artifact@v4
         with:
           name: spm-win-x64-${{ github.ref_name }}
-          path: dist/SecurePasswordManager.exe
+          path: dist/SecurePasswordManager-win-x64-${{ github.ref_name }}.zip
           if-no-files-found: error
 
   release:
@@ -93,7 +101,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            build_out/SecurePasswordManager.exe
+            build_out/SecurePasswordManager-win-x64-${{ github.ref_name }}.zip
           generate_release_notes: true
           prerelease: ${{ contains(github.ref_name, '-') }}
         env:
