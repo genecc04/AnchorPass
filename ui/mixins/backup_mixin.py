@@ -69,61 +69,15 @@ class BackupMixin:
             pass
 
     def export_backup(self, reason: str = "manual") -> Optional[Path]:
-        sm = SettingsManager()
-
-        src = self._resolve_db_path()
-        if not src:
-            QMessageBox.warning(self, "Backup", "No database is currently open.")
+        dst = self._export_backup_core(reason=reason)
+        if dst is None:
+            # show UI messages based on failure reason if you want
+            QMessageBox.warning(self, "Backup", "Backup failed or is not configured.")
             try:
-                self.statusBar().showMessage("Backup skipped: no open database.", 3000)
+                self.statusBar().showMessage("Backup failed.", 3000)
             except Exception:
                 pass
             return None
-        if not src.exists():
-            QMessageBox.warning(self, "Backup", f"Database not found:\n{src}")
-            try:
-                self.statusBar().showMessage(f"Backup skipped: DB not found ({src}).", 3000)
-            except Exception:
-                pass
-            return None
-
-        backup_dir = self._resolve_backup_folder()
-        if not backup_dir:
-            QMessageBox.warning(self, "Backup", "Please set a backup folder in Preferences.")
-            try:
-                self.statusBar().showMessage("Backup skipped: no backup folder set.", 3000)
-            except Exception:
-                pass
-            return None
-
-        try:
-            backup_dir.mkdir(parents=True, exist_ok=True)
-        except Exception as e:
-            QMessageBox.critical(self, "Backup", f"Cannot create backup folder:\n{backup_dir}\n\n{e}")
-            return None
-
-        timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
-        stem = src.stem
-        suffix = src.suffix or ".db"
-        reason_tag = reason if reason in ("manual", "scheduled", "close") else "manual"
-        dst = backup_dir / f"{stem}-{timestamp}-{reason_tag}{suffix}"
-
-        tmp = dst.with_suffix(dst.suffix + ".part")
-        try:
-            shutil.copy2(src, tmp)
-            tmp.replace(dst)
-        except Exception as e:
-            try:
-                if tmp.exists():
-                    tmp.unlink(missing_ok=True)
-            except Exception:
-                pass
-            QMessageBox.critical(self, "Backup", f"Failed to write backup:\n{dst}\n\n{e}")
-            return None
-
-        keep = self._read_retention(sm)
-        if keep > 0:
-            self._apply_backup_retention(backup_dir, stem, suffix, keep)
 
         try:
             self.statusBar().showMessage(f"Backup saved: {dst.name}", 3000)
@@ -175,8 +129,7 @@ class BackupMixin:
             try:
                 old.unlink(missing_ok=True)
             except Exception as e:
-                try: self.statusBar().showMessage(f"Prune failed: {old.name} ({e})", 5000)
-                except: pass
+                pass
 
     def _diagnose_paths(self) -> Tuple[str, str]:
         candidates = []
@@ -239,3 +192,43 @@ class BackupMixin:
             default_dir = self._default_backup_dir()
             default_dir.mkdir(parents=True, exist_ok=True)
             self.settings.set("backup_path", str(default_dir))
+
+    def _export_backup_core(self, reason: str = "manual") -> Optional[Path]:
+        sm = SettingsManager()
+
+        src = self._resolve_db_path()
+        if not src or not src.exists():
+            return None
+
+        backup_dir = self._resolve_backup_folder()
+        if not backup_dir:
+            return None
+
+        try:
+            backup_dir.mkdir(parents=True, exist_ok=True)
+        except Exception:
+            return None
+
+        timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+        stem = src.stem
+        suffix = src.suffix or ".db"
+        reason_tag = reason if reason in ("manual", "scheduled", "close") else "manual"
+        dst = backup_dir / f"{stem}-{timestamp}-{reason_tag}{suffix}"
+
+        tmp = dst.with_suffix(dst.suffix + ".part")
+        try:
+            shutil.copy2(src, tmp)
+            tmp.replace(dst)
+        except Exception:
+            try:
+                if tmp.exists():
+                    tmp.unlink(missing_ok=True)
+            except Exception:
+                pass
+            return None
+
+        keep = self._read_retention(sm)
+        if keep > 0:
+            self._apply_backup_retention(backup_dir, stem, suffix, keep)
+
+        return dst

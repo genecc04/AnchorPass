@@ -139,9 +139,26 @@ class TableMixin:
     def filter_table(self, text: str):
         raw = (text or "").strip()
         if not raw:
-            self.tree.clearSelection()
+            prev = getattr(self, "_search_prev_category", None)
+
+            if prev is not None:
+                self.current_category = prev
+                self._search_prev_category = None
+
+                if hasattr(self, "_refresh_tree_and_table"):
+                    self._refresh_tree_and_table(target_category=prev)
+                    return
+                
+            try:
+                self.tree.clearSelection()
+            except Exception:
+                pass
+
             self.reload()
             return
+
+        if getattr(self, "_search_prev_category", None) is None:
+            self._search_prev_category = getattr(self, "current_category", None)
 
         tokens = raw.split()
         status_from_query: str | None = None
@@ -161,7 +178,7 @@ class TableMixin:
         status_filter: str | None = None
         category_filter: str | None = None
 
-        cat = getattr(self, "current_category", None)
+        cat = getattr(self, "_search_prev_category", getattr(self, "current_category", None))
 
         try:
             SPECIAL_DELETED = TreeMixin.SPECIAL_DELETED
@@ -231,8 +248,10 @@ class TableMixin:
                     )
                     present_ids.add(rid)
 
-        self.tree.clearSelection()
-        self.current_category = None
+        try:
+            self.tree.clearSelection()
+        except Exception:
+            pass
         self._load_table(rows)
 
     def _get_selected_entry_id_from_table(self) -> int | None:

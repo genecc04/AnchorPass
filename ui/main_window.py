@@ -78,6 +78,7 @@ class MainWindow(PreviewMixin, BackupMixin, LockMixin, CrudMixin, TableMixin, Tr
             icon=self.normal_icon,
             tooltip="Secure Password Manager",
         )
+        self._search_prev_category: str | None = None
         
     def _cache_active_db_path_safely(self):
         try:
@@ -376,7 +377,6 @@ class MainWindow(PreviewMixin, BackupMixin, LockMixin, CrudMixin, TableMixin, Tr
             QMessageBox.information(self, "Delete", "Please select a row to delete.")
             return
 
-        # you can still look up text for the confirm dialog:
         entry = db.fetch_entry_dict(entry_id) or {}
         site_text = entry.get("site", "")
 
@@ -630,10 +630,6 @@ class MainWindow(PreviewMixin, BackupMixin, LockMixin, CrudMixin, TableMixin, Tr
 
 
     def reload(self):
-        try:
-            db.check_and_expire_entries()
-        except Exception:
-            pass
 
         cat = getattr(self, "current_category", None)
 
@@ -874,6 +870,9 @@ class MainWindow(PreviewMixin, BackupMixin, LockMixin, CrudMixin, TableMixin, Tr
     def searchEventFilter(self, obj: QObject, event: QEvent) -> bool:
         if obj is getattr(self, "search", None):
             if event.type() in (QEvent.FocusIn, QEvent.MouseButtonPress):
+                if self._search_prev_category is None:
+                    self._search_prev_category = getattr(self, "current_category", None)
+
                 table = getattr(self, "table", None)
                 if table is not None:
                     try:
