@@ -7,6 +7,7 @@ from ui.widgets.unlock_overlay import UnlockOverlay
 from pathlib import Path
 from core.db_paths import get_user_documents_dir
 from ui.widgets.button import _glyph_to_icon
+import sys
 
 class AuthMixin:
     def _login(self) -> bool:
@@ -15,6 +16,8 @@ class AuthMixin:
         while True:
             db_dlg = DatabaseDialog(self)
             if db_dlg.exec() != QDialog.Accepted:
+                if not getattr(self, "_initial_login_done", False):
+                    sys.exit(0)
                 return False
 
             db_path, is_new_db = db_dlg.values()
@@ -191,15 +194,27 @@ class AuthMixin:
     def prompt_login(self, force: bool = False) -> None:
         if getattr(self, "_login_in_progress", False):
             return
+
         if getattr(self, "cipher", None) and not force:
             return
 
         self._login_in_progress = True
         try:
-            ok = self._login()
-            if ok:
-                    self.unlock()
+            if not getattr(self, "_initial_login_done", False):
+                while True:
+                    ok = self._login()
+                    if ok:
+                        self._initial_login_done = True
+                        self.unlock()
+                        break
+                    else:
+                        continue
+
             else:
+                ok = self._login()
+                if ok:
+                    self.unlock()
+                else:
                     self.lock()
         finally:
             self._login_in_progress = False
