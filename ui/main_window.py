@@ -45,7 +45,7 @@ class MainWindow(PreviewMixin, BackupMixin, LockMixin, CrudMixin, TableMixin, Tr
 
         self.normal_icon = QIcon(str(ICON_PATH))
         self.locked_icon = QIcon(str(LOCKED_ICON_PATH))
-
+        
         if not self.normal_icon.isNull():
             self.setWindowIcon(self.normal_icon)
 
@@ -243,16 +243,12 @@ class MainWindow(PreviewMixin, BackupMixin, LockMixin, CrudMixin, TableMixin, Tr
 
     def show_context_menu(self, pos: QPoint):
         view = self.table
-        sm = view.selectionModel()
-        if not sm:
-            return
-
         idx = view.indexAt(pos)
-        if idx.isValid():
-            if sm.isSelected(idx):
-                sm.setCurrentIndex(idx, QItemSelectionModel.NoUpdate | QItemSelectionModel.Rows)
-            else:
-                sm.setCurrentIndex(idx, QItemSelectionModel.ClearAndSelect | QItemSelectionModel.Rows)
+        if not idx.isValid():
+            return
+        
+        sm = view.selectionModel()
+        sm.setCurrentIndex(idx, QItemSelectionModel.NoUpdate | QItemSelectionModel.Rows)
 
         count = len(sm.selectedRows())
 
@@ -318,6 +314,16 @@ class MainWindow(PreviewMixin, BackupMixin, LockMixin, CrudMixin, TableMixin, Tr
         except Exception as e:
             QMessageBox.critical(self, "Error", f"Failed to edit entry:\n{e}")
 
+    def _edit_single_entry(self, entry_id):
+        if not entry_id:
+            return
+
+        try:
+            super().edit_single_entry(entry_id)
+            self._refresh_tree_and_table()
+        except Exception as e:
+            QMessageBox.critical(self, "Error", f"Failed to edit entry:\n{e}")
+
     def delete_entry(self):
         try:
             count = len(self.table.selectionModel().selectedRows())
@@ -364,6 +370,52 @@ class MainWindow(PreviewMixin, BackupMixin, LockMixin, CrudMixin, TableMixin, Tr
                     QMessageBox.critical(self, "Error", f"Failed to delete entry:\n{e}")
         else:
             self.delete_selected_entries()
+
+    def _delete_single_entry(self, entry_id: int):
+        if not entry_id:
+            QMessageBox.information(self, "Delete", "Please select a row to delete.")
+            return
+
+        # you can still look up text for the confirm dialog:
+        entry = db.fetch_entry_dict(entry_id) or {}
+        site_text = entry.get("site", "")
+
+        if self._in_deleted_folder():
+            ok = QMessageBox.warning(
+                self,
+                "Permanently Delete",
+                f"Permanently delete '{site_text}'?\n\nThis action cannot be undone!",
+                QMessageBox.Yes | QMessageBox.No,
+                QMessageBox.No,
+            )
+            if ok != QMessageBox.Yes:
+                return
+
+            try:
+                db.permanently_delete_entry(entry_id)
+                self.populate_tree()
+                self.reload()
+                self._log_status("Item permanently deleted.", 1500)
+            except Exception as e:
+                QMessageBox.critical(self, "Error", f"Failed to permanently delete entry:\n{e}")
+        else:
+            ok = QMessageBox.question(
+                self,
+                "Confirm Delete",
+                f"Move '{site_text}' to Trash?\n(You can restore it later.)",
+                QMessageBox.Yes | QMessageBox.No,
+                QMessageBox.No,
+            )
+            if ok != QMessageBox.Yes:
+                return
+
+            try:
+                db.delete_entry(entry_id)
+                self.populate_tree()
+                self.reload()
+                self._log_status("Moved to Trash", 1500)
+            except Exception as e:
+                QMessageBox.critical(self, "Error", f"Failed to delete entry:\n{e}")
 
     def delete_selected_entries(self):
         ids = self._get_all_selected_entry_ids()

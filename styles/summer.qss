@@ -223,7 +223,7 @@ QWidget#HotkeysPanel QKeySequenceEdit:disabled {
 }
 
 /* ===== Inputs ===== */
-QLineEdit, QTextEdit, QPlainTextEdit, QComboBox, QSpinBox {
+QLineEdit, QTextEdit, QPlainTextEdit, QComboBox, QSpinBox, PlusMinusSpinBox, PlusMinusTimeEdit, #prefsTabs QPushButton {
     background-color: #ffffff;
     border: 1px solid #e3d7c7;
     border-radius: 6px;
@@ -231,10 +231,10 @@ QLineEdit, QTextEdit, QPlainTextEdit, QComboBox, QSpinBox {
     selection-background-color: #ffb74d;      /* soft orange selection */
     selection-color: #3b2a21;
 }
-QLineEdit:hover, QTextEdit:hover, QPlainTextEdit:hover, QComboBox:hover, QSpinBox:hover {
+QLineEdit:hover, QTextEdit:hover, QPlainTextEdit:hover, QComboBox:hover, QSpinBox:hover, PlusMinusSpinBox:hover, PlusMinusTimeEdit:hover, #prefsTabs QPushButton:hover {
     border-color: #d7af85;
 }
-QLineEdit:focus, QTextEdit:focus, QPlainTextEdit:focus, QComboBox:focus, QSpinBox:focus {
+QLineEdit:focus, QTextEdit:focus, QPlainTextEdit:focus, QComboBox:focus, QSpinBox:focus, PlusMinusSpinBox:focus, PlusMinusTimeEdit:focus, #prefsTabs QPushButton:focus {
     border-color: #ff9800;
 }
 

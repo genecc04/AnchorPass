@@ -4,6 +4,7 @@ from PySide6.QtGui import QKeySequence, QKeyEvent
 from PySide6.QtCore import Qt, QTime, QEvent
 from core.settings_manager import SettingsManager
 from ui.widgets.plusminus_spinbox import PlusMinusSpinBox
+from ui.widgets.plusminus_timeedit import PlusMinusTimeEdit
 from core.startup_manager import is_startup_enabled, set_startup_enabled
 
 class PreferencesDialog(QDialog):
@@ -285,7 +286,7 @@ class PreferencesDialog(QDialog):
         self.sched_interval_combo.setCurrentText(self.settings.get("backup_interval",
                                                                    self.settings.get("backup_schedule", "Daily")))
 
-        self.sched_time_edit = QTimeEdit()
+        self.sched_time_edit = PlusMinusTimeEdit()
         time_str = self.settings.get("backup_time", "02:00")
         t = QTime.fromString(time_str, "HH:mm")
         if not t.isValid():

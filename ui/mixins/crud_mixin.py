@@ -140,6 +140,82 @@ class CrudMixin:
         else:
             self.reload()
                     
+    def edit_single_entry(self, entry_id):
+        if not getattr(self, "cipher", None):
+            QMessageBox.critical(self, "Error", "Vault is locked; cannot edit.")
+            return
+
+        if entry_id is None:
+            return
+
+        row = db.fetch_entry_dict(int(entry_id))
+        if not row:
+            return
+
+        entry_plain = db.decrypt_row_to_plain(row, self.cipher)
+        entry_plain["id"] = entry_id
+
+        entry_plain["expiry_date"] = row.get("expiry_date")
+        old_status = row.get("status", "active")
+        entry_plain["status"] = old_status
+
+        from ui.entry_dialog import EntryDialog
+        dlg = EntryDialog(self, entry=entry_plain, default_category=self.current_category)
+        if not dlg.exec():
+            return
+
+        v = dlg.values()
+        new_status = v.get("status", "active")
+
+        merged_plain = dict(entry_plain)
+        merged_plain.update(v)
+        merged_plain["id"] = entry_id
+
+        new_row = db.encrypt_plain_to_row(
+            plain=merged_plain,
+            cipher=self.cipher,
+            base_row=row,
+            mirror_plaintext=STORE_PLAINTEXT_EMAIL,
+            preserve_existing_cipher_on_empty=True,
+        )
+
+        if not STORE_PLAINTEXT_EMAIL:
+            new_row["email"] = ""
+
+        if "expiry_date" in merged_plain:
+            new_row["expiry_date"] = merged_plain["expiry_date"]
+        if "status" in merged_plain:
+            new_row["status"] = merged_plain["status"]
+
+        if old_status != new_status:
+            from datetime import datetime, timezone
+            now = datetime.now(timezone.utc).isoformat()
+
+            if new_status == "expired":
+                new_row["expired_at"] = now
+            elif new_status == "archived":
+                new_row["archived_at"] = now
+            elif new_status == "deleted":
+                new_row["deleted_at"] = now
+            elif new_status == "active":
+                new_row["expired_at"] = None
+                new_row["archived_at"] = None
+                new_row["deleted_at"] = None
+
+        update_payload = dict(new_row)
+        update_payload.pop("id", None)
+
+        db.update_entry_full(entry_id, update_payload)
+
+        old_cat = entry_plain.get("category", "")
+        new_cat = merged_plain.get("category", old_cat)
+        target = new_cat or self.current_category
+
+        if hasattr(self, "_refresh_tree_and_table"):
+            self._refresh_tree_and_table(target_category=target)
+        else:
+            self.reload()
+
     def archive_entry(self):
         entry_id = self._current_entry_id_from_table()
         if entry_id is None:

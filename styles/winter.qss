@@ -224,7 +224,7 @@ QWidget#HotkeysPanel QKeySequenceEdit:disabled {
 }
 
 /* ===== Inputs ===== */
-QLineEdit, QTextEdit, QPlainTextEdit, QComboBox, QSpinBox {
+QLineEdit, QTextEdit, QPlainTextEdit, QComboBox, QSpinBox, PlusMinusSpinBox, PlusMinusTimeEdit, #prefsTabs QPushButton {
     background-color: #ffffff;
     border: 1px solid #cfd7e6;
     border-radius: 6px;
@@ -232,10 +232,10 @@ QLineEdit, QTextEdit, QPlainTextEdit, QComboBox, QSpinBox {
     selection-background-color: #2f7df0;      /* ice blue selection */
     selection-color: #f5f8ff;
 }
-QLineEdit:hover, QTextEdit:hover, QPlainTextEdit:hover, QComboBox:hover, QSpinBox:hover {
+QLineEdit:hover, QTextEdit:hover, QPlainTextEdit:hover, QComboBox:hover, QSpinBox:hover, PlusMinusSpinBox:hover, PlusMinusTimeEdit:hover, #prefsTabs QPushButton:hover {
     border-color: #b3c1da;
 }
-QLineEdit:focus, QTextEdit:focus, QPlainTextEdit:focus, QComboBox:focus, QSpinBox:focus {
+QLineEdit:focus, QTextEdit:focus, QPlainTextEdit:focus, QComboBox:focus, QSpinBox:focus, PlusMinusSpinBox:focus, PlusMinusTimeEdit:focus, #prefsTabs QPushButton:focus {
     border-color: #1f65d6;
 }
 

@@ -1,5 +1,5 @@
 from PySide6.QtWidgets import QTableWidgetItem, QMenu, QApplication, QHeaderView, QMessageBox
-from PySide6.QtCore import Qt, QTimer, QEventLoop
+from PySide6.QtCore import Qt, QTimer, QEventLoop, QItemSelectionModel
 from PySide6.QtGui import QColor
 
 from ui.widgets.custom_table import ModernTable, SortableItem, STATUS_ORDER
@@ -311,11 +311,16 @@ class TableMixin:
 
             QTimer.singleShot(secs * 1000, clear_if_unchanged)
 
+    
+
     def show_context_menu(self, pos):
-        row = self.table.rowAt(pos.y())
-        if row < 0:
+        view = self.table
+        idx = view.indexAt(pos)
+        if not idx.isValid():
             return
-        self.table.setCurrentCell(row, 0)
+
+        sm = view.selectionModel()
+        sm.setCurrentIndex(idx, QItemSelectionModel.NoUpdate | QItemSelectionModel.Rows)
 
         entry_id = self._get_selected_entry_id_from_table()
         if not entry_id:
@@ -340,28 +345,34 @@ class TableMixin:
 
         menu = QMenu(self)
 
-        menu.addAction("Edit…", lambda: QTimer.singleShot(0, self.edit_entry))
+        menu.addAction("Edit…", lambda: QTimer.singleShot(0, lambda: self.edit_single_entry(entry_id)))
         menu.addAction("Duplicate Entry",lambda: QTimer.singleShot(0, lambda: self._duplicate_single_entry(entry_id)))
         menu.addSeparator()
 
-        a_site = menu.addAction("Copy Site", lambda: QTimer.singleShot(0, lambda: self._copy_to_clipboard("site", site)))
+        def make_copy_action(label, value, entry_id):
+            def _do():
+                self._copy_to_clipboard(label, value)
+                self._select_entry_by_id(entry_id)
+            return _do
+        
+        a_site = menu.addAction("Copy Site", lambda: QTimer.singleShot(0, make_copy_action("site", site, entry_id)))
         a_site.setEnabled(bool(site))
 
         a_email = menu.addAction(
             "Copy Email",
-            lambda: QTimer.singleShot(0, lambda: self._copy_to_clipboard("email", email or plain.get("email", "")))
+            lambda: QTimer.singleShot(0, make_copy_action("email", email or plain.get("email", ""), entry_id))
         )
         a_email.setEnabled(bool(email or plain.get("email", "")))
 
         a_user = menu.addAction(
             "Copy Username",
-            lambda: QTimer.singleShot(0, lambda: self._copy_to_clipboard("username", username))
+            lambda: QTimer.singleShot(0, make_copy_action("username", username, entry_id))
         )
         a_user.setEnabled(bool(username))
 
         a_pwd = menu.addAction(
             "Copy Password",
-            lambda: QTimer.singleShot(0, lambda: self._copy_to_clipboard("password", password))
+            lambda: QTimer.singleShot(0, make_copy_action("password", password, entry_id))
         )
         a_pwd.setEnabled(bool(password) and bool(getattr(self, "cipher", None)))
 
@@ -369,25 +380,25 @@ class TableMixin:
 
         a_pin = menu.addAction(
             "Copy PIN",
-            lambda: QTimer.singleShot(0, lambda: self._copy_to_clipboard("PIN", pin))
+            lambda: QTimer.singleShot(0, make_copy_action("PIN", pin, entry_id))
         )
         a_pin.setEnabled(bool(pin) and bool(getattr(self, "cipher", None)))
 
         a_sec = menu.addAction(
             "Copy Security Code",
-            lambda: QTimer.singleShot(0, lambda: self._copy_to_clipboard("security code", sec_code))
+            lambda: QTimer.singleShot(0, make_copy_action("security code", sec_code, entry_id))
         )
         a_sec.setEnabled(bool(sec_code) and bool(getattr(self, "cipher", None)))
 
         a_app = menu.addAction(
             "Copy App Password",
-            lambda: QTimer.singleShot(0, lambda: self._copy_to_clipboard("app password", app_pass))
+            lambda: QTimer.singleShot(0, make_copy_action("app password", app_pass, entry_id))
         )
         a_app.setEnabled(bool(app_pass) and bool(getattr(self, "cipher", None)))
 
         a_totp = menu.addAction(
             "Copy TOTP Code",
-            lambda: QTimer.singleShot(0, lambda: self._copy_to_clipboard("TOTP code", totp_util.totp_from_uri_or_secret(otp_secret)[0]))
+            lambda: QTimer.singleShot(0, make_copy_action("TOTP code", totp_util.totp_from_uri_or_secret(otp_secret)[0], entry_id))
         )
         a_totp.setEnabled(bool(code_now))
 
@@ -405,11 +416,10 @@ class TableMixin:
         menu.addSeparator()
         
         if status != "deleted":
-            menu.addAction("Delete (to Trash)", lambda: QTimer.singleShot(0, self.delete_entry))
+            menu.addAction("Delete (to Trash)", lambda: QTimer.singleShot(0, lambda: self._delete_single_entry(entry_id)))
         else:
             menu.addAction("Permanently Delete", lambda: QTimer.singleShot(0, lambda: self._permanently_delete_single_entry(entry_id)))
 
-        QApplication.processEvents(QEventLoop.ExcludeUserInputEvents)
         menu.exec(self.table.viewport().mapToGlobal(pos))
 
     def _archive_single_entry(self, entry_id: int):
@@ -544,3 +554,21 @@ class TableMixin:
 
         if first_row is not None:
             self.table.setCurrentCell(first_row, 0)
+
+    def _select_entry_by_id(self, entry_id):
+        view = self.table
+        model = view.model()
+        if model is None:
+            return
+
+        from PySide6.QtCore import Qt, QItemSelectionModel
+
+        id_column = 0  
+
+        for row in range(model.rowCount()):
+            idx = model.index(row, id_column)
+            if model.data(idx, Qt.UserRole) == entry_id:
+                sm = view.selectionModel()
+                sm.setCurrentIndex(idx, QItemSelectionModel.ClearAndSelect | QItemSelectionModel.Rows)
+                view.scrollTo(idx)
+                break

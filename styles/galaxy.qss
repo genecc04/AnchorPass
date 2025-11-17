@@ -211,13 +211,49 @@ QWidget#HotkeysPanel QKeySequenceEdit:disabled {
 }
 
 /* ===== Inputs ===== */
-QLineEdit, QTextEdit, QPlainTextEdit, QComboBox, QSpinBox {
-    background-color: #151024;
-    border: 1px solid #3a2a54;
+/* ===== Inputs (Galaxy-style) ===== */
+QLineEdit,
+QTextEdit,
+QPlainTextEdit,
+QComboBox,
+QSpinBox,
+PlusMinusSpinBox,
+QTimeEdit,
+PlusMinusTimeEdit,
+#prefsTabs QPushButton {
+    background-color: #151024;           /* field bg */
+    border: 1px solid #3a2a54;           /* normal border */
     border-radius: 6px;
     padding: 6px 8px;
-    selection-background-color: #b26bff;
+    selection-background-color: #b26bff; /* purple selection */
     selection-color: #ffffff;
+    color: #ece6ff;
+}
+
+/* Hover: subtle highlight */
+QLineEdit:hover,
+QTextEdit:hover,
+QPlainTextEdit:hover,
+QComboBox:hover,
+QSpinBox:hover,
+PlusMinusSpinBox:hover,
+QTimeEdit:hover,
+PlusMinusTimeEdit:hover,
+#prefsTabs QPushButton:hover {
+    border-color: #b26bff;
+}
+
+/* Focus: keep strong accent border */
+QLineEdit:focus,
+QTextEdit:focus,
+QPlainTextEdit:focus,
+QComboBox:focus,
+QSpinBox:focus,
+PlusMinusSpinBox:focus,
+QTimeEdit:focus,
+PlusMinusTimeEdit:focus,
+#prefsTabs QPushButton:focus {
+    border-color: #b26bff;
 }
 
 /* ===== QSpinBox / Auto-lock field ===== */

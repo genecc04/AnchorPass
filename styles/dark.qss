@@ -210,14 +210,49 @@ QWidget#HotkeysPanel QKeySequenceEdit:disabled {
     border: none;
 }
 
-/* ===== Inputs ===== */
-QLineEdit, QTextEdit, QPlainTextEdit, QComboBox, QSpinBox {
-    background-color: #1a1a1a;
-    border: 1px solid #333333;
+/* ===== Inputs (Dark theme) ===== */
+QLineEdit,
+QTextEdit,
+QPlainTextEdit,
+QComboBox,
+QSpinBox,
+PlusMinusSpinBox,
+QTimeEdit,
+PlusMinusTimeEdit,
+#prefsTabs QPushButton {
+    background-color: #1a1a1a;          /* field background */
+    border: 1px solid #333333;          /* normal border */
     border-radius: 6px;
     padding: 6px 8px;
-    selection-background-color: #075cb2;
+    selection-background-color: #075cb2; /* blue selection */
     selection-color: #ffffff;
+    color: #e6e6e6;
+}
+
+/* Hover: subtle highlight */
+QLineEdit:hover,
+QTextEdit:hover,
+QPlainTextEdit:hover,
+QComboBox:hover,
+QSpinBox:hover,
+PlusMinusSpinBox:hover,
+QTimeEdit:hover,
+PlusMinusTimeEdit:hover,
+#prefsTabs QPushButton:hover {
+    border-color: #075cb2;  /* slightly lighter / bluer tint */
+}
+
+/* Focus: strong accent border */
+QLineEdit:focus,
+QTextEdit:focus,
+QPlainTextEdit:focus,
+QComboBox:focus,
+QSpinBox:focus,
+PlusMinusSpinBox:focus,
+QTimeEdit:focus,
+PlusMinusTimeEdit:focus,
+#prefsTabs QPushButton:focus {
+    border-color: #075cb2;
 }
 
 /* ===== QSpinBox / Auto-lock field ===== */
