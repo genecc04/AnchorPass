@@ -51,7 +51,7 @@ status badges, multi-select actions, sortable columns, and automatic backups.
 Third-party attributions are in **THIRD_PARTY_NOTICES.md** (MIT for zxcvbn; CC-BY-4.0 for the EFF list).  
 Please read those notices for details.
 
-### Cloud Backup (Future Work)
+## Cloud Backup (Future Work)
 
 Local backups are performed using a dedicated `BackupMixin` and are designed to be fast and safe on the local filesystem.
 

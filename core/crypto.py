@@ -74,6 +74,7 @@ def decrypt_any(cipher: Fernet, token: str) -> str:
     pt = decrypt_text(cipher, raw)
     return "" if pt == "[Decryption failed]" else pt
 
+#Legacy support for versions before alpha release
 DEFAULT_SALT = b"secure-password-manager"
 
 def derive_cipher_from_password(password: str) -> Fernet:
