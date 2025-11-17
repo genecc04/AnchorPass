@@ -48,12 +48,6 @@ class UIBuilder:
         help_menu = menubar.addMenu("&Help")
         help_menu.addAction(QAction("About", self.window, triggered=self._show_about))
     
-    def _show_about(self):
-        QMessageBox.information(
-            self.window, "About", 
-            "Secure Password Manager\nBuilt with PySide6 and SQLite."
-        )
-    
     def build_shortcuts(self):
         settings = SettingsManager()
 
@@ -255,3 +249,62 @@ class UIBuilder:
                 self.window.update_preview_for_selection)
         except Exception:
             pass
+
+    def _show_about(self):
+        settings = SettingsManager()
+
+        hk_copy_site      = settings.get("hotkey_copy_site", "None")
+        hk_copy_totp      = settings.get("hotkey_copy_totp", "None")
+        hk_copy_sec       = settings.get("hotkey_copy_security_code", "None")
+        hk_copy_email     = settings.get("hotkey_copy_email", "None")
+        hk_copy_username  = settings.get("hotkey_copy_username", "None")
+        hk_copy_password  = settings.get("hotkey_copy_password", "None")
+        hk_copy_app_pass  = settings.get("hotkey_copy_app_password", "None")
+
+        hk_add_entry      = settings.get("hotkey_add_entry", "None")
+        hk_edit_entry     = settings.get("hotkey_edit_entry", "None")
+        hk_duplicate      = settings.get("hotkey_duplicate_entry", "None")
+        hk_archive        = settings.get("hotkey_archive_entry", "None")
+        hk_expire         = settings.get("hotkey_expire_entry", "None")
+        hk_delete         = settings.get("hotkey_delete_entry", "None")
+        hk_lock           = settings.get("hotkey_lock_vault", "None")
+
+        text = f"""
+        <b>Secure Password Manager</b><br>
+        Built with PySide6 and SQLite.<br><br><br>
+
+        <b>Hotkeys</b><br>
+
+        <table cellspacing="4" cellpadding="2">
+        <tr>
+            <td><b>Copy Site:</b></td><td>{hk_copy_site}</td>
+            <td style="padding-left:20px;"><b>Add Entry:</b></td><td>{hk_add_entry}</td>
+        </tr>
+        <tr>
+            <td><b>Copy TOTP:</b></td><td>{hk_copy_totp}</td>
+            <td style="padding-left:20px;"><b>Edit Entry:</b></td><td>{hk_edit_entry}</td>
+        </tr>
+        <tr>
+            <td><b>Copy Security Code:</b></td><td>{hk_copy_sec}</td>
+            <td style="padding-left:20px;"><b>Duplicate Entry:</b></td><td>{hk_duplicate}</td>
+        </tr>
+        <tr>
+            <td><b>Copy Email:</b></td><td>{hk_copy_email}</td>
+            <td style="padding-left:20px;"><b>Archive:</b></td><td>{hk_archive}</td>
+        </tr>
+        <tr>
+            <td><b>Copy Username:</b></td><td>{hk_copy_username}</td>
+            <td style="padding-left:20px;"><b>Expire:</b></td><td>{hk_expire}</td>
+        </tr>
+        <tr>
+            <td><b>Copy Password:</b></td><td>{hk_copy_password}</td>
+            <td style="padding-left:20px;"><b>Delete:</b></td><td>{hk_delete}</td>
+        </tr>
+        <tr>
+            <td><b>Copy App Password:</b></td><td>{hk_copy_app_pass}</td>
+            <td style="padding-left:20px;"><b>Lock Vault:</b></td><td>{hk_lock}</td>
+        </tr>
+        </table>
+        """
+
+        QMessageBox.information(self.window, "About", text)
