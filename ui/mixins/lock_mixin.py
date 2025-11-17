@@ -3,6 +3,8 @@ from PySide6.QtCore import QEvent
 import time
 from pathlib import Path
 from ui.mixins.auth_mixin import AuthMixin
+from core import settings_manager
+from core import db
 
 
 class LockMixin:
@@ -74,8 +76,22 @@ class LockMixin:
             self.last_activity = time.time()
 
     def change_database(self):
+        before_db = getattr(self, "current_db", None)
+
         ok = self._login()
+
         if not ok:
+            if before_db:
+                try:
+                    db.set_db_path(before_db)
+                    db.init()
+                    db.save_last_db(before_db)
+                    self.current_db = before_db
+
+                    if hasattr(self, "_update_title"):
+                        self._update_title()
+                except Exception as e:
+                    print("Failed to restore previous DB:", e)
             return
 
         if hasattr(self, "populate_tree"):
