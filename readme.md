@@ -45,8 +45,20 @@ status badges, multi-select actions, sortable columns, and automatic backups.
 - **SQLite** for storage.
 - **Cryptography** for encryption.
 - **zxcvbn** for strength estimation.
-- **EFF Short Wordlist #1** for passphrase generation.
+- **EFF Short Wordlist** for passphrase generation.
 - **pywin32** for Windows startup integration.
 
 Third-party attributions are in **THIRD_PARTY_NOTICES.md** (MIT for zxcvbn; CC-BY-4.0 for the EFF list).  
 Please read those notices for details.
+
+### Cloud Backup (Future Work)
+
+Local backups are performed using a dedicated `BackupMixin` and are designed to be fast and safe on the local filesystem.
+
+If/when a cloud backup feature is added (e.g. uploading backup files to a remote server or cloud storage), **all network uploads MUST be done off the UI thread**. Uploading even a ~50 MB database can take several seconds on typical home upload speeds, and performing that work on the main thread would freeze the application.
+
+Planned approach for cloud backup:
+
+- Continue using `_export_backup_core()` to create a local backup file.
+- Perform any cloud uploads in a background worker (`QThread`/async job).
+- Only update the UI (status messages, errors) via signals back to the main thread.
