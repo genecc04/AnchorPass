@@ -74,9 +74,14 @@ class LockMixin:
             self.last_activity = time.time()
 
     def change_database(self):
-        self._login()
-        self.populate_tree()
-        self.reload()
+        ok = self._login()
+        if not ok:
+            return
+
+        if hasattr(self, "populate_tree"):
+            self.populate_tree()
+        if hasattr(self, "reload"):
+            self.reload()
 
     def _update_title(self):
         db_path = (getattr(self, "current_db", "") or "").strip()
