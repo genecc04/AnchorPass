@@ -60,7 +60,7 @@ jobs:
         shell: pwsh
         run: |
           pyinstaller .\main.py `
-            --noconsole --onedir --name SecurePasswordManager `
+            --noconsole --onedir --name AnchorPass `
             --icon ".\assets\icon.ico" `
             --clean `
             --collect-all PySide6 `
@@ -72,15 +72,15 @@ jobs:
         shell: pwsh
         run: |
           $version = "${{ github.ref_name }}"
-          $outDir = "dist/SecurePasswordManager"
-          $zipPath = "dist/SecurePasswordManager-win-x64-$version.zip"
+          $outDir = "dist/AnchorPass"
+          $zipPath = "dist/AnchorPass-win-x64-$version.zip"
           Compress-Archive -Path "$outDir\*" -DestinationPath $zipPath -Force
 
       - name: Upload artifact (zip)
         uses: actions/upload-artifact@v4
         with:
           name: spm-win-x64-${{ github.ref_name }}
-          path: dist/SecurePasswordManager-win-x64-${{ github.ref_name }}.zip
+          path: dist/AnchorPass-win-x64-${{ github.ref_name }}.zip
           if-no-files-found: error
 
   release:
@@ -101,7 +101,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            build_out/SecurePasswordManager-win-x64-${{ github.ref_name }}.zip
+            build_out/AnchorPass-win-x64-${{ github.ref_name }}.zip
           generate_release_notes: true
           prerelease: ${{ contains(github.ref_name, '-') }}
         env:
