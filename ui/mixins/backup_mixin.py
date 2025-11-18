@@ -184,7 +184,7 @@ class BackupMixin:
         return db_line, backup_line
 
     def _default_backup_dir(self) -> Path:
-        return get_user_documents_dir() / "securepasswordmanager" / "backup"
+        return get_user_documents_dir() / "anchorpass" / "backup"
 
     def _ensure_backup_path_default(self):
         path = (self.settings.get("backup_path", "") or "").strip()

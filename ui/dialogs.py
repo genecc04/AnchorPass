@@ -1,13 +1,12 @@
-from PySide6.QtWidgets import ( QDialog, QFormLayout, QLineEdit, QDialogButtonBox, QPushButton, QFileDialog, QHBoxLayout, QLabel, QMessageBox)
+from PySide6.QtWidgets import ( QDialog, QFormLayout, QLineEdit, QDialogButtonBox, QPushButton, QFileDialog, QHBoxLayout, 
+                               QLabel, QMessageBox)
 
 from pathlib import Path
-from core.db_paths import get_user_documents_dir
-DEFAULT_DB_DIR = get_user_documents_dir() / "securepasswordmanager" / "data"
+from core.db_paths import DEFAULT_DB_DIR
 from core import db, security
 from ui.widgets.plusminus_spinbox import PlusMinusSpinBox
 from core.settings_manager import SettingsManager
 from ui.widgets.password_field import PasswordLineEdit
-
 
 class DatabaseDialog(QDialog):
 
@@ -27,16 +26,17 @@ class DatabaseDialog(QDialog):
         self.db_edit.setReadOnly(True)
 
         btn_layout = QHBoxLayout()
+        btn_layout.setSpacing(6)
         self.db_btn_open = QPushButton("Open Database")
         self.db_btn_new = QPushButton("Create New Database")
         btn_layout.addWidget(self.db_btn_open)
         btn_layout.addWidget(self.db_btn_new)
 
-        layout.addRow(QLabel("<b>Select a password database file:</b>"))
+        layout.addRow(QLabel("<b>Select or create a database:</b>"))
         layout.addRow("", self.db_edit)
         layout.addRow("", btn_layout)
 
-        note = QLabel("You can open an existing vault or create a new one.")
+        note = QLabel("Open an existing vault or Create a new one.")
         note.setObjectName("hint")
         layout.addRow("", note)
 
@@ -154,9 +154,9 @@ class MasterDialog(QDialog):
         self.auto.setRange(0, 120)
         self.auto.setValue(self.settings.get("auto_lock_minutes", 10))
         self.auto.setObjectName("autoLockSpin")
-        layout.addRow("Auto-lock (minutes, 0 = off):", self.auto)
+        layout.addRow("Auto-lock:", self.auto)
 
-        hint = QLabel("The master password encrypts your entire vault. Keep it safe!")
+        hint = QLabel("Enter your master password to unlock the vault.\nAutolock time is in minutes (0 to disable).")
         hint.setObjectName("hint")
         layout.addRow("", hint)
 

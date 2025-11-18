@@ -11,7 +11,7 @@ import sys
 
 class AuthMixin:
     def _login(self) -> bool:
-        default_db_dir = get_user_documents_dir() / "securepasswordmanager" / "data"
+        default_db_dir = get_user_documents_dir() / "anchorpass" / "data"
 
         while True:
             db_dlg = DatabaseDialog(self)

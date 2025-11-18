@@ -10,9 +10,9 @@ class CharacterSetsTab(QWidget):
 
         layout = QVBoxLayout(self)
 
-        self.use_lower     = QCheckBox("Lowercase (a–z)"); self.use_lower.setChecked(True)
-        self.use_upper     = QCheckBox("Uppercase (A–Z)"); self.use_upper.setChecked(True)
-        self.use_digits    = QCheckBox("Digits (0–9)");    self.use_digits.setChecked(True)
+        self.use_lower     = QCheckBox("Lowercase (q,w,e,r...)"); self.use_lower.setChecked(True)
+        self.use_upper     = QCheckBox("Uppercase (Q,W,E,R...)"); self.use_upper.setChecked(True)
+        self.use_digits    = QCheckBox("Digits (0-9)");    self.use_digits.setChecked(True)
         self.use_symbols   = QCheckBox("Symbols (!@#$…)"); self.use_symbols.setToolTip("!@#$%^&*")
         self.use_punct     = QCheckBox("Punctuation (.,;:!?)"); self.use_punct.setToolTip(".,;:!?")
         self.use_quotes    = QCheckBox("Quotes (' \" `)"); self.use_quotes.setToolTip("' \" `")

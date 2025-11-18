@@ -9,7 +9,7 @@ except ImportError:
     win32com = None
 
 
-APP_SHORTCUT_NAME = "Secure Password Manager.lnk"
+APP_SHORTCUT_NAME = "AnchorPass.lnk"
 
 
 def _is_windows() -> bool:

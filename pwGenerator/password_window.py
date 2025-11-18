@@ -24,7 +24,7 @@ class PasswordGeneratorDialog(QDialog):
     def __init__( self, parent=None, *, targets: Optional[Dict[str, Callable[[str], None]]] = None, 
                  initial_target: Optional[str] = None, icon_family: str | None = None, ):
         super().__init__(parent)
-        self.setWindowTitle("Password Generator")
+        self.setWindowTitle("AnchorPass: Password Generator")
         self.setModal(True)
         self.setMinimumWidth(720)
         self.adjustSize()

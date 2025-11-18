@@ -103,10 +103,10 @@ class LockMixin:
         db_path = (getattr(self, "current_db", "") or "").strip()
         if db_path:
             fname = Path(db_path).name
-            self.setWindowTitle(f"Secure Password Manager: {fname}")
+            self.setWindowTitle(f"AnchorPass: {fname}")
             if hasattr(self, "status_label"):
                 self.status_label.setText(f"Active DB: {fname}")
         else:
-            self.setWindowTitle("Secure Password Manager")
+            self.setWindowTitle("AnchorPass")
             if hasattr(self, "status_label"):
                 self.status_label.setText("No database open")

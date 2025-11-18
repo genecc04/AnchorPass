@@ -36,9 +36,8 @@ class MainWindow(PreviewMixin, BackupMixin, LockMixin, CrudMixin, TableMixin, Tr
     def __init__(self, icon_family: str | None = None):
 
         super().__init__()
-        self.setWindowTitle("Secure Password Manager")
+        self.setWindowTitle("AnchorPass")
         self.resize(1200, 650)
-
         self.setFixedSize(self.size())
         self.setWindowFlag(Qt.WindowMaximizeButtonHint, False)
         self.setWindowFlag(Qt.MSWindowsFixedSizeDialogHint, True)
@@ -76,7 +75,7 @@ class MainWindow(PreviewMixin, BackupMixin, LockMixin, CrudMixin, TableMixin, Tr
             on_open=self._tray_open_from_tray,
             on_lock_db=self._lock_database_from_tray,
             icon=self.normal_icon,
-            tooltip="Secure Password Manager",
+            tooltip="AnchorPass",
         )
         self._search_prev_category: str | None = None
         

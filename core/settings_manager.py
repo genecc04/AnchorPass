@@ -2,22 +2,27 @@ from __future__ import annotations
 import json, os, sys, tempfile
 from pathlib import Path
 from typing import Any, Dict
+import os
 
-APP_NAME = "SecurePasswordManager"
+APP_NAME = "AnchorPass"
 
 def _appdata_dir() -> Path:
     """Roaming AppData (stable across runs/updates)."""
     base = os.environ.get("APPDATA")
-    return Path(base) / APP_NAME if base else (Path.home() / f".{APP_NAME}")
-
-CONFIG_DIR = _appdata_dir()
-CONFIG_DIR.mkdir(parents=True, exist_ok=True)
-SETTINGS_PATH = CONFIG_DIR / "settings.json"
+    #return Path(base) / APP_NAME if base else (Path.home() / f".{APP_NAME})
+    return Path.home() / f".{APP_NAME}"
 
 def _user_documents() -> Path:
     """Simpler Documents resolution via expanduser."""
     docs = Path(os.path.expanduser("~/Documents"))
     return docs if docs.exists() else Path.home()
+
+def _config_dir() -> Path:
+    return _user_documents() / "anchorpass" / "settings"
+
+CONFIG_DIR = _config_dir()
+CONFIG_DIR.mkdir(parents=True, exist_ok=True)
+SETTINGS_PATH = CONFIG_DIR / "settings.json"
 
 DEFAULT_SETTINGS: Dict[str, Any] = {
     "auto_lock_minutes": 10,
@@ -33,7 +38,7 @@ DEFAULT_SETTINGS: Dict[str, Any] = {
     "enable_backup": True,
     "backup_schedule": "Daily",
     "backup_time": "02:00",
-    "backup_path": str(_user_documents() / "securepasswordmanager" / "backup"),
+    "backup_path": str(_user_documents() / "anchorpass" / "backup"),
     "backup_number": 5,
 }
 

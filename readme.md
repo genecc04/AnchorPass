@@ -1,4 +1,4 @@
-# Secure Password Manager (PySide6)
+# AnchorPass (PySide6)
 
 A desktop password manager built with PySide6, SQLite, and modern UX touches:
 status badges, multi-select actions, sortable columns, and automatic backups.

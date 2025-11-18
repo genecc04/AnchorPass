@@ -9,7 +9,7 @@ def get_user_documents_dir() -> Path:
     docs = Path(os.path.expanduser("~/Documents"))
     return docs if docs.exists() else home
 
-APP_ROOT_DIR = get_user_documents_dir() / "securepasswordmanager"
+APP_ROOT_DIR = get_user_documents_dir() / "anchorpass"
 DEFAULT_DB_DIR = APP_ROOT_DIR / "data"
 
 def get_default_db_path() -> Path:

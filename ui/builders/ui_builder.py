@@ -270,7 +270,7 @@ class UIBuilder:
         hk_lock           = settings.get("hotkey_lock_vault", "None")
 
         text = f"""
-        <b>Secure Password Manager</b><br>
+        <b>AnchorPass</b><br>
         Built with PySide6 and SQLite.<br><br><br>
 
         <b>Hotkeys</b><br>
