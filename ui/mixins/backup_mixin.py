@@ -29,7 +29,7 @@ class BackupMixin:
                     if callable(getattr(db, "get_db_path", None)) else None),
             lambda: getattr(self, "_active_db_path", None),
             lambda: getattr(self, "current_db", None),
-            lambda: SettingsManager().get("database_path", ""),
+            lambda: self._get_settings().get("database_path", ""),
             lambda: getattr(db, "DB_PATH", None),
         ]
 
@@ -45,7 +45,7 @@ class BackupMixin:
         return None
 
     def _resolve_backup_folder(self) -> Optional[Path]:
-        sm = SettingsManager()
+        sm = self._get_settings()
         folder_str = (sm.get("backup_path", "") or "").strip()
         if not folder_str:
             folder_str = (sm.get("backup_dir", "") or "").strip()
@@ -62,7 +62,7 @@ class BackupMixin:
                 p = Path(str(path))
                 self._active_db_path = str(p)
                 try:
-                    SettingsManager().set("database_path", str(p))
+                    self._get_settings().set("database_path", str(p))
                 except Exception:
                     pass
         except Exception:
@@ -91,7 +91,7 @@ class BackupMixin:
           - honor 'backup_disabled'
           - only run on 'close' (per your configuration)
         """
-        sm = SettingsManager()
+        sm = self._get_settings()
         if bool(sm.get("backup_disabled", False)):
             return
         if reason == "close" and bool(sm.get("backup_on_close", True)):
@@ -155,7 +155,7 @@ class BackupMixin:
             pass
 
         try:
-            s = SettingsManager().get("database_path", "")
+            s = self._get_settings().get("database_path", "")
             if s:
                 candidates.append(("settings.database_path", Path(s)))
         except Exception:
@@ -187,14 +187,15 @@ class BackupMixin:
         return get_user_documents_dir() / "anchorpass" / "backup"
 
     def _ensure_backup_path_default(self):
-        path = (self.settings.get("backup_path", "") or "").strip()
+        sm = self._get_settings()
+        path = (sm.get("backup_path", "") or "").strip()
         if not path:
             default_dir = self._default_backup_dir()
             default_dir.mkdir(parents=True, exist_ok=True)
-            self.settings.set("backup_path", str(default_dir))
+            sm.set("backup_path", str(default_dir))
 
     def _export_backup_core(self, reason: str = "manual") -> Optional[Path]:
-        sm = SettingsManager()
+        sm = self._get_settings()
 
         src = self._resolve_db_path()
         if not src or not src.exists():
@@ -232,3 +233,8 @@ class BackupMixin:
             self._apply_backup_retention(backup_dir, stem, suffix, keep)
 
         return dst
+
+    def _get_settings(self) -> SettingsManager:
+        if hasattr(self, "settings") and isinstance(self.settings, SettingsManager):
+            return self.settings
+        return SettingsManager()

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from PySide6.QtWidgets import QMainWindow, QMessageBox, QFileDialog, QApplication, QMenu
+from PySide6.QtWidgets import QMainWindow, QMessageBox, QFileDialog, QApplication, QMenu, QDialog
 from PySide6.QtCore import Qt, QTimer, QEvent, QPoint, QItemSelectionModel, QObject
 from PySide6.QtGui import QIcon
 
@@ -48,6 +48,7 @@ class MainWindow(PreviewMixin, BackupMixin, LockMixin, CrudMixin, TableMixin, Tr
         if not self.normal_icon.isNull():
             self.setWindowIcon(self.normal_icon)
 
+        self.current_db = None
         self.settings = SettingsManager()
         self.master = None
         self.cipher = None
@@ -78,7 +79,7 @@ class MainWindow(PreviewMixin, BackupMixin, LockMixin, CrudMixin, TableMixin, Tr
             tooltip="AnchorPass",
         )
         self._search_prev_category: str | None = None
-        
+
     def _cache_active_db_path_safely(self):
         try:
             active = getattr(db, "DB_PATH", None) or self.settings.get("database_path", None)
@@ -678,11 +679,10 @@ class MainWindow(PreviewMixin, BackupMixin, LockMixin, CrudMixin, TableMixin, Tr
         self.clipboard_manager.copy_field_from_entry(row, field, self.cipher)
 
     def open_settings_dialog(self):
-        dlg = PreferencesDialog(self)
-        if not dlg.exec():
+        dlg = PreferencesDialog(main_window=self, settings=self.settings)
+        if dlg.exec() != QDialog.Accepted:
             return
 
-        self.settings = SettingsManager()
         self.backup_manager.settings = self.settings
         self.clipboard_manager.settings = self.settings
         
@@ -695,7 +695,7 @@ class MainWindow(PreviewMixin, BackupMixin, LockMixin, CrudMixin, TableMixin, Tr
                 self.ui_builder.build_shortcuts()
 
         try:
-            load_styles(QApplication.instance(), theme=self.settings.get("theme", "dark"))
+            self._apply_theme_from_settings()
         except Exception:
             pass
 
@@ -922,3 +922,10 @@ class MainWindow(PreviewMixin, BackupMixin, LockMixin, CrudMixin, TableMixin, Tr
             return
 
         self._copy_to_clipboard("TOTP code", code_now)
+
+    def _apply_theme_from_settings(self):
+        try:
+            theme = self.settings.get("theme", "dark")
+            load_styles(QApplication.instance(), theme=theme)
+        except Exception as e:
+            pass

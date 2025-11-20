@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QMessageBox, QDialog, QWidget, QVBoxLayout, QPushButton
+from PySide6.QtWidgets import QMessageBox, QDialog, QWidget, QVBoxLayout, QPushButton, QApplication
 from PySide6.QtCore import QEventLoop, Qt, QSize
 from PySide6.QtGui import QPalette
 from core import db, crypto, security
@@ -7,6 +7,8 @@ from ui.widgets.unlock_overlay import UnlockOverlay
 from pathlib import Path
 from core.db_paths import get_user_documents_dir
 from ui.widgets.button import _glyph_to_icon
+from core.settings_manager import SettingsManager
+from styles.theme import load_styles
 import sys
 
 class AuthMixin:
@@ -42,6 +44,21 @@ class AuthMixin:
         db.init()
         db.save_last_db(db_path)
         self.current_db = db_path
+
+        self.settings = SettingsManager(db_path=db_path)
+
+        if hasattr(self, "backup_manager"):
+            self.backup_manager.settings = self.settings
+        if hasattr(self, "clipboard_manager"):
+            self.clipboard_manager.settings = self.settings
+
+        try:
+            theme = self.settings.get("theme", "dark")
+            load_styles(QApplication.instance(), theme=theme)
+        except Exception:
+            pass
+
+
         self._update_title()
 
         try:
@@ -50,8 +67,7 @@ class AuthMixin:
             pass
 
         while True:
-            dlg = MasterDialog(setup=is_new_db, parent=self,
-                            icon_family=getattr(self, "icon_family", None))
+            dlg = MasterDialog(setup=is_new_db, parent=self, icon_family=getattr(self, "icon_family", None), settings=self.settings)
             if dlg.exec() != QDialog.Accepted:
                 return False
 
@@ -166,7 +182,7 @@ class AuthMixin:
                 self.reload()
 
         except Exception as e:
-            print(f"[Repair skipped] {e}")
+            pass
 
     def _ask_master_inline(self, setup: bool):
         overlay = UnlockOverlay(parent=self.centralWidget(), setup=setup,

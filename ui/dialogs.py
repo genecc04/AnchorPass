@@ -106,7 +106,7 @@ class DatabaseDialog(QDialog):
 
 class MasterDialog(QDialog):
 
-    def __init__(self, setup=False, parent=None, icon_family: str | None = None):
+    def __init__(self, setup: bool = False, parent=None, icon_family: str | None = None, settings: SettingsManager | None = None):
         super().__init__(parent)
         self.setWindowTitle("Setup Master Password" if setup else "Unlock Vault")
         layout = QFormLayout(self)
@@ -114,7 +114,13 @@ class MasterDialog(QDialog):
         layout.setContentsMargins(30, 25, 30, 25)
 
         self.setup = setup
-        self.settings = SettingsManager()
+
+        if settings is not None:
+            self.settings = settings
+        elif hasattr(parent, "settings"):
+            self.settings = parent.settings
+        else:
+            self.settings = SettingsManager()
 
         if not setup:
             self.p1 = PasswordLineEdit(

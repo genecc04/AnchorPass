@@ -7,13 +7,10 @@ import os
 APP_NAME = "AnchorPass"
 
 def _appdata_dir() -> Path:
-    """Roaming AppData (stable across runs/updates)."""
     base = os.environ.get("APPDATA")
-    #return Path(base) / APP_NAME if base else (Path.home() / f".{APP_NAME})
-    return Path.home() / f".{APP_NAME}"
+    return Path(base) / APP_NAME if base else (Path.home() / f".{APP_NAME}")
 
 def _user_documents() -> Path:
-    """Simpler Documents resolution via expanduser."""
     docs = Path(os.path.expanduser("~/Documents"))
     return docs if docs.exists() else Path.home()
 
@@ -22,7 +19,7 @@ def _config_dir() -> Path:
 
 CONFIG_DIR = _config_dir()
 CONFIG_DIR.mkdir(parents=True, exist_ok=True)
-SETTINGS_PATH = CONFIG_DIR / "settings.json"
+SETTINGS_PATH = CONFIG_DIR / "settings.json" #global settings file
 
 DEFAULT_SETTINGS: Dict[str, Any] = {
     "auto_lock_minutes": 10,
@@ -78,31 +75,69 @@ def _maybe_migrate_legacy_settings() -> None:
             except Exception:
                 break
 
-class SettingsManager:
-    def __init__(self):
-        _maybe_migrate_legacy_settings()
+def _settings_path_for_db(db_path: str | Path) -> Path:
+    p = Path(db_path).expanduser().resolve()
+    return CONFIG_DIR / f"{p.name}.settings.json"
 
-        if not SETTINGS_PATH.exists():
-            _atomic_write(SETTINGS_PATH, json.dumps(DEFAULT_SETTINGS, indent=4))
+class SettingsManager:
+    def __init__(self, db_path: str | Path | None = None):
+        
+        raw_arg = db_path
+
+        if db_path is not None:
+            # PER-DB MODE
+            self._db_path = Path(db_path).expanduser().resolve()
+            self._settings_path = _settings_path_for_db(self._db_path)
+            mode = "per-db"
+        else:
+            # GLOBAL MODE (legacy / app-wide)
+            _maybe_migrate_legacy_settings()
+            self._db_path = None
+            self._settings_path = SETTINGS_PATH
+            mode = "global"
+
+        self._settings_path.parent.mkdir(parents=True, exist_ok=True)
+
+        if not self._settings_path.exists():
+            initial = DEFAULT_SETTINGS.copy()
+            if self._db_path is not None:
+                initial["database_path"] = str(self._db_path)
+
+            try:
+                _atomic_write(self._settings_path, json.dumps(initial, indent=4))
+            except Exception as e:
+                raise RuntimeError(
+                    f"Failed to create settings file at {self._settings_path!r}: {e}"
+                ) from e
 
         try:
-            self._data: Dict[str, Any] = json.loads(SETTINGS_PATH.read_text(encoding="utf-8"))
+            self._data: Dict[str, Any] = json.loads(
+                self._settings_path.read_text(encoding="utf-8")
+            )
         except Exception:
             try:
-                (SETTINGS_PATH.parent / "settings.bak").write_text(
-                    SETTINGS_PATH.read_text(encoding="utf-8"), encoding="utf-8"
+                backup = self._settings_path.with_suffix(self._settings_path.suffix + ".bak")
+                backup.write_text(
+                    self._settings_path.read_text(encoding="utf-8"),
+                    encoding="utf-8"
                 )
             except Exception:
                 pass
+
             self._data = DEFAULT_SETTINGS.copy()
+            if self._db_path is not None:
+                self._data["database_path"] = str(self._db_path)
             self.save()
+
+        for k, v in DEFAULT_SETTINGS.items():
+            self._data.setdefault(k, v)
 
         if not self._data.get("backup_path"):
             self._data["backup_path"] = DEFAULT_SETTINGS["backup_path"]
             self.save()
 
     def save(self) -> None:
-        _atomic_write(SETTINGS_PATH, json.dumps(self._data, indent=4))
+        _atomic_write(self._settings_path, json.dumps(self._data, indent=4))
 
     def get(self, key: str, default=None):
         return self._data.get(key, default)

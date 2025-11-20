@@ -137,6 +137,7 @@ class TableMixin:
 
 
     def filter_table(self, text: str):
+        all_flag = False
         raw = (text or "").strip()
         if not raw:
             prev = getattr(self, "_search_prev_category", None)
@@ -171,6 +172,11 @@ class TableMixin:
                 if val in {"active", "archived", "deleted", "expired"}:
                     status_from_query = val
                     continue
+
+                if val == "all":
+                    all_flag = True
+                    status_from_query = None
+                    continue
             remaining_tokens.append(t)
 
         text = " ".join(remaining_tokens)
@@ -200,6 +206,10 @@ class TableMixin:
 
         if status_from_query is not None:
             status_filter = status_from_query
+
+        if all_flag:
+            status_filter = None
+            category_filter = None
 
         cipher = getattr(self, "cipher", None)
 

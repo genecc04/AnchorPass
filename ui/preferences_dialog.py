@@ -9,7 +9,7 @@ from core.startup_manager import is_startup_enabled, set_startup_enabled
 
 class PreferencesDialog(QDialog):
 
-    def __init__(self, main_window=None):
+    def __init__(self, main_window=None, settings: SettingsManager | None = None):
         super().__init__(main_window)
         self.main_window = main_window
         self.setWindowTitle("Preferences")
@@ -22,7 +22,12 @@ class PreferencesDialog(QDialog):
         self.setWindowFlag(Qt.WindowMaximizeButtonHint, False)
         self.setWindowFlag(Qt.MSWindowsFixedSizeDialogHint, True) 
 
-        self.settings = SettingsManager()
+        if settings is not None:
+            self.settings = settings
+        elif main_window is not None and hasattr(main_window, "settings"):
+            self.settings = main_window.settings
+        else:
+            self.settings = SettingsManager()
 
         layout = QVBoxLayout(self)
         self.tabs = QTabWidget()
@@ -398,5 +403,5 @@ class PreferencesDialog(QDialog):
                 self.main_window._check_scheduled_backup()
             except Exception:
                 pass
-
+        
         super().accept()
