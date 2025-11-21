@@ -16,7 +16,18 @@ def _create_section_label(title: str) -> QLabel:
     lbl.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
     return lbl
 
-class BasicInfoSection(QWidget):
+class EntrySectionBase(QWidget):
+    def _get_settings(self) -> SettingsManager:
+        w = self
+        while w is not None:
+            if hasattr(w, "settings"):
+                s = getattr(w, "settings")
+                if isinstance(s, SettingsManager):
+                    return s
+            w = w.parent()
+        return SettingsManager()
+    
+class BasicInfoSection(EntrySectionBase):
     
     def __init__(self, entry: dict, icon_family: str | None, parent=None):
         super().__init__(parent)
@@ -48,7 +59,8 @@ class BasicInfoSection(QWidget):
         
     def _build_fields(self, form: QFormLayout):
         """Build form fields."""
-        clear_ms = max(0, int(SettingsManager().get("clipboard_clear_seconds", 15))) * 1000
+        sm = self._get_settings()
+        clear_ms = max(0, int(sm.get("clipboard_clear_seconds", 15))) * 1000
         
         self.site = QLineEdit(self._entry.get("site", ""))
         
@@ -94,7 +106,7 @@ class BasicInfoSection(QWidget):
         }
 
 
-class AuthSection(QWidget):
+class AuthSection(EntrySectionBase):
     
     def __init__(self, entry: dict, icon_family: str | None, parent=None):
         super().__init__(parent)
@@ -121,7 +133,8 @@ class AuthSection(QWidget):
         layout.addWidget(form_widget)
         
     def _build_fields(self, form: QFormLayout):
-        clear_ms = max(0, int(SettingsManager().get("clipboard_clear_seconds", 15))) * 1000
+        sm = self._get_settings()
+        clear_ms = max(0, int(sm.get("clipboard_clear_seconds", 15))) * 1000
         
         self.password = self._create_password_field(clear_ms, "Password", True)
         self.app_password = self._create_password_field(clear_ms, "App-specific password", True)
@@ -166,7 +179,7 @@ class AuthSection(QWidget):
         }
 
 
-class RecoverySection(QWidget):
+class RecoverySection(EntrySectionBase):
     
     def __init__(self, entry: dict, icon_family: str | None, parent=None):
         super().__init__(parent)
@@ -193,7 +206,8 @@ class RecoverySection(QWidget):
         layout.addWidget(form_widget)
         
     def _build_fields(self, form: QFormLayout):
-        clear_ms = max(0, int(SettingsManager().get("clipboard_clear_seconds", 15))) * 1000
+        sm = self._get_settings()
+        clear_ms = max(0, int(sm.get("clipboard_clear_seconds", 15))) * 1000
         
         self.recovery_email = QLineEdit(self._entry.get("recovery_email", ""))
         self.recovery_phone = QLineEdit(self._entry.get("recovery_phone", ""))
@@ -239,7 +253,7 @@ class RecoverySection(QWidget):
             "otp_secret": self.otp_secret.text(),
         }
 
-class MetadataSection(QWidget):
+class MetadataSection(EntrySectionBase):
     
     def __init__(self, entry: dict, default_category: str | None, icon_family: str | None = None, parent=None):
         super().__init__(parent)

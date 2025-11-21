@@ -134,7 +134,8 @@ class TotpPreviewWidget(QWidget):
         self.copy_btn.setEnabled(False)
         self._copy_timer.start(900)
         
-        secs = int(SettingsManager().get("clipboard_clear_seconds", 15) or 0)
+        sm = self._get_settings()
+        secs = int(sm.get("clipboard_clear_seconds", 15) or 0)
         if secs > 0:
             def clear_if_same():
                 if cb.text() == code:
@@ -174,3 +175,13 @@ class TotpPreviewWidget(QWidget):
     def changeEvent(self, event):
         super().changeEvent(event)
         self.handle_theme_change(event)
+
+    def _get_settings(self) -> SettingsManager:
+        w = self
+        while w is not None:
+            if hasattr(w, "settings"):
+                s = getattr(w, "settings")
+                if isinstance(s, SettingsManager):
+                    return s
+            w = w.parent()
+        return SettingsManager()

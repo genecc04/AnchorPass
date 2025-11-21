@@ -5,10 +5,12 @@ from PySide6.QtGui import QFontDatabase
 from ui import material_symbols as ms
 from ui.entry_dialog_sections import (BasicInfoSection, AuthSection, RecoverySection, MetadataSection)
 from pwGenerator.password_window import PasswordGeneratorDialog
+from core.settings_manager import SettingsManager
+
 
 class EntryDialog(QDialog):
     def __init__(self, parent=None, entry: dict | None = None, 
-                 default_category: str | None = None, icon_family: str | None = None):
+                 default_category: str | None = None, icon_family: str | None = None, settings: SettingsManager | None = None):
         self._entry = entry or {}
         self._last_focus_widget = None
         self.basic_info = None
@@ -18,6 +20,10 @@ class EntryDialog(QDialog):
         self._icon_family = icon_family
         self._have_icons_family = False
         
+        self.settings = settings
+        if self.settings is None and parent is not None and hasattr(parent, "settings"):
+            self.settings = parent.settings
+
         super().__init__(parent)
 
         self.setWindowTitle("Edit Entry" if entry else "Add Entry")
@@ -67,10 +73,10 @@ class EntryDialog(QDialog):
         cols.addLayout(col_left, 1)
         cols.addLayout(col_right, 1)
 
-        self.basic_info = BasicInfoSection(self._entry, self._icon_family)
-        self.auth = AuthSection(self._entry, self._icon_family)
-        self.recovery = RecoverySection(self._entry, self._icon_family)
-        self.metadata = MetadataSection(self._entry, default_category, self._icon_family)
+        self.basic_info = BasicInfoSection(self._entry, self._icon_family, parent=self)
+        self.auth = AuthSection(self._entry, self._icon_family, parent=self)
+        self.recovery = RecoverySection(self._entry, self._icon_family, parent=self)
+        self.metadata = MetadataSection(self._entry, default_category, self._icon_family, parent=self)
 
         col_left.addWidget(self.basic_info)
         col_left.addWidget(self.auth)
@@ -111,7 +117,8 @@ class EntryDialog(QDialog):
             parent=self,
             targets=targets,
             initial_target=initial,
-            icon_family=self._icon_family
+            icon_family=self._icon_family,
+            settings=self.settings
         )
         dlg.exec()
         self._last_focus_widget = None

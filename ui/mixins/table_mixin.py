@@ -315,7 +315,7 @@ class TableMixin:
         cb = QApplication.clipboard()
         cb.setText(value)
 
-        settings = SettingsManager()
+        settings = getattr(self, "settings", None) or SettingsManager()
         secs = int(settings.get("clipboard_clear_seconds", 15) or 0)
         notify = bool(settings.get("copy_notifications", True))
 

@@ -11,10 +11,7 @@ from ui.widgets.plusminus_spinbox import PlusMinusSpinBox
 from pwGenerator.tabs.character_sets_tab import CharacterSetsTab
 from pwGenerator.tabs.passphrase_tab import PassphraseTab
 
-try:
-    from core.settings_manager import SettingsManager
-except Exception:
-    SettingsManager = None
+from core.settings_manager import SettingsManager
 
 from ui.widgets.password_field import PasswordLineEdit
 
@@ -22,7 +19,7 @@ from ui.widgets.password_field import PasswordLineEdit
 class PasswordGeneratorDialog(QDialog):
 
     def __init__( self, parent=None, *, targets: Optional[Dict[str, Callable[[str], None]]] = None, 
-                 initial_target: Optional[str] = None, icon_family: str | None = None, ):
+                 initial_target: Optional[str] = None, icon_family: str | None = None, settings: SettingsManager | None = None):
         super().__init__(parent)
         self.setWindowTitle("AnchorPass: Password Generator")
         self.setModal(True)
@@ -31,6 +28,12 @@ class PasswordGeneratorDialog(QDialog):
         self.setSizeGripEnabled(False)
         self.setWindowFlag(Qt.WindowMaximizeButtonHint, False)
         self.setWindowFlag(Qt.MSWindowsFixedSizeDialogHint, True)
+
+        self._settings = None
+        if settings is not None:
+            self._settings = settings
+        elif parent is not None and hasattr(parent, "settings"):
+            self._settings = parent.settings
 
         self.length = PlusMinusSpinBox()
         self.length.setRange(4, 128)
@@ -73,7 +76,8 @@ class PasswordGeneratorDialog(QDialog):
         clear_ms = 10_000
         if SettingsManager is not None:
             try:
-                clear_ms = max(0, int(SettingsManager().get("clipboard_clear_seconds", 15))) * 1000
+                sm = self._settings or SettingsManager()
+                clear_ms = max(0, int(sm.get("clipboard_clear_seconds", 15))) * 1000
             except Exception:
                 pass
 

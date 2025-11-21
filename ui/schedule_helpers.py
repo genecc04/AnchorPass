@@ -63,7 +63,8 @@ def scheduled_is_due_now(s: SettingsManager) -> bool:
     return False
 
 def maybe_run_scheduled_backup(host_with_export_backup) -> bool:
-    s = SettingsManager()
+    s = _resolve_settings_from_host(host_with_export_backup)
+
     if not scheduled_is_due_now(s):
         return False
 
@@ -83,7 +84,9 @@ def maybe_run_scheduled_backup(host_with_export_backup) -> bool:
     return False
 
 def schedule_debug_snapshot() -> str:
-    s = SettingsManager()
+    if s is None:
+        s = SettingsManager()
+
     now = datetime.now()
 
     enabled = _read_bool(s, "backup_sched_enabled", _read_bool(s, "enable_backup", False))
@@ -115,3 +118,20 @@ def schedule_debug_snapshot() -> str:
         f"Would run now?:  {due}",
     ]
     return "\n".join(parts)
+
+def _resolve_settings_from_host(host) -> SettingsManager:
+    # If host has a helper, prefer that
+    if hasattr(host, "_get_settings") and callable(getattr(host, "_get_settings")):
+        try:
+            sm = host._get_settings()
+            if isinstance(sm, SettingsManager):
+                return sm
+        except Exception:
+            pass
+
+    # If host exposes .settings directly
+    if hasattr(host, "settings") and isinstance(host.settings, SettingsManager):
+        return host.settings
+
+    # Fallback: global settings
+    return SettingsManager()

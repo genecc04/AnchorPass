@@ -18,6 +18,12 @@ class UIBuilder:
     
     def __init__(self, window: 'MainWindow'):
         self.window = window
+
+    def _get_settings(self) -> SettingsManager:
+        s = getattr(self.window, "settings", None)
+        if isinstance(s, SettingsManager):
+            return s
+        return SettingsManager()
     
     def build_menus(self):
         menubar = self.window.menuBar()
@@ -49,7 +55,7 @@ class UIBuilder:
         help_menu.addAction(QAction("About", self.window, triggered=self._show_about))
     
     def build_shortcuts(self):
-        settings = SettingsManager()
+        settings = self._get_settings()
 
         if hasattr(self.window, "_shortcuts"):
             for sc in self.window._shortcuts:
@@ -251,7 +257,7 @@ class UIBuilder:
             pass
 
     def _show_about(self):
-        settings = SettingsManager()
+        settings = self._get_settings()
 
         hk_copy_site      = settings.get("hotkey_copy_site", "None")
         hk_copy_totp      = settings.get("hotkey_copy_totp", "None")

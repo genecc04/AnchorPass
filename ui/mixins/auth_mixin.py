@@ -186,7 +186,8 @@ class AuthMixin:
 
     def _ask_master_inline(self, setup: bool):
         overlay = UnlockOverlay(parent=self.centralWidget(), setup=setup,
-                                icon_family=getattr(self, "icon_family", None))
+                                icon_family=getattr(self, "icon_family", None), settings=getattr(self, "settings", None))
+        
         overlay.show(); overlay.raise_()
 
         loop = QEventLoop()

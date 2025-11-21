@@ -92,8 +92,10 @@ class BackupMixin:
           - only run on 'close' (per your configuration)
         """
         sm = self._get_settings()
+
         if bool(sm.get("backup_disabled", False)):
             return
+        
         if reason == "close" and bool(sm.get("backup_on_close", True)):
             self.export_backup(reason=reason)
 

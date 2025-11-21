@@ -1,5 +1,6 @@
 from PySide6.QtWidgets import QMessageBox
 from core import db
+from ui.entry_dialog import EntryDialog
 
 STORE_PLAINTEXT_EMAIL = False
 
@@ -24,8 +25,7 @@ class CrudMixin:
             QMessageBox.critical(self, "Error", "Vault is locked; cannot add.")
             return
 
-        from ui.entry_dialog import EntryDialog
-        dlg = EntryDialog(self, entry=None, default_category=self.current_category, icon_family=getattr(self, "icon_family", None))
+        dlg = EntryDialog(self, entry=None, default_category=self.current_category, icon_family=getattr(self, "icon_family", None), settings=self.settings)
         if not dlg.exec():
             return
 
@@ -90,8 +90,7 @@ class CrudMixin:
         old_status = row.get("status", "active")
         entry_plain["status"] = old_status
 
-        from ui.entry_dialog import EntryDialog
-        dlg = EntryDialog(self, entry=entry_plain, default_category=self.current_category)
+        dlg = EntryDialog(self, entry=entry_plain, default_category=self.current_category, settings=self.settings)
         if not dlg.exec():
             return
 
@@ -159,8 +158,7 @@ class CrudMixin:
         old_status = row.get("status", "active")
         entry_plain["status"] = old_status
 
-        from ui.entry_dialog import EntryDialog
-        dlg = EntryDialog(self, entry=entry_plain, default_category=self.current_category)
+        dlg = EntryDialog(self, entry=entry_plain, default_category=self.current_category, settings=self.settings)
         if not dlg.exec():
             return
 

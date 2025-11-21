@@ -11,13 +11,23 @@ class UnlockOverlay(QWidget):
     accepted = Signal(str, str, int)
     canceled = Signal()
 
-    def __init__(self, parent=None, setup=False, icon_family=None):
+    def __init__(self, parent=None, setup=False, icon_family=None, settings: SettingsManager | None = None):
         super().__init__(parent)
         self.setAttribute(Qt.WA_StyledBackground, True)
 
         self.setup = setup
-        self.settings = SettingsManager()
         self.icon_family = icon_family
+
+        if settings is not None:
+            self.settings = settings
+        else:
+            w = parent
+            while w is not None and not hasattr(w, "settings"):
+                w = w.parent()
+            if w is not None and hasattr(w, "settings"):
+                self.settings = w.settings
+            else:
+                self.settings = SettingsManager()
 
         if parent:
             self.setGeometry(parent.rect())
