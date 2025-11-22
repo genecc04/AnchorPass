@@ -14,14 +14,13 @@ def _read_str(s: SettingsManager, key: str, default="") -> str:
 
 def parse_time_maybe_12h(hhmm: str) -> tuple[int, int]:
     """Accept 'HH:mm' or 'h:mm AM/PM'. Returns (hour, minute) in 24h."""
-    from datetime import datetime as _dt
     try:
-        t = _dt.strptime((hhmm or "").strip(), "%H:%M")
+        t = datetime.strptime((hhmm or "").strip(), "%H:%M")
         return t.hour, t.minute
     except Exception:
         pass
     try:
-        t = _dt.strptime((hhmm or "").strip(), "%I:%M %p")
+        t = datetime.strptime((hhmm or "").strip(), "%I:%M %p")
         return t.hour, t.minute
     except Exception:
         return 2, 0  # default 02:00
