@@ -22,6 +22,14 @@ class EntrySectionBase(QWidget):
             w = w.parent()
         return SettingsManager()
     
+    def _get_logger(self):
+        w = self
+        while w is not None:
+            if hasattr(w, "_log_status"):
+                return getattr(w, "_log_status")
+            w = w.parent()
+        return None
+    
 class BasicInfoSection(EntrySectionBase):
     
     def __init__(self, entry: dict, icon_family: str | None, parent=None):
@@ -88,6 +96,17 @@ class BasicInfoSection(EntrySectionBase):
         form.addRow("Username:", self.username)
         form.addRow("Email:", self.email)
         form.addRow("Notes:", self.notes)
+
+        logger = self._get_logger()
+        if logger:
+            fields = [
+                (self.site_link, "Site URL"),
+                (self.username, "Username"),
+                (self.email, "Email"),
+            ]
+            for fld, label in fields:
+                if hasattr(fld, "copied"):
+                    fld.copied.connect(lambda lbl=label: logger(f"{lbl} copied", 1500))
         
     def _create_plain_copy_field(self, initial: str, placeholder: str, clear_ms: int) -> PasswordLineEdit:
         fld = PasswordLineEdit(
@@ -201,6 +220,19 @@ class AuthSection(EntrySectionBase):
         add_advanced_row("App Password:", self.app_password)
         add_advanced_row("PIN:", self.pin)
         add_advanced_row("Security Code:", self.security_code)
+
+        logger = self._get_logger()
+        if logger:
+            fields = [
+                (self.password, "Password"),
+                (self.app_password, "App password"),
+                (self.pin, "PIN"),
+                (self.security_code, "Security code"),
+            ]
+            for fld, label in fields:
+                if hasattr(fld, "copied"):
+                    fld.copied.connect(lambda lbl=label: logger(f"{lbl} copied", 1500))
+
         
     def _create_password_field(self, clear_ms: int, placeholder: str, strength_enabled: bool) -> PasswordLineEdit:
         return PasswordLineEdit(
@@ -292,6 +324,12 @@ class RecoverySection(EntrySectionBase):
         
         self.totp_widget = TotpPreviewWidget(self.otp_secret, self._icon_family, self)
         form.addRow("TOTP now:", self.totp_widget)
+
+        logger = self._get_logger()
+        if logger and hasattr(self.otp_secret, "copied"):
+            self.otp_secret.copied.connect(
+                lambda: logger("OTP secret copied", 1500)
+            )
         
     def cleanup(self):
         self.totp_widget.cleanup()

@@ -2,7 +2,7 @@ from __future__ import annotations
 from typing import Optional, Tuple
 import re
 
-from PySide6.QtCore import Qt, QRect, QTimer, QEvent
+from PySide6.QtCore import Qt, QRect, QTimer, QEvent, Signal
 from PySide6.QtGui import ( QFont, QFontDatabase, QPainter, QPixmap, QAction, QColor, QIcon, QPalette )
 from PySide6.QtWidgets import QLineEdit, QApplication, QStyle
 
@@ -87,6 +87,7 @@ class PasswordLineEdit(QLineEdit):
       copy_feedback_ms: milliseconds to show the 'check' icon after copying (default 1200)
       visibility_enabled: show/hide the eye toggle (default True)
     """
+    copied = Signal()
 
     def __init__(
         self,
@@ -304,6 +305,7 @@ class PasswordLineEdit(QLineEdit):
         text = self.text()
         cb.setText(text)
         self._show_copy_feedback()
+        self.copied.emit()
         if self._clear_ms and self._clear_ms > 0:
             def maybe_clear():
                 if cb.text() == text:

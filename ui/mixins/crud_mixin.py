@@ -70,6 +70,9 @@ class CrudMixin:
         else:
             self.reload()
 
+        if hasattr(self, "_log_status"):
+            self._log_status("Entry saved.", 2000)
+
     def edit_entry(self):
         if not getattr(self, "cipher", None):
             QMessageBox.critical(self, "Error", "Vault is locked; cannot edit.")
@@ -138,6 +141,9 @@ class CrudMixin:
             self._refresh_tree_and_table(target_category=target)
         else:
             self.reload()
+
+        if hasattr(self, "_log_status"):
+            self._log_status("Entry updated.", 2000)
                     
     def edit_single_entry(self, entry_id):
         if not getattr(self, "cipher", None):
@@ -213,6 +219,9 @@ class CrudMixin:
             self._refresh_tree_and_table(target_category=target)
         else:
             self.reload()
+
+        if hasattr(self, "_log_status"):
+            self._log_status("Entry updated.", 2000)
 
     def archive_entry(self):
         entry_id = self._current_entry_id_from_table()

@@ -671,8 +671,16 @@ class MainWindow(PreviewMixin, BackupMixin, LockMixin, CrudMixin, TableMixin, Tr
         self.clipboard_manager.copy_field_from_entry(row, field, self.cipher)
 
     def open_settings_dialog(self):
+        old_theme = self.settings.get("theme", "dark")
+
         dlg = PreferencesDialog(main_window=self, settings=self.settings)
-        if dlg.exec() != QDialog.Accepted:
+        try:
+            result = dlg.exec()
+        finally:
+            dlg.deleteLater()
+
+        if result != QDialog.Accepted:
+            self._log_status("Settings unchanged.", 2000)
             return
 
         self.backup_manager.settings = self.settings
@@ -686,15 +694,18 @@ class MainWindow(PreviewMixin, BackupMixin, LockMixin, CrudMixin, TableMixin, Tr
         if hasattr(self, "ui_builder"):
                 self.ui_builder.build_shortcuts()
 
-        try:
-            self._apply_theme_from_settings()
-        except Exception:
-            pass
+        new_theme = self.settings.get("theme", "dark")
+        if new_theme != old_theme:
+            try:
+                self._apply_theme_from_settings()
+            except Exception:
+                pass
 
         self._sched_first_log_done = False
         self._sched_last_skip_note_at = 0
-        self._log_status("Settings updated.", 2000)
         self._check_scheduled_backup()
+
+        self._log_status("Settings saved.", 2000)
 
     def _open_backup_folder(self):
         path = (self.settings.get("backup_path", "") or "").strip() or \
@@ -741,10 +752,17 @@ class MainWindow(PreviewMixin, BackupMixin, LockMixin, CrudMixin, TableMixin, Tr
             else:
                 self._log_status("Scheduled backup attempted but not saved.", 4000)
                 
-    def _log_status(self, text: str, ms: int = 3000):
+    def _log_status(self, text: str, ms: int = 3000, is_error: bool = False) -> None:
         try:
-            self.statusBar().showMessage(text, ms)
+            bar = self.statusBar()
+            if is_error:
+                bar.setStyleSheet("color: red;")
+            else:
+                bar.setStyleSheet("")  # reset to default
+
+            bar.showMessage(text, ms)
         except Exception:
+            # Avoid crashing if statusBar is not available yet
             pass
 
     def _sleep_guard_tick(self):

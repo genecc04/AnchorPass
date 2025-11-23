@@ -135,7 +135,16 @@ class TotpPreviewWidget(QWidget):
         self._copy_timer.start(900)
         
         sm = self._get_settings()
+        
         secs = int(sm.get("clipboard_clear_seconds", 15) or 0)
+
+        logger = self._get_logger()
+        if logger:
+            if secs > 0:
+                logger(f"TOTP code copied", 2000)
+            else:
+                logger("TOTP code copied", 2000)
+
         if secs > 0:
             def clear_if_same():
                 if cb.text() == code:
@@ -185,3 +194,11 @@ class TotpPreviewWidget(QWidget):
                     return s
             w = w.parent()
         return SettingsManager()
+    
+    def _get_logger(self):
+        w = self
+        while w is not None:
+            if hasattr(w, "_log_status"):
+                return getattr(w, "_log_status")
+            w = w.parent()
+        return None

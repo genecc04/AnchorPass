@@ -143,6 +143,9 @@ class SettingsManager:
         return self._data.get(key, default)
 
     def set(self, key: str, value) -> None:
+        if key in self._data and self._data[key] == value:
+            return
+
         self._data[key] = value
         self.save()
 
