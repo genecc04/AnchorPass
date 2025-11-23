@@ -121,24 +121,16 @@ class MainWindow(PreviewMixin, BackupMixin, LockMixin, CrudMixin, TableMixin, Tr
             pass
         super().changeEvent(event)
 
-    def closeEvent(self, ev):
-        try:
-            self.maybe_auto_backup("close")
-            self._stop_preview_timers()
-        except Exception:
-            pass
-        
-        try:
-            minimize_to_tray = bool(self.settings.get("minimize_to_tray_on_exit", False))
-        except Exception:
-            minimize_to_tray = False
+    def closeEvent(self, event):
 
-        if minimize_to_tray and hasattr(self, "tray_icon") and self.tray_icon is not None:
+        if self.settings.get("minimize_to_tray_on_exit", True):
+            event.ignore()
             self.hide()
-            ev.ignore()
-            return
 
-        super().closeEvent(ev)
+            if bool(self.settings.get("lock_on_minimize", True)):
+                QTimer.singleShot(100, self.lock)
+        else:
+            super().closeEvent(event)
 
     def _start_expiration_checker(self):
         self._expiration_timer = QTimer(self)
