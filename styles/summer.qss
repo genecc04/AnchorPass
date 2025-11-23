@@ -237,6 +237,53 @@ QLineEdit:hover, QTextEdit:hover, QPlainTextEdit:hover, QComboBox:hover, QSpinBo
 QLineEdit:focus, QTextEdit:focus, QPlainTextEdit:focus, QComboBox:focus, QSpinBox:focus, PlusMinusSpinBox:focus, PlusMinusTimeEdit:focus, #prefsTabs QPushButton:focus {
     border-color: #ff9800;
 }
+/* ===== Collapsable Section ===== */
+
+QToolButton#SectionHeaderButton {
+    font-weight: 600;
+    padding: 6px 8px;
+    text-align: left;
+
+    background-color: #fff7e6;
+    color: #4a3427;
+    border: 1px solid #e3d7c7;
+    border-radius: 6px;
+}
+
+/* Hover (unselected) */
+QToolButton#SectionHeaderButton:hover:!checked {
+    background-color: #ffe9c7;
+    color: #332018;
+    border-color: #e0c59b;
+}
+
+/* Keyboard / focus highlight (unselected) */
+QToolButton#SectionHeaderButton[sectionFocused="true"]:!checked {
+    background-color: #ff9800;
+    color: #ffffff;
+    border-color: #ff9800;
+}
+
+/* Expanded / checked state */
+QToolButton#SectionHeaderButton:checked {
+    background-color: #ffffff;
+    color: #1f1a19;
+    border-color: #e3d7c7;
+}
+
+/* Expanded + hover */
+QToolButton#SectionHeaderButton:checked:hover {
+    background-color: #fff3de;
+    color: #332018;
+    border-color: #e0c59b;
+}
+
+/* Expanded + focused */
+QToolButton#SectionHeaderButton[sectionFocused="true"]:checked {
+    background-color: #ff9800;
+    color: #ffffff;
+    border-color: #ff9800;
+}
 
 /* ===== QSpinBox / Auto-lock field ===== */
 QAbstractSpinBox {

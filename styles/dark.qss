@@ -255,6 +255,54 @@ PlusMinusTimeEdit:focus,
     border-color: #075cb2;
 }
 
+/* ===== Collapsable Section (Dark Theme) ===== */
+
+QToolButton#SectionHeaderButton {
+    font-weight: 600;
+    padding: 6px 8px;
+    text-align: left;
+
+    background-color: #1f1f1f;      /* same as buttons / tabs */
+    color: #e6e6e6;
+    border: 1px solid #333333;
+    border-radius: 6px;
+}
+
+/* Hover (unselected / collapsed) */
+QToolButton#SectionHeaderButton:hover:!checked {
+    background-color: #061019;      /* same hover as buttons / tabs */
+    color: #ffffff;
+    border-color: #075cb2;          /* subtle blue edge */
+}
+
+/* Section has focus (any child widget inside) and is unexpanded */
+QToolButton#SectionHeaderButton[sectionFocused="true"]:!checked {
+    background-color: #075cb2;      /* strong blue focus */
+    color: #ffffff;
+    border-color: #075cb2;
+}
+
+/* Expanded / checked state */
+QToolButton#SectionHeaderButton:checked {
+    background-color: #121212;      /* match main bg / selected tab area */
+    color: #ffffff;
+    border-color: #333333;
+}
+
+/* Expanded + hover */
+QToolButton#SectionHeaderButton:checked:hover {
+    background-color: #181818;      /* slightly lighter for hover */
+    color: #ffffff;
+    border-color: #4a4a4a;
+}
+
+/* Expanded + section-focused */
+QToolButton#SectionHeaderButton[sectionFocused="true"]:checked {
+    background-color: #075cb2;      /* same strong blue focus */
+    color: #ffffff;
+    border-color: #075cb2;
+}
+
 /* ===== QSpinBox / Auto-lock field ===== */
 QAbstractSpinBox {
     background-color: #1a1a1a;

@@ -11,12 +11,6 @@ from ui.widgets.password_field import PasswordLineEdit
 from ui.widgets.date_picker import DatePicker
 from ui.entry_dialog_totp import TotpPreviewWidget
 
-def _create_section_label(title: str) -> QLabel:
-    lbl = QLabel(f"<b>{title}</b>")
-    lbl.setTextFormat(Qt.RichText)
-    lbl.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
-    return lbl
-
 class EntrySectionBase(QWidget):
     def _get_settings(self) -> SettingsManager:
         w = self
@@ -182,7 +176,6 @@ class AuthSection(EntrySectionBase):
             clear_ms, "Security code / CVV / access code", False
         )
         
-        # restore values if editing
         if self._entry.get("password"):
             self.password.setText(self._entry["password"])
         if self._entry.get("pin"):
@@ -192,10 +185,8 @@ class AuthSection(EntrySectionBase):
         if self._entry.get("app_password"):
             self.app_password.setText(self._entry["app_password"])
         
-        # Always-visible row
         form.addRow("Password:", self.password)
 
-        # Advanced rows
         def add_advanced_row(label_text: str, widget: QWidget):
             form.addRow(label_text, widget)
             row = form.rowCount() - 1

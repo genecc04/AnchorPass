@@ -237,6 +237,54 @@ QLineEdit:focus, QTextEdit:focus, QPlainTextEdit:focus, QComboBox:focus, QSpinBo
     border-color: #075cb2;
 }
 
+/* ===== Collapsable Section (Light / Neutral Theme) ===== */
+
+QToolButton#SectionHeaderButton {
+    font-weight: 600;
+    padding: 6px 8px;
+    text-align: left;
+
+    background-color: #f5f5f7;      /* same family as tabs / panels */
+    color: #333333;
+    border: 1px solid #d0d0d0;
+    border-radius: 6px;
+}
+
+/* Hover (unselected / collapsed) */
+QToolButton#SectionHeaderButton:hover:!checked {
+    background-color: #eaf3ff;      /* light blue hover */
+    color: #0a0a0a;
+    border-color: #c2c2c2;
+}
+
+/* Section has focus (any child widget inside) and is unexpanded */
+QToolButton#SectionHeaderButton[sectionFocused="true"]:!checked {
+    background-color: #075cb2;      /* strong blue focus */
+    color: #cccccc;                 /* matches selection text color */
+    border-color: #075cb2;
+}
+
+/* Expanded / checked state */
+QToolButton#SectionHeaderButton:checked {
+    background-color: #ffffff;      /* like selected tab/page */
+    color: #1a1a1a;
+    border-color: #d0d0d0;
+}
+
+/* Expanded + hover */
+QToolButton#SectionHeaderButton:checked:hover {
+    background-color: #eaf3ff;
+    color: #0a0a0a;
+    border-color: #c2c2c2;
+}
+
+/* Expanded + section-focused */
+QToolButton#SectionHeaderButton[sectionFocused="true"]:checked {
+    background-color: #075cb2;
+    color: #cccccc;
+    border-color: #075cb2;
+}
+
 /* ===== QSpinBox / Auto-lock field ===== */
 QAbstractSpinBox {
     background-color: #ffffff;

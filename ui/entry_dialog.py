@@ -1,7 +1,7 @@
 from __future__ import annotations
 from PySide6.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QScrollArea, QWidget, QDialogButtonBox, QPushButton, 
-                               QApplication, QToolButton, QFrame)
-from PySide6.QtCore import Qt
+                               QApplication, QToolButton, QFrame, QSizePolicy)
+from PySide6.QtCore import Qt, QEvent, QTimer
 from PySide6.QtGui import QFontDatabase
 from ui import material_symbols as ms
 from ui.entry_dialog_sections import (BasicInfoSection, AuthSection, RecoverySection, MetadataSection)
@@ -17,25 +17,19 @@ class CollapsibleSection(QWidget):
         self._summary = ""
 
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setContentsMargins(0, 0, 5, 0)
         layout.setSpacing(0)
 
         self._header_btn = QToolButton(self)
+        self._header_btn.setObjectName("SectionHeaderButton")
         self._header_btn.setCheckable(True)
         self._header_btn.setChecked(expanded)
         self._header_btn.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
         self._header_btn.setArrowType(Qt.DownArrow if expanded else Qt.RightArrow)
         self._header_btn.clicked.connect(self._on_toggled)
-        self._header_btn.setStyleSheet(
-            """
-            QToolButton {
-                font-weight: 600;
-                padding: 6px 4px;
-                border: 0;
-                text-align: left;
-            }
-            """
-        )
+
+        self._header_btn.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        layout.addWidget(self._header_btn)
 
         # Card-like frame for content
         frame = QFrame(self)
@@ -43,17 +37,41 @@ class CollapsibleSection(QWidget):
         frame.setFrameShadow(QFrame.Raised)
 
         frame_layout = QVBoxLayout(frame)
-        frame_layout.setContentsMargins(30, 6, 10, 10)
+        frame_layout.setContentsMargins(30, 5, 10, 10)
         frame_layout.setSpacing(6)
         frame_layout.addWidget(content)
 
-        layout.addWidget(self._header_btn)
         layout.addWidget(frame)
 
         frame.setVisible(expanded)
         self._frame = frame
-
+        self._install_focus_tracking(content)
         self._apply_header_text()
+
+    def _install_focus_tracking(self, root: QWidget):
+        # Watch focus on all children in this section
+        root.installEventFilter(self)
+        for child in root.findChildren(QWidget):
+            child.installEventFilter(self)
+
+    def eventFilter(self, obj, event):
+        if event.type() == QEvent.FocusIn or event.type() == QEvent.FocusOut:
+            # slight delay so QApplication.focusWidget() is updated
+            QTimer.singleShot(0, self._update_section_focus_from_current)
+        return super().eventFilter(obj, event)
+
+    def _update_section_focus_from_current(self):
+        from PySide6.QtWidgets import QApplication
+        fw = QApplication.focusWidget()
+        has_focus = fw is not None and self.isAncestorOf(fw)
+        self._set_section_focused(has_focus)
+
+    def _set_section_focused(self, focused: bool):
+        self._header_btn.setProperty("sectionFocused", focused)
+        # force style re-evaluation
+        self._header_btn.style().unpolish(self._header_btn)
+        self._header_btn.style().polish(self._header_btn)
+        self._header_btn.update()
 
     def _on_toggled(self, checked: bool):
         self._frame.setVisible(checked)
@@ -96,7 +114,7 @@ class EntryDialog(QDialog):
         super().__init__(parent)
 
         self.setWindowTitle("Edit Entry" if entry else "Add Entry")
-        self.resize(600, 484)
+        self.resize(600, 472)
 
         self._icon_family = (
             icon_family or 
@@ -131,7 +149,7 @@ class EntryDialog(QDialog):
         scroll.setWidget(content)
 
         main = QVBoxLayout(content)
-        main.setSpacing(14)
+        main.setSpacing(0)
         main.setContentsMargins(0, 0, 0, 0)
 
         self.basic_info = BasicInfoSection(self._entry, self._icon_family, parent=self)

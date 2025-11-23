@@ -210,7 +210,6 @@ QWidget#HotkeysPanel QKeySequenceEdit:disabled {
     border: none;
 }
 
-/* ===== Inputs ===== */
 /* ===== Inputs (Galaxy-style) ===== */
 QLineEdit,
 QTextEdit,
@@ -253,6 +252,54 @@ PlusMinusSpinBox:focus,
 QTimeEdit:focus,
 PlusMinusTimeEdit:focus,
 #prefsTabs QPushButton:focus {
+    border-color: #b26bff;
+}
+
+/* ===== Collapsable Section (Galaxy Theme) ===== */
+
+QToolButton#SectionHeaderButton {
+    font-weight: 600;
+    padding: 6px 8px;
+    text-align: left;
+
+    background-color: #191024;      /* same family as tabs/buttons */
+    color: #e1d7ff;
+    border: 1px solid #3a2a54;
+    border-radius: 6px;
+}
+
+/* Hover (unselected / collapsed) */
+QToolButton#SectionHeaderButton:hover:!checked {
+    background-color: #251338;      /* same hover as other controls */
+    color: #ffffff;
+    border-color: #3a2a54;
+}
+
+/* Section has focus (any child widget inside) and is unexpanded */
+QToolButton#SectionHeaderButton[sectionFocused="true"]:!checked {
+    background-color: #b26bff;      /* strong galaxy purple */
+    color: #ffffff;
+    border-color: #b26bff;
+}
+
+/* Expanded / checked state */
+QToolButton#SectionHeaderButton:checked {
+    background-color: #140b24;      /* pane / card background tone */
+    color: #ffffff;
+    border-color: #3a2a54;
+}
+
+/* Expanded + hover */
+QToolButton#SectionHeaderButton:checked:hover {
+    background-color: #251338;      /* same hover purple as tabs */
+    color: #ffffff;
+    border-color: #4a3470;
+}
+
+/* Expanded + section-focused */
+QToolButton#SectionHeaderButton[sectionFocused="true"]:checked {
+    background-color: #b26bff;      /* focused section highlight */
+    color: #ffffff;
     border-color: #b26bff;
 }
 
