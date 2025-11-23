@@ -154,12 +154,10 @@ class MainWindow(PreviewMixin, BackupMixin, LockMixin, CrudMixin, TableMixin, Tr
                 else:
                     if hasattr(self, "populate_tree"):
                         self.populate_tree()
-                    self._refresh_tree_and_table()
                     self.reload()
             except Exception:
                 try:
                     self._refresh_tree_and_table()
-                    self.reload()
                 except Exception:
                     pass
 
@@ -343,8 +341,7 @@ class MainWindow(PreviewMixin, BackupMixin, LockMixin, CrudMixin, TableMixin, Tr
                     return
                 try:
                     db.permanently_delete_entry(entry_id)
-                    self.populate_tree()
-                    self.reload()
+                    self._refresh_tree_and_table()
                     self._log_status("Item permanently deleted.", 1500)
                 except Exception as e:
                     QMessageBox.critical(self, "Error", f"Failed to permanently delete entry:\n{e}")
@@ -356,8 +353,7 @@ class MainWindow(PreviewMixin, BackupMixin, LockMixin, CrudMixin, TableMixin, Tr
 
                 try:
                     db.delete_entry(entry_id)
-                    self.populate_tree()
-                    self.reload()
+                    self._refresh_tree_and_table()
                     self._log_status("Moved to Trash", 1500)
                 except Exception as e:
                     QMessageBox.critical(self, "Error", f"Failed to delete entry:\n{e}")
@@ -403,8 +399,7 @@ class MainWindow(PreviewMixin, BackupMixin, LockMixin, CrudMixin, TableMixin, Tr
 
             try:
                 db.delete_entry(entry_id)
-                self.populate_tree()
-                self.reload()
+                self._refresh_tree_and_table()
                 self._log_status("Moved to Trash", 1500)
             except Exception as e:
                 QMessageBox.critical(self, "Error", f"Failed to delete entry:\n{e}")
@@ -431,7 +426,6 @@ class MainWindow(PreviewMixin, BackupMixin, LockMixin, CrudMixin, TableMixin, Tr
                 except Exception:
                     errors += 1
 
-            self.populate_tree()
             self._refresh_tree_and_table()
             if errors == 0:
                 self._log_status(f"Permanently deleted {len(ids)} item{'s' if len(ids)!=1 else ''}.", 2000)
@@ -455,8 +449,7 @@ class MainWindow(PreviewMixin, BackupMixin, LockMixin, CrudMixin, TableMixin, Tr
                 except Exception:
                     errors += 1
 
-            self.populate_tree()
-            self.reload()
+            self._refresh_tree_and_table()
             if errors == 0:
                 self._log_status(f"Moved {len(ids)} entr{'y' if len(ids)==1 else 'ies'} to Trash.", 1500)
             else:
@@ -475,7 +468,6 @@ class MainWindow(PreviewMixin, BackupMixin, LockMixin, CrudMixin, TableMixin, Tr
                     db.set_status(eid, "active")
             except Exception:
                 errors += 1
-        self.populate_tree()
         self._refresh_tree_and_table()
         self._log_status(
             f"Restored {len(ids)-errors}/{len(ids)} entr{'y' if len(ids)==1 else 'ies'}.",
@@ -498,8 +490,7 @@ class MainWindow(PreviewMixin, BackupMixin, LockMixin, CrudMixin, TableMixin, Tr
             except Exception:
                 errors += 1
 
-        self.populate_tree()
-        self.reload()
+        self._refresh_tree_and_table()
         ok = len(ids) - errors
         if errors == 0:
             self._log_status(f"Archived {ok} entr{'y' if ok==1 else 'ies'}.", 1500)
@@ -585,8 +576,7 @@ class MainWindow(PreviewMixin, BackupMixin, LockMixin, CrudMixin, TableMixin, Tr
                 db.permanently_delete_entry(entry_id)
             except Exception:
                 errors += 1
-        self.populate_tree()
-        self.reload()
+        self._refresh_tree_and_table()
         if errors == 0:
             self._log_status(f"Permanently deleted {len(ids)} item{'s' if len(ids)!=1 else ''}.", 2000)
         else:
