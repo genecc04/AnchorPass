@@ -23,7 +23,7 @@ class PasswordGeneratorDialog(QDialog):
         super().__init__(parent)
         self.setWindowTitle("AnchorPass: Password Generator")
         self.setModal(True)
-        self.setMinimumWidth(720)
+        self.setMinimumWidth(400)
         self.adjustSize()
         self.setSizeGripEnabled(False)
         self.setWindowFlag(Qt.WindowMaximizeButtonHint, False)

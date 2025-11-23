@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from PySide6.QtWidgets import (QWidget, QVBoxLayout, QFormLayout, QLineEdit, QPlainTextEdit, QLabel, QComboBox, QCheckBox, QSizePolicy)
+from PySide6.QtWidgets import (QWidget, QVBoxLayout, QFormLayout, QLineEdit, QPlainTextEdit, QLabel, QComboBox, 
+                               QCheckBox, QSizePolicy, QHBoxLayout, QPushButton)
 from PySide6.QtCore import Qt, QDate
 from datetime import datetime, timezone
 
@@ -34,15 +35,10 @@ class BasicInfoSection(EntrySectionBase):
         self._entry = entry
         self._icon_family = icon_family
         
-        # Main layout
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(8)
         
-        # Section header
-        layout.addWidget(_create_section_label("Basic Info"))
-        
-        # Form layout
         form = QFormLayout()
         form.setLabelAlignment(Qt.AlignRight)
         form.setFormAlignment(Qt.AlignTop)
@@ -51,7 +47,6 @@ class BasicInfoSection(EntrySectionBase):
         
         self._build_fields(form)
         
-        # Wrap form in widget
         form_widget = QWidget()
         form_widget.setLayout(form)
         form_widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Maximum)
@@ -63,18 +58,39 @@ class BasicInfoSection(EntrySectionBase):
         clear_ms = max(0, int(sm.get("clipboard_clear_seconds", 15))) * 1000
         
         self.site = QLineEdit(self._entry.get("site", ""))
-        
-        self.site_link = self._create_plain_copy_field( self._entry.get("site_link", ""), "https://example.com/login", clear_ms )
-        self.username = self._create_plain_copy_field( self._entry.get("username", ""), "Username", clear_ms )
-        self.email = self._create_plain_copy_field( self._entry.get("email", ""), "Email", clear_ms )
-        
+        self.site.setPlaceholderText("Site / App")
+
+        self.site_link = self._create_plain_copy_field(
+            self._entry.get("site_link", ""),
+            "https://example.com/login",
+            clear_ms,
+        )
+
+        self.username = self._create_plain_copy_field(
+            self._entry.get("username", ""),
+            "Username",
+            clear_ms,
+        )
+        self.email = self._create_plain_copy_field(
+            self._entry.get("email", ""),
+            "Email",
+            clear_ms,
+        )
+
         self.notes = QPlainTextEdit(self._entry.get("notes", ""))
         self.notes.setFixedHeight(96)
         self.notes.setAttribute(Qt.WA_StyledBackground, True)
         self.notes.setViewportMargins(2, 2, 2, 2)
-        
-        form.addRow("Site / App:", self.site)
-        form.addRow("Site Link:", self.site_link)
+
+        site_row = QWidget(self)
+        site_layout = QHBoxLayout(site_row)
+        site_layout.setContentsMargins(0, 0, 0, 0)
+        site_layout.setSpacing(8)
+
+        site_layout.addWidget(self.site, 2)
+        site_layout.addWidget(self.site_link, 3)
+
+        form.addRow("Site:", site_row)
         form.addRow("Username:", self.username)
         form.addRow("Email:", self.email)
         form.addRow("Notes:", self.notes)
@@ -112,26 +128,48 @@ class AuthSection(EntrySectionBase):
         super().__init__(parent)
         self._entry = entry
         self._icon_family = icon_family
+        self._advanced_widgets: list[tuple[QWidget, QWidget]] = []
         
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(8)
-        
-        layout.addWidget(_create_section_label("Authentication Details"))
         
         form = QFormLayout()
         form.setLabelAlignment(Qt.AlignRight)
         form.setFormAlignment(Qt.AlignTop)
         form.setHorizontalSpacing(10)
         form.setVerticalSpacing(8)
-        
+        form.setContentsMargins(0, 0, 0, 0)
+
         self._build_fields(form)
         
         form_widget = QWidget()
         form_widget.setLayout(form)
         form_widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Maximum)
         layout.addWidget(form_widget)
-        
+
+        self._btn_toggle_advanced = QPushButton("Show more", self)
+        self._btn_toggle_advanced.setFlat(True)
+        self._btn_toggle_advanced.setCursor(Qt.PointingHandCursor)
+        self._btn_toggle_advanced.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        self._btn_toggle_advanced.clicked.connect(self._toggle_advanced)
+
+        btn_row = QHBoxLayout()
+        btn_row.setContentsMargins(0, 0, 0, 0)
+        btn_row.addStretch(1)
+        btn_row.addWidget(self._btn_toggle_advanced)
+        layout.addLayout(btn_row)
+
+        self._set_advanced_visible(False)
+
+        has_advanced_values = any([
+            bool(self.app_password.text().strip()),
+            bool(self.pin.text().strip()),
+            bool(self.security_code.text().strip()),
+        ])
+        if has_advanced_values:
+            self._set_advanced_visible(True)
+
     def _build_fields(self, form: QFormLayout):
         sm = self._get_settings()
         clear_ms = max(0, int(sm.get("clipboard_clear_seconds", 15))) * 1000
@@ -144,6 +182,7 @@ class AuthSection(EntrySectionBase):
             clear_ms, "Security code / CVV / access code", False
         )
         
+        # restore values if editing
         if self._entry.get("password"):
             self.password.setText(self._entry["password"])
         if self._entry.get("pin"):
@@ -153,10 +192,24 @@ class AuthSection(EntrySectionBase):
         if self._entry.get("app_password"):
             self.app_password.setText(self._entry["app_password"])
         
+        # Always-visible row
         form.addRow("Password:", self.password)
-        form.addRow("App Password:", self.app_password)
-        form.addRow("PIN:", self.pin)
-        form.addRow("Security Code:", self.security_code)
+
+        # Advanced rows
+        def add_advanced_row(label_text: str, widget: QWidget):
+            form.addRow(label_text, widget)
+            row = form.rowCount() - 1
+            label_item = form.itemAt(row, QFormLayout.LabelRole)
+            field_item = form.itemAt(row, QFormLayout.FieldRole)
+            if label_item and field_item:
+                label_widget = label_item.widget()
+                field_widget = field_item.widget()
+                if label_widget and field_widget:
+                    self._advanced_widgets.append((label_widget, field_widget))
+
+        add_advanced_row("App Password:", self.app_password)
+        add_advanced_row("PIN:", self.pin)
+        add_advanced_row("Security Code:", self.security_code)
         
     def _create_password_field(self, clear_ms: int, placeholder: str, strength_enabled: bool) -> PasswordLineEdit:
         return PasswordLineEdit(
@@ -169,6 +222,18 @@ class AuthSection(EntrySectionBase):
             icon_family=self._icon_family,
             copy_enabled=True
         )
+
+    def _set_advanced_visible(self, visible: bool):
+        for label, field in self._advanced_widgets:
+            label.setVisible(visible)
+            field.setVisible(visible)
+        self._btn_toggle_advanced.setText("Show less" if visible else "Show more")
+
+    def _toggle_advanced(self):
+        if not self._advanced_widgets:
+            return
+        currently_visible = self._advanced_widgets[0][0].isVisible()
+        self._set_advanced_visible(not currently_visible)
         
     def values(self) -> dict:
         return {
@@ -189,8 +254,6 @@ class RecoverySection(EntrySectionBase):
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(8)
-        
-        layout.addWidget(_create_section_label("Recovery & 2FA"))
         
         form = QFormLayout()
         form.setLabelAlignment(Qt.AlignRight)
@@ -264,8 +327,6 @@ class MetadataSection(EntrySectionBase):
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(8)
-        
-        layout.addWidget(_create_section_label("Metadata"))
         
         form = QFormLayout()
         form.setLabelAlignment(Qt.AlignRight)

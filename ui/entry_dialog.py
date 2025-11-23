@@ -1,11 +1,80 @@
 from __future__ import annotations
-from PySide6.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QScrollArea, QWidget, QDialogButtonBox, QPushButton, QApplication)
+from PySide6.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QScrollArea, QWidget, QDialogButtonBox, QPushButton, 
+                               QApplication, QToolButton, QFrame)
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QFontDatabase
 from ui import material_symbols as ms
 from ui.entry_dialog_sections import (BasicInfoSection, AuthSection, RecoverySection, MetadataSection)
 from pwGenerator.password_window import PasswordGeneratorDialog
 from core.settings_manager import SettingsManager
+
+class CollapsibleSection(QWidget):
+
+    def __init__(self, title: str, content: QWidget, parent=None, expanded: bool = True):
+        super().__init__(parent)
+        self._content = content
+        self._base_title = title
+        self._summary = ""
+
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(0)
+
+        self._header_btn = QToolButton(self)
+        self._header_btn.setCheckable(True)
+        self._header_btn.setChecked(expanded)
+        self._header_btn.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
+        self._header_btn.setArrowType(Qt.DownArrow if expanded else Qt.RightArrow)
+        self._header_btn.clicked.connect(self._on_toggled)
+        self._header_btn.setStyleSheet(
+            """
+            QToolButton {
+                font-weight: 600;
+                padding: 6px 4px;
+                border: 0;
+                text-align: left;
+            }
+            """
+        )
+
+        # Card-like frame for content
+        frame = QFrame(self)
+        frame.setFrameShape(QFrame.StyledPanel)
+        frame.setFrameShadow(QFrame.Raised)
+
+        frame_layout = QVBoxLayout(frame)
+        frame_layout.setContentsMargins(30, 6, 10, 10)
+        frame_layout.setSpacing(6)
+        frame_layout.addWidget(content)
+
+        layout.addWidget(self._header_btn)
+        layout.addWidget(frame)
+
+        frame.setVisible(expanded)
+        self._frame = frame
+
+        self._apply_header_text()
+
+    def _on_toggled(self, checked: bool):
+        self._frame.setVisible(checked)
+        self._header_btn.setArrowType(Qt.DownArrow if checked else Qt.RightArrow)
+        self._apply_header_text()
+
+    def _apply_header_text(self):
+        expanded = self._header_btn.isChecked()
+        if expanded or not self._summary:
+            text = self._base_title
+        else:
+            text = f"{self._base_title} - {self._summary}"
+        self._header_btn.setText(text)
+
+    def set_summary(self, summary: str | None):
+        self._summary = (summary or "").strip()
+        self._apply_header_text()
+
+    def set_header_text(self, text: str):
+        self._base_title = text
+        self._apply_header_text()
 
 
 class EntryDialog(QDialog):
@@ -27,7 +96,7 @@ class EntryDialog(QDialog):
         super().__init__(parent)
 
         self.setWindowTitle("Edit Entry" if entry else "Add Entry")
-        self.resize(900, 700)
+        self.resize(600, 484)
 
         self._icon_family = (
             icon_family or 
@@ -61,30 +130,25 @@ class EntryDialog(QDialog):
         content = QWidget()
         scroll.setWidget(content)
 
-        cols = QHBoxLayout(content)
-        cols.setSpacing(24)
-        cols.setContentsMargins(0, 0, 0, 0)
-
-        col_left = QVBoxLayout()
-        col_left.setSpacing(14)
-        col_right = QVBoxLayout()
-        col_right.setSpacing(14)
-
-        cols.addLayout(col_left, 1)
-        cols.addLayout(col_right, 1)
+        main = QVBoxLayout(content)
+        main.setSpacing(14)
+        main.setContentsMargins(0, 0, 0, 0)
 
         self.basic_info = BasicInfoSection(self._entry, self._icon_family, parent=self)
         self.auth = AuthSection(self._entry, self._icon_family, parent=self)
         self.recovery = RecoverySection(self._entry, self._icon_family, parent=self)
         self.metadata = MetadataSection(self._entry, default_category, self._icon_family, parent=self)
 
-        col_left.addWidget(self.basic_info)
-        col_left.addWidget(self.auth)
-        col_left.addStretch(1)
+        self.basic_section = CollapsibleSection("Basic Information", self.basic_info, expanded=True)
+        main.addWidget(self.basic_section)
 
-        col_right.addWidget(self.recovery)
-        col_right.addWidget(self.metadata)
-        col_right.addStretch(1)
+        main.addWidget(CollapsibleSection("Authentication", self.auth, expanded=True))
+        main.addWidget(CollapsibleSection("Recovery / 2FA", self.recovery, expanded=False))
+        main.addWidget(CollapsibleSection("Metadata", self.metadata, expanded=False))
+
+        main.addStretch(1)
+
+        self._setup_basic_info_header_summary()
 
         self._build_buttons(root)
 
@@ -140,3 +204,23 @@ class EntryDialog(QDialog):
         if self.recovery:
             self.recovery.handle_theme_change(ev)
         super().changeEvent(ev)
+
+    def _setup_basic_info_header_summary(self):
+        if not self.basic_info or not hasattr(self, "basic_section"):
+            return
+
+        def update_summary():
+            site = self.basic_info.site.text().strip()
+            username = self.basic_info.username.text().strip()
+            email = self.basic_info.email.text().strip()
+
+            parts = [p for p in (site, username, email) if p]
+            summary = " · ".join(parts)
+            self.basic_section.set_summary(summary if parts else "")
+
+        for field in (self.basic_info.site,
+                      self.basic_info.username,
+                      self.basic_info.email):
+            field.textChanged.connect(lambda _=None, u=update_summary: u())
+
+        update_summary()

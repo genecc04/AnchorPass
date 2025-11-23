@@ -110,11 +110,14 @@ class _PreviewPanel(QWidget):
         totp_row.addWidget(self.totp_ring, 0, Qt.AlignLeft | Qt.AlignVCenter)
         totp_row.addWidget(self.totp_now, 0, Qt.AlignLeft | Qt.AlignVCenter)
 
-        totp_wrap = QWidget()
-        totp_wrap.setLayout(totp_row)
+        self.totp_wrap = QWidget(self)
+        self.totp_wrap.setLayout(totp_row)
 
         grid.addWidget(self.lbl_totp, 1, 2, Qt.AlignRight | Qt.AlignTop)
-        grid.addWidget(totp_wrap,     1, 3, Qt.AlignLeft  | Qt.AlignVCenter)
+        grid.addWidget(self.totp_wrap, 1, 3, Qt.AlignLeft  | Qt.AlignVCenter)
+
+        self.lbl_totp.hide()
+        self.totp_wrap.hide()
 
         self.notes = QPlainTextEdit()
         self.notes.setReadOnly(True)
@@ -190,6 +193,11 @@ class _PreviewPanel(QWidget):
 
     def _set_totp(self, secret: str | None):
         self._otp_secret = (secret or "").strip()
+        has_secret = bool(self._otp_secret)
+
+        self.lbl_totp.setVisible(has_secret)
+        self.totp_wrap.setVisible(has_secret)
+
         self._tick()
 
     def _tick(self):
@@ -198,7 +206,7 @@ class _PreviewPanel(QWidget):
 
         secret = self._otp_secret
         if not secret:
-            self.totp_now.setText("—")
+            self.totp_now.setText("")
             self.totp_now.setToolTip("")
             self.totp_ring.set_remaining(0, period=30)
             return

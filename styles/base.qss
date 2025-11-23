@@ -95,3 +95,7 @@ QDateTimeEdit::down-arrow {
     height: 0;
     image: none;
 }
+
+QFrame {
+    border: none;
+}
