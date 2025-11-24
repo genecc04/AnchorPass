@@ -130,7 +130,7 @@ class EntryDialog(QDialog):
         self.adjustSize()
         full_size = self.sizeHint()
 
-        full_size.setWidth(max(full_size.width(), 400))
+        full_size.setWidth(max(full_size.width(), 500))
         full_size.setHeight(max(full_size.height(), 450))
 
         self.resize(full_size)
