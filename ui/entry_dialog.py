@@ -61,9 +61,12 @@ class CollapsibleSection(QWidget):
         return super().eventFilter(obj, event)
 
     def _update_section_focus_from_current(self):
-        fw = QApplication.focusWidget()
-        has_focus = fw is not None and self.isAncestorOf(fw)
-        self._set_section_focused(has_focus)
+        try:
+            fw = QApplication.focusWidget()
+            has_focus = fw is not None and self.isAncestorOf(fw)
+            self._set_section_focused(has_focus)
+        except RuntimeError:
+            pass
 
     def _set_section_focused(self, focused: bool):
         self._header_btn.setProperty("sectionFocused", focused)
