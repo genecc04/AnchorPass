@@ -68,6 +68,11 @@ class AuthMixin:
         except Exception:
             pass
 
+        try:
+            self._refresh_lock_overlay_icon()
+        except Exception:
+            pass
+
         self._update_title()
 
         try:
@@ -339,3 +344,12 @@ class AuthMixin:
                 pass
 
         self.unlock()
+
+    def _refresh_lock_overlay_icon(self):
+        if not hasattr(self, "_lock_btn"):
+            return
+
+        glyph = chr(0xE898)
+        color = self.palette().color(QPalette.ButtonText)
+        icon = _glyph_to_icon(glyph, size=50, color=color, y_offset=3)
+        self._lock_btn.setIcon(icon)
