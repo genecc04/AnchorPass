@@ -51,14 +51,13 @@ class BasicInfoSection(EntrySectionBase):
         
         form_widget = QWidget()
         form_widget.setLayout(form)
-        form_widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Maximum)
+        form_widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
         layout.addWidget(form_widget)
         
     def _build_fields(self, form: QFormLayout):
-        """Build form fields."""
         sm = self._get_settings()
         clear_ms = max(0, int(sm.get("clipboard_clear_seconds", 15))) * 1000
-        
+
         self.site = QLineEdit(self._entry.get("site", ""))
         self.site.setPlaceholderText("Site / App")
 
@@ -79,6 +78,19 @@ class BasicInfoSection(EntrySectionBase):
             clear_ms,
         )
 
+        self.password = PasswordLineEdit(
+            placeholder="Password",
+            clear_clipboard_after_ms=clear_ms,
+            icon_point_size=18,
+            icon_padding=2,
+            strength_alpha=0.12,
+            strength_enabled=True,
+            icon_family=self._icon_family,
+            copy_enabled=True,
+        )
+        if self._entry.get("password"):
+            self.password.setText(self._entry["password"])
+
         self.notes = QPlainTextEdit(self._entry.get("notes", ""))
         self.notes.setFixedHeight(96)
         self.notes.setAttribute(Qt.WA_StyledBackground, True)
@@ -95,6 +107,7 @@ class BasicInfoSection(EntrySectionBase):
         form.addRow("Site:", site_row)
         form.addRow("Username:", self.username)
         form.addRow("Email:", self.email)
+        form.addRow("Password:", self.password)
         form.addRow("Notes:", self.notes)
 
         logger = self._get_logger()
@@ -103,6 +116,7 @@ class BasicInfoSection(EntrySectionBase):
                 (self.site_link, "Site URL"),
                 (self.username, "Username"),
                 (self.email, "Email"),
+                (self.password, "Password"),
             ]
             for fld, label in fields:
                 if hasattr(fld, "copied"):
@@ -131,6 +145,7 @@ class BasicInfoSection(EntrySectionBase):
             "site_link": self.site_link.text().strip(),
             "username": self.username.text().strip(),
             "email": self.email.text().strip(),
+            "password": self.password.text(),
             "notes": self.notes.toPlainText(),
         }
 
@@ -141,7 +156,6 @@ class AuthSection(EntrySectionBase):
         super().__init__(parent)
         self._entry = entry
         self._icon_family = icon_family
-        self._advanced_widgets: list[tuple[QWidget, QWidget]] = []
         
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
@@ -158,73 +172,33 @@ class AuthSection(EntrySectionBase):
         
         form_widget = QWidget()
         form_widget.setLayout(form)
-        form_widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Maximum)
+        form_widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
         layout.addWidget(form_widget)
-
-        self._btn_toggle_advanced = QPushButton("Show more", self)
-        self._btn_toggle_advanced.setFlat(True)
-        self._btn_toggle_advanced.setCursor(Qt.PointingHandCursor)
-        self._btn_toggle_advanced.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-        self._btn_toggle_advanced.clicked.connect(self._toggle_advanced)
-
-        btn_row = QHBoxLayout()
-        btn_row.setContentsMargins(0, 0, 0, 0)
-        btn_row.addStretch(1)
-        btn_row.addWidget(self._btn_toggle_advanced)
-        layout.addLayout(btn_row)
-
-        self._set_advanced_visible(False)
-
-        has_advanced_values = any([
-            bool(self.app_password.text().strip()),
-            bool(self.pin.text().strip()),
-            bool(self.security_code.text().strip()),
-        ])
-        if has_advanced_values:
-            self._set_advanced_visible(True)
 
     def _build_fields(self, form: QFormLayout):
         sm = self._get_settings()
         clear_ms = max(0, int(sm.get("clipboard_clear_seconds", 15))) * 1000
-        
-        self.password = self._create_password_field(clear_ms, "Password", True)
+
         self.app_password = self._create_password_field(clear_ms, "App-specific password", True)
-        
         self.pin = self._create_password_field(clear_ms, "PIN", False)
         self.security_code = self._create_password_field(
             clear_ms, "Security code / CVV / access code", False
         )
-        
-        if self._entry.get("password"):
-            self.password.setText(self._entry["password"])
+
+        if self._entry.get("app_password"):
+            self.app_password.setText(self._entry["app_password"])
         if self._entry.get("pin"):
             self.pin.setText(self._entry["pin"])
         if self._entry.get("security_code"):
             self.security_code.setText(self._entry["security_code"])
-        if self._entry.get("app_password"):
-            self.app_password.setText(self._entry["app_password"])
-        
-        form.addRow("Password:", self.password)
 
-        def add_advanced_row(label_text: str, widget: QWidget):
-            form.addRow(label_text, widget)
-            row = form.rowCount() - 1
-            label_item = form.itemAt(row, QFormLayout.LabelRole)
-            field_item = form.itemAt(row, QFormLayout.FieldRole)
-            if label_item and field_item:
-                label_widget = label_item.widget()
-                field_widget = field_item.widget()
-                if label_widget and field_widget:
-                    self._advanced_widgets.append((label_widget, field_widget))
-
-        add_advanced_row("App Password:", self.app_password)
-        add_advanced_row("PIN:", self.pin)
-        add_advanced_row("Security Code:", self.security_code)
+        form.addRow("App Password:", self.app_password)
+        form.addRow("PIN:", self.pin)
+        form.addRow("Security Code:", self.security_code)
 
         logger = self._get_logger()
         if logger:
             fields = [
-                (self.password, "Password"),
                 (self.app_password, "App password"),
                 (self.pin, "PIN"),
                 (self.security_code, "Security code"),
@@ -233,7 +207,6 @@ class AuthSection(EntrySectionBase):
                 if hasattr(fld, "copied"):
                     fld.copied.connect(lambda lbl=label: logger(f"{lbl} copied", 1500))
 
-        
     def _create_password_field(self, clear_ms: int, placeholder: str, strength_enabled: bool) -> PasswordLineEdit:
         return PasswordLineEdit(
             placeholder=placeholder,
@@ -245,25 +218,12 @@ class AuthSection(EntrySectionBase):
             icon_family=self._icon_family,
             copy_enabled=True
         )
-
-    def _set_advanced_visible(self, visible: bool):
-        for label, field in self._advanced_widgets:
-            label.setVisible(visible)
-            field.setVisible(visible)
-        self._btn_toggle_advanced.setText("Show less" if visible else "Show more")
-
-    def _toggle_advanced(self):
-        if not self._advanced_widgets:
-            return
-        currently_visible = self._advanced_widgets[0][0].isVisible()
-        self._set_advanced_visible(not currently_visible)
         
     def values(self) -> dict:
         return {
-            "password": self.password.text(),
+            "app_password": self.app_password.text(),
             "pin": self.pin.text(),
             "security_code": self.security_code.text(),
-            "app_password": self.app_password.text(),
         }
 
 
@@ -288,7 +248,7 @@ class RecoverySection(EntrySectionBase):
         
         form_widget = QWidget()
         form_widget.setLayout(form)
-        form_widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Maximum)
+        form_widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
         layout.addWidget(form_widget)
         
     def _build_fields(self, form: QFormLayout):
@@ -367,7 +327,7 @@ class MetadataSection(EntrySectionBase):
         
         form_widget = QWidget()
         form_widget.setLayout(form)
-        form_widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Maximum)
+        form_widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
         layout.addWidget(form_widget)
         
     def _build_fields(self, form: QFormLayout, default_category: str | None):
@@ -433,8 +393,8 @@ class MetadataSection(EntrySectionBase):
         self.status_timestamp_label.setProperty("secondary", True)
         self.status_timestamp_value.setProperty("secondary", True)
         
-        self.status_timestamp_label.hide()
-        self.status_timestamp_value.hide()
+        self.status_timestamp_label.setText("")
+        self.status_timestamp_value.setText("-")
         
         now_utc_iso = datetime.now(timezone.utc).isoformat()
         created_iso = self._entry.get("date_created") or now_utc_iso
@@ -492,23 +452,24 @@ class MetadataSection(EntrySectionBase):
     
     def _update_status_timestamp_visibility(self, status: str):
         timestamp_map = {
-            "expired": ("Expired At:", self._entry.get("expired_at")),
-            "archived": ("Archived At:", self._entry.get("archived_at")),
-            "deleted": ("Deleted At:", self._entry.get("deleted_at")),
+            "expired": ("Expired at:", self._entry.get("expired_at")),
+            "archived": ("Archived at:", self._entry.get("archived_at")),
+            "deleted": ("Deleted at:", self._entry.get("deleted_at")),
         }
-        
+
         if status in timestamp_map:
             label_text, timestamp_value = timestamp_map[status]
+            self.status_timestamp_label.setText(label_text)
             if timestamp_value:
-                self.status_timestamp_label.setText(label_text)
                 self.status_timestamp_value.setText(self._format_datetime(timestamp_value))
                 self.status_timestamp_value.setToolTip(self._format_datetime_tooltip(timestamp_value))
-                self.status_timestamp_label.show()
-                self.status_timestamp_value.show()
-                return
-        
-        self.status_timestamp_label.hide()
-        self.status_timestamp_value.hide()
+            else:
+                self.status_timestamp_value.setText("-")
+                self.status_timestamp_value.setToolTip("")
+        else:
+            self.status_timestamp_label.setText("")
+            self.status_timestamp_value.setText("")
+            self.status_timestamp_value.setToolTip("")
         
     def values(self) -> dict:
         expiry_date_value = None
