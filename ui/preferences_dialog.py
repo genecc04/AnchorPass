@@ -352,6 +352,7 @@ class PreferencesDialog(QDialog):
             host.export_backup(reason="manual")
 
     def accept(self):
+        _global_settings = SettingsManager()
         self.settings.set("auto_lock_minutes", self.auto_lock_spin.value())
         self.settings.set("lock_on_sleep", self.lock_on_sleep_chk.isChecked())
 
@@ -360,6 +361,7 @@ class PreferencesDialog(QDialog):
         self.settings.set("copy_notifications", self.copy_notify_chk.isChecked())
 
         self.settings.set("theme", self.theme_combo.currentText())
+        _global_settings.set("theme", self.theme_combo.currentText())
         self.settings.set("minimize_to_tray_on_exit", self.minimize_to_tray_chk.isChecked())
         self.settings.set("hotkeys_enabled", self.hotkeys_enabled_chk.isChecked())
         start_with_windows = self.start_with_windows_chk.isChecked()
