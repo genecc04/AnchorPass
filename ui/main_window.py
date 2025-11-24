@@ -37,10 +37,8 @@ class MainWindow(PreviewMixin, BackupMixin, LockMixin, CrudMixin, TableMixin, Tr
 
         super().__init__()
         self.setWindowTitle("AnchorPass")
-        self.resize(1200, 650)
-        self.setFixedSize(self.size())
-        self.setWindowFlag(Qt.WindowMaximizeButtonHint, False)
-        self.setWindowFlag(Qt.MSWindowsFixedSizeDialogHint, True)
+        self.resize(1000, 550)
+        self.setMinimumSize(775, 385)
 
         self.normal_icon = QIcon(str(ICON_PATH))
         self.locked_icon = QIcon(str(LOCKED_ICON_PATH))

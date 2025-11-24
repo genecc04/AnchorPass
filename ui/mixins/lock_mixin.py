@@ -111,7 +111,9 @@ class LockMixin:
             self.setWindowTitle(f"AnchorPass: {fname}")
             if hasattr(self, "status_label"):
                 self.status_label.setText(f"Active DB: {fname}")
+                self.status_label.setStyleSheet("background: transparent;")
         else:
             self.setWindowTitle("AnchorPass")
             if hasattr(self, "status_label"):
                 self.status_label.setText("No database open")
+                self.status_label.setStyleSheet("background: transparent;")
