@@ -27,7 +27,8 @@ QPushButton#topelements{
     max-height: 15px;
 }
 
-QPushButton#topelements:hover   { background: #0b2529; color: #fff; }
+QPushButton#topelements:hover   { background: #0b2529; color: #fff; border-color: #00b3c0; }
+QPushButton#topelements:focus { border-color: #00b3c0; }
 QPushButton#topelements:pressed { background: #00b3c0; color: #fff; border-color:#00b3c0; }
 QPushButton#topelements:disabled{ background: #151920; color: #7b858f; border-color:#262c36; }
 

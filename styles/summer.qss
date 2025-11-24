@@ -30,7 +30,7 @@ QPushButton#topelements{
 QPushButton#topelements:hover {
     background: #ffe9c7;
     color: #332018;
-    border-color: #e0c59b;
+    border-color: #ff9800;
 }
 
 QPushButton#topelements:pressed {

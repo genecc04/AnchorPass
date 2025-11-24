@@ -26,7 +26,7 @@ status badges, multi-select actions, sortable columns, and automatic backups.
   - **Automatic expiration checker** runs periodically; when entries expire, the UI (tree + table) refreshes.
 
 - **Backups**
-  - Manual: “Backup now”.
+  - Manual: "Backup now".
   - **Auto-backup on close** (configurable).
   - **Retention**: keep the newest *N* backups (uses `backup_retention`; falls back to `backup_number`).
 
