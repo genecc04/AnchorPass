@@ -1,8 +1,7 @@
 from PySide6.QtCore import Qt, Signal, QEvent
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QFrame, QFormLayout, QLabel, QDialogButtonBox, QApplication, QPushButton
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QFrame, QFormLayout, QLabel, QDialogButtonBox, QApplication
 from PySide6.QtGui import QFont
 import time
-
 from core.settings_manager import SettingsManager
 from ui.widgets.password_field import PasswordLineEdit
 from ui.widgets.plusminus_spinbox import PlusMinusSpinBox 
@@ -38,11 +37,12 @@ class UnlockOverlay(QWidget):
         root.setAlignment(Qt.AlignCenter)
 
         card = QFrame()
+        card.setFixedWidth(600)
         card_l = QFormLayout(card)
         card_l.setContentsMargins(30, 25, 30, 25)
         card_l.setVerticalSpacing(12)
 
-        title = QLabel("Setup Master Password" if setup else "Unlock Vault")
+        title = QLabel(f"Setup Master Password" if setup else "Unlock Vault")
         f = QFont(); f.setPointSize(16); f.setBold(True)
         title.setFont(f)
         card_l.addRow("", title)
@@ -104,11 +104,6 @@ class UnlockOverlay(QWidget):
             self.setGeometry(self.parent().rect())
 
     def closeEvent(self, e):
-        app = QApplication.instance()
-        try:
-            app.removeEventFilter(self)
-        except Exception:
-            pass
         if self.parent():
             try:
                 self.parent().removeEventFilter(self)

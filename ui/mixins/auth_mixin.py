@@ -12,33 +12,39 @@ from styles.theme import load_styles
 import sys
 
 class AuthMixin:
-    def _login(self) -> bool:
+    def _login(self, reuse_current_db: bool = False) -> bool:
         default_db_dir = get_user_documents_dir() / "anchorpass" / "data"
 
-        while True:
-            db_dlg = DatabaseDialog(self)
-            if db_dlg.exec() != QDialog.Accepted:
-                if not getattr(self, "_initial_login_done", False):
-                    sys.exit(0)
-                return False
+        db_path = None
+        is_new_db = False
+        if reuse_current_db and getattr(self, "current_db", None):
+            db_path = self.current_db
+            is_new_db = False
+        else:
+            while True:
+                db_dlg = DatabaseDialog(self)
+                if db_dlg.exec() != QDialog.Accepted:
+                    if not getattr(self, "_initial_login_done", False):
+                        sys.exit(0)
+                    return False
 
-            db_path, is_new_db = db_dlg.values()
-            if not db_path:
-                QMessageBox.warning(self, "Error", "Create a database first.")
-                continue
+                db_path, is_new_db = db_dlg.values()
+                if not db_path:
+                    QMessageBox.warning(self, "Error", "Create a database first.")
+                    continue
 
-            p = Path(str(db_path))
-            if is_new_db:
-                parent = p.parent if str(p.parent) not in ("", ".", "/") else default_db_dir
-                try:
-                    parent.mkdir(parents=True, exist_ok=True)
-                except Exception:
-                    pass
-                filename = p.name or "vault.db"
-                p = parent / filename
+                p = Path(str(db_path))
+                if is_new_db:
+                    parent = p.parent if str(p.parent) not in ("", ".", "/") else default_db_dir
+                    try:
+                        parent.mkdir(parents=True, exist_ok=True)
+                    except Exception:
+                        pass
+                    filename = p.name or "vault.db"
+                    p = parent / filename
 
-            db_path = str(p)
-            break
+                db_path = str(p)
+                break
 
         db.set_db_path(db_path)
         db.init()
@@ -55,9 +61,12 @@ class AuthMixin:
         try:
             theme = self.settings.get("theme", "dark")
             load_styles(QApplication.instance(), theme=theme)
+
+            if theme != SettingsManager().get("theme", "dark"):
+                SettingsManager().set("theme", theme)
+
         except Exception:
             pass
-
 
         self._update_title()
 
@@ -208,7 +217,7 @@ class AuthMixin:
         overlay.deleteLater()
         return result["ok"], result["p1"], result["p2"], result["m"]
     
-    def prompt_login(self, force: bool = False) -> None:
+    def prompt_login(self, force: bool = False, reuse_current_db: bool = False) -> None:
         if getattr(self, "_login_in_progress", False):
             return
 
@@ -219,7 +228,7 @@ class AuthMixin:
         try:
             if not getattr(self, "_initial_login_done", False):
                 while True:
-                    ok = self._login()
+                    ok = self._login(reuse_current_db=reuse_current_db)
                     if ok:
                         self._initial_login_done = True
                         self.unlock()
@@ -228,7 +237,7 @@ class AuthMixin:
                         continue
 
             else:
-                ok = self._login()
+                ok = self._login(reuse_current_db=reuse_current_db)
                 if ok:
                     self.unlock()
                 else:
@@ -284,7 +293,7 @@ class AuthMixin:
         btn.setIcon(icon)
         btn.setIconSize(QSize(50, 50))
 
-        btn.clicked.connect(lambda: self.prompt_login(force=True))
+        btn.clicked.connect(self._unlock_with_inline_master)
         lay.addWidget(btn, 0, Qt.AlignCenter)
 
         self._lock_btn = btn
@@ -303,3 +312,30 @@ class AuthMixin:
                 self._lock_overlay.setFocus()
             if hasattr(self, "_lock_btn"):
                 self._lock_btn.setEnabled(True)
+
+    def _unlock_with_inline_master(self) -> None:
+
+        if not getattr(self, "_initial_login_done", False):
+            self.prompt_login(force=True)
+            return
+
+        ok, p1, _p2, minutes = self._ask_master_inline(setup=False)
+        if not ok:
+            return
+
+        if not security.verify_master(p1):
+            QMessageBox.critical(self, "Error", "Incorrect master password.")
+            return
+
+        salt = security.get_salt()
+        self.cipher = crypto.make_cipher(p1, salt)
+        self.master = p1
+        self.auto_lock_minutes = minutes
+
+        if getattr(self, "settings", None) is not None:
+            try:
+                self.settings.set("auto_lock_minutes", int(minutes))
+            except Exception:
+                pass
+
+        self.unlock()

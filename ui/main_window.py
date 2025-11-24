@@ -78,9 +78,6 @@ class MainWindow(PreviewMixin, BackupMixin, LockMixin, CrudMixin, TableMixin, Tr
         )
         self._search_prev_category: str | None = None
 
-        if self.settings.get("theme", "dark") != SettingsManager().get("theme", "dark"):
-            SettingsManager().set("theme", self.settings.get("theme", "dark"))
-
     def _cache_active_db_path_safely(self):
         try:
             active = getattr(db, "DB_PATH", None) or self.settings.get("database_path", None)
