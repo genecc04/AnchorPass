@@ -7,9 +7,9 @@ from core import db, security
 from ui.widgets.plusminus_spinbox import PlusMinusSpinBox
 from core.settings_manager import SettingsManager
 from ui.widgets.password_field import PasswordLineEdit
+from PySide6.QtCore import Qt, Signal
 
 class DatabaseDialog(QDialog):
-
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowTitle("Select or Create Database")
@@ -22,33 +22,34 @@ class DatabaseDialog(QDialog):
         if self.db_path and not Path(self.db_path).exists():
             self.db_path = None
         db_name = self.db_path.stem if self.db_path else ""
-        self.db_edit = QLineEdit(db_name)
+        self.db_edit = ClickableLineEdit(db_name)
         self.db_edit.setReadOnly(True)
+        self.db_edit.setCursor(Qt.PointingHandCursor)
+        if not self.db_path:
+            self.db_edit.setPlaceholderText("Click to select a vault...")
+        else:
+            self.db_edit.setToolTip("Click to select a vault...\n[Current] "+str(self.db_path))
 
-        btn_layout = QHBoxLayout()
-        btn_layout.setSpacing(6)
-        self.db_btn_open = QPushButton("Open Database")
-        self.db_btn_new = QPushButton("Create New Database")
-        btn_layout.addWidget(self.db_btn_open)
-        btn_layout.addWidget(self.db_btn_new)
-
-        layout.addRow(QLabel("<b>Select or create a database:</b>"))
+        layout.addRow(QLabel("<b>Select a vault:</b>"))
         layout.addRow("", self.db_edit)
-        layout.addRow("", btn_layout)
 
-        note = QLabel("Open an existing vault or Create a new one.")
+        note = QLabel("Open an existing vault by clicking the field\nor create a new one.")
         note.setObjectName("hint")
         layout.addRow("", note)
 
-        buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
-        buttons.accepted.connect(self.accept)
-        buttons.rejected.connect(self.reject)
+        buttons = QDialogButtonBox()
+        self.btn_open = buttons.addButton("Open", QDialogButtonBox.AcceptRole)
+        self.btn_new = buttons.addButton("New", QDialogButtonBox.ActionRole)
+
+        self.btn_open.setDefault(True)
+        self.btn_open.setAutoDefault(True)
+
         layout.addRow("", buttons)
 
-        self.db_btn_open.clicked.connect(self.choose_existing_db)
-        self.db_btn_new.clicked.connect(self.create_new_db)
+        self.db_edit.clicked.connect(self.choose_existing_db)
+        self.btn_open.clicked.connect(self.accept)
+        self.btn_new.clicked.connect(self.create_new_db)
         self.is_new_db = False
-
         self.setFixedSize(self.sizeHint())
         self.setSizeGripEnabled(False)
 
@@ -61,14 +62,19 @@ class DatabaseDialog(QDialog):
         path, _ = QFileDialog.getOpenFileName(
             self, "Select Database", start_dir, "SQLite DB (*.db)"
         )
-        if path:
-            self.db_path = Path(path)
-            db_name = self.db_path.stem
-            self.db_edit.setText(db_name)
-            db.set_db_path(self.db_path)
-            db.init()
-            db.save_last_db(self.db_path)
-            self.is_new_db = not security.master_exists()
+        if not path:
+            return
+        
+        self.db_path = Path(path)
+        db_name = self.db_path.stem
+        self.db_edit.setText(db_name)
+        self.db_edit.setToolTip(str(self.db_path))
+        self.db_edit.setPlaceholderText("")
+
+        db.set_db_path(self.db_path)
+        db.init()
+        db.save_last_db(self.db_path)
+        self.is_new_db = not security.master_exists()
 
     def create_new_db(self):
         try:
@@ -79,20 +85,25 @@ class DatabaseDialog(QDialog):
         path, _ = QFileDialog.getSaveFileName(
             self, "Create New Database", str(Path(start_dir) / "new_vault.db"), "SQLite DB (*.db)"
         )
-        if path:
-            self.db_path = Path(path)
-            db_name = self.db_path.stem
-            self.db_edit.setText(db_name)
-            db.set_db_path(self.db_path)
-            db.init()
-            db.save_last_db(self.db_path)
-            self.is_new_db = True
-            QMessageBox.information(
-                self,
-                "New Database Created",
-                "A new database file has been created.\n"
-                "You will now set a master password after selecting OK.",
-            )
+
+        if not path:
+            return
+        
+        self.db_path = Path(path)
+        db_name = self.db_path.stem
+        self.db_edit.setText(db_name)
+        self.db_edit.setToolTip(str(self.db_path))
+        self.db_edit.setPlaceholderText("")
+        db.set_db_path(self.db_path)
+        db.init()
+        db.save_last_db(self.db_path)
+        self.is_new_db = True
+        QMessageBox.information(
+            self,
+            "New Database Created",
+            "A new database file has been created.\n"
+            "You will now set a master password after selecting OK.",
+        )
     
     def accept(self):
         if not getattr(self, 'db_path', None):
@@ -170,6 +181,10 @@ class MasterDialog(QDialog):
         buttons.accepted.connect(self.validate)
         buttons.rejected.connect(self.reject)
         layout.addRow("", buttons)
+
+        cancel_btn = buttons.button(QDialogButtonBox.Cancel)
+        if cancel_btn is not None:
+            cancel_btn.setText("Back")
 
         self.setFixedSize(self.sizeHint())
         self.setSizeGripEnabled(False)
@@ -252,3 +267,11 @@ class ChangePasswordDialog(QDialog):
 
     def values(self):
         return self.old_pw.text(), self.new_pw.text()
+    
+class ClickableLineEdit(QLineEdit):
+    clicked = Signal()
+
+    def mousePressEvent(self, event):
+        if event.button() == Qt.LeftButton:
+            self.clicked.emit()
+        super().mousePressEvent(event)
