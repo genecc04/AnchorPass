@@ -8,6 +8,7 @@ from ui.widgets.plusminus_spinbox import PlusMinusSpinBox
 from core.settings_manager import SettingsManager
 from ui.widgets.password_field import PasswordLineEdit
 from PySide6.QtCore import Qt, Signal
+from PySide6.QtGui import QFont
 
 class DatabaseDialog(QDialog):
     def __init__(self, parent=None):
@@ -66,7 +67,7 @@ class DatabaseDialog(QDialog):
             return
         
         self.db_path = Path(path)
-        db_name = self.db_path.stem
+        db_name = self.db_path.stem if self.db_path else ""
         self.db_edit.setText(db_name)
         self.db_edit.setToolTip(str(self.db_path))
         self.db_edit.setPlaceholderText("")
@@ -102,7 +103,7 @@ class DatabaseDialog(QDialog):
             self,
             "New Database Created",
             "A new database file has been created.\n"
-            "You will now set a master password after selecting OK.",
+            "You will now set a master password after selecting Open.",
         )
     
     def accept(self):
@@ -119,19 +120,25 @@ class MasterDialog(QDialog):
 
     def __init__(self, setup: bool = False, parent=None, icon_family: str | None = None, settings: SettingsManager | None = None):
         super().__init__(parent)
-        self.setWindowTitle("Setup Master Password" if setup else "Unlock Vault")
-        layout = QFormLayout(self)
-        layout.setVerticalSpacing(12)
-        layout.setContentsMargins(30, 25, 30, 25)
-
         self.setup = setup
-
+        
         if settings is not None:
             self.settings = settings
         elif hasattr(parent, "settings"):
             self.settings = parent.settings
         else:
             self.settings = SettingsManager()
+        self.db_name = self.settings._db_path.stem if self.settings._db_path else ""
+
+        self.setWindowTitle("Setup Master Password: " + self.db_name if setup else "Unlock Vault: " + self.db_name)
+        layout = QFormLayout(self)
+        layout.setVerticalSpacing(12)
+        layout.setContentsMargins(30, 25, 30, 25)
+        
+        title = QLabel("Setup Master Password" if setup else "Unlock Vault")
+        f = QFont(); f.setPointSize(16); f.setBold(True)
+        title.setFont(f)
+        layout.addRow("", title)
 
         if not setup:
             self.p1 = PasswordLineEdit(
@@ -141,7 +148,7 @@ class MasterDialog(QDialog):
                 strength_enabled=False,
                 strength_alpha=0.0,
             )
-            layout.addRow("Master password:", self.p1)
+            layout.addRow(self.p1)
 
             self.p2 = PasswordLineEdit(
                 placeholder="", icon_family='Material Symbols Rounded', copy_enabled=False,
@@ -156,7 +163,7 @@ class MasterDialog(QDialog):
                 strength_enabled=True,
                 strength_alpha=0.12,
             )
-            layout.addRow("Master password:", self.p1)
+            layout.addRow(self.p1)
 
             self.p2 = PasswordLineEdit(
                 placeholder="Confirm password",
@@ -165,15 +172,9 @@ class MasterDialog(QDialog):
                 strength_enabled=True,
                 strength_alpha=0.12,
             )
-            layout.addRow("Confirm password:", self.p2)
+            layout.addRow(self.p2)
 
-        self.auto = PlusMinusSpinBox()
-        self.auto.setRange(0, 120)
-        self.auto.setValue(self.settings.get("auto_lock_minutes", 10))
-        self.auto.setObjectName("autoLockSpin")
-        layout.addRow("Auto-lock:", self.auto)
-
-        hint = QLabel("Enter your master password to unlock the vault.\nAutolock time is in minutes (0 to disable).")
+        hint = QLabel("Please don't forget your master password, it's the key to your vault." if setup else "Enter your master password to unlock the vault.")
         hint.setObjectName("hint")
         layout.addRow("", hint)
 
@@ -202,14 +203,14 @@ class MasterDialog(QDialog):
             return
         
         try:
-            self.settings.set("auto_lock_minutes", int(self.auto.value()))
+            self.settings.set("auto_lock_minutes", 10)
         except Exception:
             pass
 
         self.accept()
 
     def values(self):
-        return self.p1.text(), (self.p2.text() if self.setup else ""), self.auto.value()
+        return self.p1.text(), (self.p2.text() if self.setup else ""), self.settings.set("auto_lock_minutes", 10)
 
 
 class ChangePasswordDialog(QDialog):
@@ -221,6 +222,11 @@ class ChangePasswordDialog(QDialog):
         layout.setVerticalSpacing(12)
         layout.setContentsMargins(30, 25, 30, 25)
 
+        title = QLabel("Change Master Password")
+        f = QFont(); f.setPointSize(16); f.setBold(True)
+        title.setFont(f)
+        layout.addRow("", title)
+
         self.old_pw = PasswordLineEdit(
             placeholder="Current master password",
             icon_family='Material Symbols Rounded',
@@ -228,7 +234,7 @@ class ChangePasswordDialog(QDialog):
             strength_enabled=False,
             strength_alpha=0.0,
         )
-        layout.addRow("current Master password:", self.old_pw)
+        layout.addRow("Current:", self.old_pw)
 
         self.new_pw = PasswordLineEdit(
             placeholder="New master password",
@@ -237,7 +243,7 @@ class ChangePasswordDialog(QDialog):
             strength_enabled=True,
             strength_alpha=0.12,
         )
-        layout.addRow("new Master password:", self.new_pw)
+        layout.addRow("New:", self.new_pw)
 
         self.conf_pw = PasswordLineEdit(
             placeholder="Confirm new master password",
@@ -246,7 +252,11 @@ class ChangePasswordDialog(QDialog):
             strength_enabled=True,
             strength_alpha=0.12,
         )
-        layout.addRow("confirm Master password:", self.conf_pw)
+        layout.addRow("Confirm:", self.conf_pw)
+
+        hint = QLabel("Please don't forget your master password, it's the key to your vault.")
+        hint.setObjectName("hint")
+        layout.addRow("", hint)
 
         buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
         buttons.accepted.connect(self.validate)

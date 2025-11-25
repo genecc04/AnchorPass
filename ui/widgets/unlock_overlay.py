@@ -37,7 +37,7 @@ class UnlockOverlay(QWidget):
         root.setAlignment(Qt.AlignCenter)
 
         card = QFrame()
-        card.setFixedWidth(600)
+        card.setFixedWidth(400)
         card_l = QFormLayout(card)
         card_l.setContentsMargins(30, 25, 30, 25)
         card_l.setVerticalSpacing(12)
@@ -63,12 +63,7 @@ class UnlockOverlay(QWidget):
             self.p2 = PasswordLineEdit(placeholder="", icon_family=self.icon_family,
                                        copy_enabled=False, strength_enabled=False, strength_alpha=0.0)
             self.p2.hide()
-            card_l.addRow("Master password:", self.p1)
-
-        self.auto = PlusMinusSpinBox()
-        self.auto.setRange(0, 120)
-        self.auto.setValue(self.settings.get("auto_lock_minutes", 10))
-        card_l.addRow("Auto-lock (minutes, 0 = off):", self.auto)
+            card_l.addRow(self.p1)
 
         hint = QLabel("The master password encrypts your entire vault. Keep it safe!")
         hint.setObjectName("hint")
@@ -114,8 +109,7 @@ class UnlockOverlay(QWidget):
     def _on_accept(self):
         p1 = self.p1.text()
         p2 = self.p2.text() if self.setup else ""
-        minutes = int(self.auto.value())
-        self.accepted.emit(p1, p2, minutes)
+        self.accepted.emit(p1, p2, self.settings.get("auto_lock_minutes", 10))
 
     def _on_cancel(self):
         self.canceled.emit()
