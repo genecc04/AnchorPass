@@ -1,6 +1,6 @@
 from PySide6.QtWidgets import QMenu, QTreeWidgetItem, QMessageBox, QInputDialog
 from PySide6.QtCore import Qt, QPoint
-from PySide6.QtGui import QFont, QIcon
+from PySide6.QtGui import QFont
 from core import db
 from core.db import UNCATEGORIZED
 from core.styled_tree import StyledTreeWidget
@@ -20,17 +20,19 @@ class CategoryTreeWidget(StyledTreeWidget):
         except AttributeError:
             pos = event.pos()
         return self.itemAt(pos)
+    
+    def _is_table_drag(self, event) -> bool:
+        table = getattr(self._owner, "table", None)
+        return table is not None and event.source() is table
 
     def _should_accept_drag(self, event) -> bool:
-        table = getattr(self._owner, "table", None)
-        if table is None or event.source() is not table:
+        if not self._is_table_drag(event):
             return False
 
         item = self._event_item(event)
         if item is None:
             return False
 
-        # Block special/system folders
         try:
             if hasattr(self._owner, "_is_special_folder") and self._owner._is_special_folder(item):
                 return False
@@ -58,7 +60,7 @@ class CategoryTreeWidget(StyledTreeWidget):
         return True
 
     def dragEnterEvent(self, event):
-        if self._should_accept_drag(event):
+        if self._is_table_drag(event):
             event.acceptProposedAction()
         else:
             event.ignore()

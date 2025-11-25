@@ -31,6 +31,8 @@ def search_entries( query: str, *, exclude_fields: Iterable[str] | None = None, 
         if status:
             where_parts.append("status = ?")
             params.append(status)
+        else:
+            where_parts.append("status != 'deleted'")
 
         if category:
             where_parts.append("category = ?")

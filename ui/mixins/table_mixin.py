@@ -88,11 +88,18 @@ class TableMixin:
             it_notes  = QTableWidgetItem(notes)
 
             if status == "deleted":
-                font = it_site.font(); font.setStrikeOut(True)
+                font = it_site.font()
+                font.setStrikeOut(True)
                 for it in (it_site, it_email, it_user, it_notes):
-                    it.setFont(font); it.setForeground(QColor("#6b7280"))
+                    it.setFont(font)
+                    it.setForeground(QColor("#6b7280"))
 
-            flags = Qt.ItemIsSelectable | Qt.ItemIsEnabled | Qt.ItemIsDragEnabled
+            can_drag = status not in ("deleted")
+
+            flags = Qt.ItemIsSelectable | Qt.ItemIsEnabled
+            if can_drag:
+                flags |= Qt.ItemIsDragEnabled
+
             for it in (it_site, it_email, it_user, it_notes):
                 it.setFlags(flags)
 
@@ -188,26 +195,6 @@ class TableMixin:
 
         status_filter: str | None = None
         category_filter: str | None = None
-
-        cat = getattr(self, "_search_prev_category", getattr(self, "current_category", None))
-
-        try:
-            SPECIAL_DELETED = TreeMixin.SPECIAL_DELETED
-            SPECIAL_ARCHIVED = TreeMixin.SPECIAL_ARCHIVED
-            SPECIAL_EXPIRED = TreeMixin.SPECIAL_EXPIRED
-        except Exception:
-            SPECIAL_DELETED = "__SPECIAL_DELETED__"
-            SPECIAL_ARCHIVED = "__SPECIAL_ARCHIVED__"
-            SPECIAL_EXPIRED = "__SPECIAL_EXPIRED__"
-
-        if cat == SPECIAL_DELETED:
-            status_filter = "deleted"
-        elif cat == SPECIAL_ARCHIVED:
-            status_filter = "archived"
-        elif cat == SPECIAL_EXPIRED:
-            status_filter = "expired"
-        elif cat:
-            category_filter = cat
 
         if status_from_query is not None:
             status_filter = status_from_query
