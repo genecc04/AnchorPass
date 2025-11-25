@@ -58,9 +58,11 @@ class LockMixin:
                 return True
 
         if event.type() in (
-            QEvent.MouseButtonPress,
-            QEvent.KeyPress,
             QEvent.MouseMove,
+            QEvent.MouseButtonPress,
+            QEvent.MouseButtonRelease,
+            QEvent.KeyPress,
+            QEvent.Wheel,
         ):
             self.last_activity = time.time()
 

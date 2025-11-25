@@ -53,6 +53,14 @@ QToolTip {
     border-radius: 6px;
 }
 
+QLabel#DragPreviewChip {
+    background-color: #eef3fb;
+    color: #141821;
+    border-radius: 6px;
+    padding: 4px 10px;
+    border: 1px solid #cfd7e6;
+}
+
 /* ===== Settings Tabs (Winter Theme) ===== */
 
 /* Base tab widget */

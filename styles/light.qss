@@ -53,6 +53,14 @@ QToolTip {
     border-radius: 6px;
 }
 
+QLabel#DragPreviewChip {
+    background-color: #f5f5f7;
+    color: #1a1a1a;
+    border-radius: 6px;
+    padding: 4px 10px;
+    border: 1px solid #d0d0d0;
+}
+
 /* ===== Settings Tabs (Light / Neutral Theme) ===== */
 
 /* Main tab widget */

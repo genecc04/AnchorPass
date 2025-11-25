@@ -21,12 +21,13 @@ QWidget {
 
 /* QMenuBar base look */
 QMenuBar#AppMenuBar {
-    background: #0f172a;    /* slate-900-ish */
-    color: #e5e7eb;         /* slate-200 */
+    background: #020617;    /* slightly darker or lighter than TopBar */
+    color: #e5e7eb;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.4); /* subtle separator line */
 }
 
 QMenuBar#AppMenuBar::item {
-    padding: 6px 10px;
+    padding: 3px 10px;      /* was 6px – reduces height */
     background: transparent;
 }
 

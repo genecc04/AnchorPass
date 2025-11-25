@@ -104,7 +104,7 @@ class BasicInfoSection(EntrySectionBase):
         site_layout.addWidget(self.site, 2)
         site_layout.addWidget(self.site_link, 3)
 
-        form.addRow("Site:", site_row)
+        form.addRow("Site/Title:", site_row)
         form.addRow("Username:", self.username)
         form.addRow("Email:", self.email)
         form.addRow("Password:", self.password)

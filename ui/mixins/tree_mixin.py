@@ -6,6 +6,107 @@ from core.db import UNCATEGORIZED
 from core.styled_tree import StyledTreeWidget
 import re
 
+class CategoryTreeWidget(StyledTreeWidget):
+
+    def __init__(self, owner):
+        super().__init__(owner)
+        self._owner = owner
+        self.setAcceptDrops(True)
+        self.setDropIndicatorShown(True)
+
+    def _event_item(self, event):
+        try:
+            pos = event.position().toPoint()
+        except AttributeError:
+            pos = event.pos()
+        return self.itemAt(pos)
+
+    def _should_accept_drag(self, event) -> bool:
+        table = getattr(self._owner, "table", None)
+        if table is None or event.source() is not table:
+            return False
+
+        item = self._event_item(event)
+        if item is None:
+            return False
+
+        # Block special/system folders
+        try:
+            if hasattr(self._owner, "_is_special_folder") and self._owner._is_special_folder(item):
+                return False
+        except Exception:
+            pass
+
+        path = None
+        try:
+            if hasattr(self._owner, "current_item_path"):
+                path = self._owner.current_item_path(item)
+        except Exception:
+            path = None
+
+        if not path:
+            return False
+
+        if path in (
+            getattr(self._owner, "SPECIAL_ARCHIVED", "__SPECIAL_ARCHIVED__"),
+            getattr(self._owner, "SPECIAL_EXPIRED", "__SPECIAL_EXPIRED__"),
+            getattr(self._owner, "SPECIAL_DELETED", "__SPECIAL_DELETED__"),
+            UNCATEGORIZED,
+        ):
+            return False
+
+        return True
+
+    def dragEnterEvent(self, event):
+        if self._should_accept_drag(event):
+            event.acceptProposedAction()
+        else:
+            event.ignore()
+
+    def dragMoveEvent(self, event):
+        if self._should_accept_drag(event):
+            event.acceptProposedAction()
+        else:
+            event.ignore()
+
+    def dropEvent(self, event):
+        if not self._should_accept_drag(event):
+            event.ignore()
+            return
+
+        item = self._event_item(event)
+        if item is None:
+            event.ignore()
+            return
+
+        target_path = None
+        try:
+            if hasattr(self._owner, "current_item_path"):
+                target_path = self._owner.current_item_path(item)
+        except Exception:
+            target_path = None
+
+        if not target_path:
+            event.ignore()
+            return
+
+        ids = []
+        try:
+            if hasattr(self._owner, "_get_all_selected_entry_ids"):
+                ids = self._owner._get_all_selected_entry_ids()
+        except Exception:
+            ids = []
+
+        if not ids:
+            event.ignore()
+            return
+
+        mover = getattr(self._owner, "_move_entries_to_category", None)
+        if callable(mover):
+            mover(ids, target_path)
+            event.acceptProposedAction()
+        else:
+            event.ignore()
 
 class TreeMixin:
     SPECIAL_ARCHIVED = "__SPECIAL_ARCHIVED__"
@@ -38,8 +139,8 @@ class TreeMixin:
         return parent_item
 
     def _init_tree_view(self):
-        if not hasattr(self, "tree") or not isinstance(self.tree, StyledTreeWidget):
-            self.tree = StyledTreeWidget(self)
+        if not hasattr(self, "tree") or not isinstance(self.tree, CategoryTreeWidget):
+            self.tree = CategoryTreeWidget(self)
 
         self.tree.setHeaderHidden(True)
         self.tree.setAnimated(False)

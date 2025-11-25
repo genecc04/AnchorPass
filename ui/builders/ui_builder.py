@@ -9,6 +9,7 @@ from PySide6.QtGui import QAction, QKeySequence, QShortcut
 
 from ui.widgets.button import FontIconButton
 from core.settings_manager import SettingsManager
+from ui.mixins.tree_mixin import CategoryTreeWidget 
 
 if TYPE_CHECKING:
     from ui.main_window import MainWindow
@@ -122,7 +123,7 @@ class UIBuilder:
         self.window.setCentralWidget(central)
         root = QVBoxLayout(central)
         root.setContentsMargins(0, 0, 0, 0)
-        root.setSpacing(0)
+        root.setSpacing(2)
 
         self._build_top_bar(root)
         
@@ -197,12 +198,11 @@ class UIBuilder:
 
         
     def _build_content_area(self, parent_layout):
-        from core.styled_tree import StyledTreeWidget
-        
+
         self.window.splitter_h = QSplitter(Qt.Horizontal)
         parent_layout.addWidget(self.window.splitter_h)
 
-        self.window.tree = StyledTreeWidget(self.window)
+        self.window.tree = CategoryTreeWidget(self.window)
         self.window.tree.setHeaderHidden(True)
         self.window.tree.setMaximumWidth(320)
         self.window.tree.setContextMenuPolicy(Qt.CustomContextMenu)
@@ -220,6 +220,8 @@ class UIBuilder:
 
         self.window.splitter_h.setStretchFactor(0, 0)
         self.window.splitter_h.setStretchFactor(1, 1)
+        self.window.splitter_h.setSizes([240, 760])
+
         self.window.splitter_r.setStretchFactor(0, 1)
         self.window.splitter_r.setStretchFactor(1, 0)
     

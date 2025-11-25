@@ -303,3 +303,73 @@ class CrudMixin:
             return
 
         self._duplicate_single_entry(entry_id)
+
+    def _move_entries_to_category(self, entry_ids, target_category):
+        if not entry_ids:
+            return
+
+        if not getattr(self, "cipher", None):
+            QMessageBox.critical(self, "Error", "Vault is locked; cannot move entries.")
+            return
+
+        moved = 0
+        errors = 0
+
+        for entry_id in entry_ids:
+            try:
+                row = db.fetch_entry_dict(int(entry_id)) or None
+                if not row:
+                    errors += 1
+                    continue
+
+                entry_plain = db.decrypt_row_to_plain(row, self.cipher) or {}
+                entry_plain["id"] = entry_id
+                entry_plain["category"] = target_category
+
+                entry_plain["expiry_date"] = row.get("expiry_date")
+                entry_plain["status"] = row.get("status", "active")
+
+                new_row = db.encrypt_plain_to_row(
+                    plain=entry_plain,
+                    cipher=self.cipher,
+                    base_row=row,
+                    mirror_plaintext=STORE_PLAINTEXT_EMAIL,
+                    preserve_existing_cipher_on_empty=True,
+                )
+
+                if not STORE_PLAINTEXT_EMAIL:
+                    new_row["email"] = ""
+
+                if "expiry_date" in entry_plain:
+                    new_row["expiry_date"] = entry_plain["expiry_date"]
+                if "status" in entry_plain:
+                    new_row["status"] = entry_plain["status"]
+
+                update_payload = dict(new_row)
+                update_payload.pop("id", None)
+
+                db.update_entry_full(entry_id, update_payload)
+                moved += 1
+            except Exception:
+                errors += 1
+
+        if hasattr(self, "_refresh_tree_and_table"):
+            self._refresh_tree_and_table(target_category=target_category)
+        else:
+            self.reload()
+
+        if hasattr(self, "_log_status"):
+            if moved and not errors:
+                label = target_category or "Uncategorized"
+                self._log_status(
+                    f"Moved {moved} entr{'y' if moved == 1 else 'ies'} to '{label}'.",
+                    2000,
+                )
+            elif moved:
+                self._log_status(
+                    f"Moved {moved} entr{'y' if moved == 1 else 'ies'}; {errors} failed.",
+                    4000,
+                    is_error=True,
+                )
+            elif errors:
+                self._log_status("Failed to move selected entries.", 4000, is_error=True)

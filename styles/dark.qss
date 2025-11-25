@@ -40,6 +40,14 @@ QToolTip {
     border-radius: 6px;
 }
 
+QLabel#DragPreviewChip {
+    background-color: #1f1f1f;
+    color: #e6e6e6;
+    border-radius: 6px;
+    padding: 4px 10px;
+    border: 1px solid #333333;
+}
+
 /* ===== Settings Tabs (Dark Theme) ===== */
 
 /* Main tab widget */

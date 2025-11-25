@@ -1,6 +1,6 @@
-from PySide6.QtWidgets import ( QTableWidget, QTableWidgetItem, QHeaderView, QAbstractItemView, QGraphicsDropShadowEffect )
-from PySide6.QtCore import Qt
-from PySide6.QtGui import QColor, QBrush, QFont
+from PySide6.QtWidgets import ( QTableWidget, QTableWidgetItem, QHeaderView, QAbstractItemView, QGraphicsDropShadowEffect, QLabel )
+from PySide6.QtCore import Qt, QRectF
+from PySide6.QtGui import QColor, QBrush, QFont, QDrag, QPainter, QPixmap, QPainterPath
 
 from datetime import datetime
 
@@ -141,3 +141,55 @@ class ModernTable(QTableWidget):
             pass
 
         return SortableItem(str(value), (0, str(value).lower()))
+
+    def startDrag(self, supportedActions):
+        model = self.model()
+        if model is None:
+            return
+
+        indexes = self.selectedIndexes()
+        if not indexes:
+            return
+
+        mime = model.mimeData(indexes)
+        drag = QDrag(self)
+        drag.setMimeData(mime)
+
+        rows = sorted({idx.row() for idx in indexes})
+        if not rows:
+            return
+
+        if len(rows) == 1:
+            first_row = rows[0]
+            site_index = model.index(first_row, 0)
+            text = str(site_index.data(Qt.DisplayRole) or "").strip()
+            if not text:
+                super().startDrag(supportedActions)
+                return
+        else:
+            count = len(rows)
+            text = f"{count} items selected"
+
+        chip = QLabel(text, self)
+        chip.setObjectName("DragPreviewChip")
+        chip.ensurePolished()
+        chip.adjustSize()
+
+        pm = chip.grab()
+
+        radius = 6
+        rounded = QPixmap(pm.size())
+        rounded.fill(Qt.transparent)
+
+        painter = QPainter(rounded)
+        painter.setRenderHint(QPainter.Antialiasing, True)
+
+        path = QPainterPath()
+        path.addRoundedRect(QRectF(0, 0, pm.width(), pm.height()), radius, radius)
+        painter.setClipPath(path)
+        painter.drawPixmap(0, 0, pm)
+        painter.end()
+
+        drag.setPixmap(rounded)
+        drag.setHotSpot(rounded.rect().center())
+        drag.exec(supportedActions)

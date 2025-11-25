@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QTableWidgetItem, QMenu, QApplication, QHeaderView, QMessageBox
+from PySide6.QtWidgets import QTableWidgetItem, QMenu, QApplication, QHeaderView, QMessageBox, QAbstractItemView
 from PySide6.QtCore import Qt, QTimer, QEventLoop, QItemSelectionModel
 from PySide6.QtGui import QColor
 
@@ -14,8 +14,13 @@ class TableMixin:
         self.table = ModernTable(self)
         self.table.setObjectName("ModernTable")
 
+        self.table.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.table.setSelectionMode(QAbstractItemView.ExtendedSelection)
+        self.table.setDragEnabled(True)
+        self.table.setDragDropMode(QAbstractItemView.DragOnly)
+
         self.table.setColumnCount(5)
-        self.table.setHorizontalHeaderLabels(["Site", "Email", "Username", "Status", "Notes"])
+        self.table.setHorizontalHeaderLabels(["Site/Title", "Email", "Username", "Status", "Notes"])
 
         self.table.setContextMenuPolicy(Qt.CustomContextMenu)
         self.table.customContextMenuRequested.connect(self.show_context_menu)
@@ -87,7 +92,7 @@ class TableMixin:
                 for it in (it_site, it_email, it_user, it_notes):
                     it.setFont(font); it.setForeground(QColor("#6b7280"))
 
-            flags = Qt.ItemIsSelectable | Qt.ItemIsEnabled
+            flags = Qt.ItemIsSelectable | Qt.ItemIsEnabled | Qt.ItemIsDragEnabled
             for it in (it_site, it_email, it_user, it_notes):
                 it.setFlags(flags)
 
