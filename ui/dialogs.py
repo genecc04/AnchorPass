@@ -4,7 +4,6 @@ from PySide6.QtWidgets import ( QDialog, QFormLayout, QLineEdit, QDialogButtonBo
 from pathlib import Path
 from core.db_paths import DEFAULT_DB_DIR
 from core import db, security
-from ui.widgets.plusminus_spinbox import PlusMinusSpinBox
 from core.settings_manager import SettingsManager
 from ui.widgets.password_field import PasswordLineEdit
 from PySide6.QtCore import Qt, Signal

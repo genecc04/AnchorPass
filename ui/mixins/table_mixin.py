@@ -8,6 +8,19 @@ from core import db
 from core import totp as totp_util
 from core.settings_manager import SettingsManager
 from ui.mixins.tree_mixin import TreeMixin
+from datetime import date, timedelta, datetime
+
+def is_expiring_soon(expiry_date_str: str | None, days: int = 5) -> bool:
+    if not expiry_date_str:
+        return False
+    try:
+        expiry = datetime.strptime(expiry_date_str, "%Y-%m-%d").date()
+    except ValueError:
+        return False
+
+    today = date.today()
+    return today < expiry <= today + timedelta(days=days)
+
 
 class TableMixin:
     def setup_table(self):
@@ -75,6 +88,7 @@ class TableMixin:
             username = row[3] or ""
             notes = row[5] or ""
             status = entry_full.get("status", "active")
+            expiry_date = entry_full.get("expiry_date")
 
             display_email = email
             if getattr(self, "cipher", None):
@@ -109,7 +123,11 @@ class TableMixin:
             self.table.setItem(r, 3, it_status)
             self.table.setItem(r, 4, it_notes)
 
-            badge = StatusBadgeTableWidget(status, icon_family)
+            badge_status = status
+            if status == "active" and is_expiring_soon(expiry_date, days=5):
+                badge_status = "expiring"
+
+            badge = StatusBadgeTableWidget(badge_status, icon_family)
             self.table.setCellWidget(r, 3, badge)
             it_status.setSizeHint(badge.sizeHint())
 

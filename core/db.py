@@ -17,7 +17,7 @@ from .db_crypto import (
 from .db_expiry import (
     set_expiry_date, change_status, restore_entry, permanently_delete_entry,
     check_and_expire_entries, fetch_by_status, fetch_expiring_soon,
-    get_status_counts,
+    get_status_counts, get_entries_expiring_soon
 )
 
 def __getattr__(name: str):

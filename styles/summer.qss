@@ -161,7 +161,7 @@ QWidget#HotkeysPanel QKeySequenceEdit:disabled {
     border: 1px solid #e3d7c7;
     border-radius: 0px;
     gridline-color: #f0e4d6;
-    selection-background-color: #ff9800;
+    selection-background-color: #fad28f;
     selection-color: #fff7ec;
     font-family: "Segoe UI", "Inter", "Roboto", Arial, sans-serif;
     font-size: 13px;
@@ -193,8 +193,8 @@ QWidget#HotkeysPanel QKeySequenceEdit:disabled {
 }
 #ModernTable QTableView::item:selected,
 #ModernTable::item:selected {
-    background-color: #ff9800;
-    color: #fff7ec;
+    background-color: #fad28f;
+    color: #3b2603;
 }
 
 /* Scrollbars (Summer style) */
@@ -422,8 +422,8 @@ QTreeView::item:hover {
     color: #36251c;
 }
 QTreeView::item:selected {
-    background-color: #ff9800;
-    color: #fff7ec;
+    background-color: #fad28f;
+    color: #3b2603;
 }
 
 /* === Table hover & selected === */
@@ -436,7 +436,7 @@ QTableView::item:hover {
     color: #36251c;
 }
 QTableView::item:selected {
-    background-color: #ff9800;
+    background-color: #fad28f;
     color: #fff7ec;
     border-radius: 0px;
 }

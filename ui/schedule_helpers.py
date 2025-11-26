@@ -23,7 +23,7 @@ def parse_time_maybe_12h(hhmm: str) -> tuple[int, int]:
         t = datetime.strptime((hhmm or "").strip(), "%I:%M %p")
         return t.hour, t.minute
     except Exception:
-        return 2, 0  # default 02:00
+        return 2, 0
 
 def scheduled_is_due_now(s: SettingsManager) -> bool:
     if _read_bool(s, "backup_disabled", False):

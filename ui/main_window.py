@@ -136,6 +136,22 @@ class MainWindow(PreviewMixin, BackupMixin, LockMixin, CrudMixin, TableMixin, Tr
         self._expiration_timer.start(60_000)
         QTimer.singleShot(2000, self._check_and_expire_entries)
 
+    def _check_and_warn_expiring_entries(self):
+        try:
+            expiring_ids = db.get_entries_expiring_soon(days=5)
+        except Exception:
+            return
+
+        if not expiring_ids:
+            return
+
+        self._log_status(
+            f"{len(expiring_ids)} entr"
+            f"{'y is' if len(expiring_ids) == 1 else 'ies are'} "
+            "within 5 days of expiry",
+            5000
+        )
+
     def _check_and_expire_entries(self):
         try:
             expired_ids = db.check_and_expire_entries()
@@ -149,6 +165,7 @@ class MainWindow(PreviewMixin, BackupMixin, LockMixin, CrudMixin, TableMixin, Tr
             try:
                 if hasattr(self, "_rebuild_tree_preserving_selection"):
                     self._rebuild_tree_preserving_selection(target_category=getattr(self, "current_category", None))
+                    self.reload()
                 else:
                     if hasattr(self, "populate_tree"):
                         self.populate_tree()
@@ -159,7 +176,7 @@ class MainWindow(PreviewMixin, BackupMixin, LockMixin, CrudMixin, TableMixin, Tr
                 except Exception:
                     pass
 
-            self._log_status(f"{len(expired_ids)} entr{'y' if len(expired_ids)==1 else 'ies'} expired", 3000)
+        self._log_status(f"{len(expired_ids)} entr{'y' if len(expired_ids)==1 else 'ies'} expired", 3000)
 
     def _update_actions_for_selection(self):
         try:

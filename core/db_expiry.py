@@ -1,5 +1,5 @@
 from __future__ import annotations
-from datetime import date
+from datetime import date, timedelta
 from typing import List, Tuple
 from .db_schema import get_connection, _now_iso
 
@@ -93,6 +93,29 @@ def check_and_expire_entries() -> List[int]:
         conn.commit()
     
     return expired_ids
+
+def get_entries_expiring_soon(days: int = 5) -> List[int]:
+    today = date.today()
+    upper = today + timedelta(days=days)
+
+    today_iso = today.isoformat()
+    upper_iso = upper.isoformat()
+
+    with get_connection() as conn:
+        c = conn.cursor()
+        c.execute(
+            """
+            SELECT id FROM passwords
+            WHERE status='active'
+              AND expiry_date IS NOT NULL
+              AND expiry_date > ?   -- strictly after today (not yet expired)
+              AND expiry_date <= ?; -- within N days
+            """,
+            (today_iso, upper_iso)
+        )
+        rows = c.fetchall()
+
+    return [id_ for (id_,) in rows]
 
 def fetch_by_status(status: str) -> List[Tuple]:
     """

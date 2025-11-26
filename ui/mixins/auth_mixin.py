@@ -269,7 +269,8 @@ class AuthMixin:
         for fn in ("_start_idle_lock_timer",
                 "_start_scheduled_backup_timer",
                 "_start_sleep_guard",
-                "_start_expiration_checker"):
+                "_start_expiration_checker",
+                "_check_and_warn_expiring_entries"):
             if hasattr(self, fn):
                 getattr(self, fn)()
 

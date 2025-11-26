@@ -10,41 +10,50 @@ class StatusBadge(QWidget):
     BASELINE_NUDGE_PX = 2  
 
     STATUS_CONFIG = {
-        "active": {
-            "text": "Active",
-            "icon": "check_circle",     
-            "bg_color": "rgba(16, 185, 129, 0.15)",   
-            "bg_color_selected": "#10b981",           
-            "text_color": "#059669",              
-            "text_color_selected": "#ffffff",        
-            "border_color": "#10b981",              
-        },
-        "expired": {
-            "text": "Expired",
-            "icon": "error",
-            "bg_color": "rgba(239, 68, 68, 0.15)",
-            "bg_color_selected": "#ef4444",         
-            "text_color": "#dc2626",
-            "text_color_selected": "#ffffff",
-            "border_color": "#ef4444",
-        },
-        "archived": {
-            "text": "Archived",
-            "icon": "inventory_2",
-            "bg_color": "rgba(107, 114, 128, 0.15)",
-            "bg_color_selected": "#6b7280",           
-            "text_color": "#4b5563",
-            "text_color_selected": "#ffffff",
-            "border_color": "#6b7280",
-        },
-        "deleted": {
-            "text": "Deleted",
-            "icon": "delete",
-            "bg_color": "rgba(107, 114, 128, 0.15)",
-            "bg_color_selected": "#6b7280",           
-            "text_color": "#4b5563",
-            "text_color_selected": "#ffffff",
-            "border_color": "#6b7280",
+    "active": {
+        "text": "Active",
+        "icon": "check_circle",
+        "bg_color": "rgba(16, 185, 129, 0.15)",
+        "bg_color_selected": "#10b981",
+        "text_color": "#059669",
+        "text_color_selected": "#ffffff",
+        "border_color": "#10b981",
+    },
+    "expiring": {
+        "text": "Active",
+        "icon": "warning",
+        "bg_color": "rgba(245, 158, 11, 0.15)",
+        "bg_color_selected": "#f59e0b",
+        "text_color": "#b45309",
+        "text_color_selected": "#ffffff",
+        "border_color": "#f59e0b",
+    },
+    "expired": {
+        "text": "Expired",
+        "icon": "error",
+        "bg_color": "rgba(239, 68, 68, 0.15)",
+        "bg_color_selected": "#ef4444",
+        "text_color": "#dc2626",
+        "text_color_selected": "#ffffff",
+        "border_color": "#ef4444",
+    },
+    "archived": {
+        "text": "Archived",
+        "icon": "inventory_2",
+        "bg_color": "rgba(107, 114, 128, 0.15)",
+        "bg_color_selected": "#6b7280",
+        "text_color": "#4b5563",
+        "text_color_selected": "#ffffff",
+        "border_color": "#6b7280",
+    },
+    "deleted": {
+        "text": "Deleted",
+        "icon": "delete",
+        "bg_color": "rgba(107, 114, 128, 0.15)",
+        "bg_color_selected": "#6b7280",
+        "text_color": "#4b5563",
+        "text_color_selected": "#ffffff",
+        "border_color": "#6b7280",
         },
     }
 
@@ -163,8 +172,6 @@ class StatusBadge(QWidget):
         p.drawText(pm.rect(), Qt.AlignCenter, ligature)
         p.end()
         return pm
-
-
 
 class StatusBadgeTableWidget(QWidget):
     def __init__(self, status: str, icon_family: Union[str, QFont, None] = None, parent=None):
