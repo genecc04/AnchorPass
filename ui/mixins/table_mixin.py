@@ -9,6 +9,7 @@ from core import totp as totp_util
 from core.settings_manager import SettingsManager
 from ui.mixins.tree_mixin import TreeMixin
 from datetime import date, timedelta, datetime
+from typing import Optional
 
 def is_expiring_soon(expiry_date_str: str | None, days: int = 5) -> bool:
     if not expiry_date_str:
@@ -21,6 +22,24 @@ def is_expiring_soon(expiry_date_str: str | None, days: int = 5) -> bool:
     today = date.today()
     return today < expiry <= today + timedelta(days=days)
 
+def days_left_if_expiring_soon(expiry_date_str: str | None, days: int = 5) -> Optional[int]:
+    if not expiry_date_str:
+        return None
+
+    try:
+        expiry = datetime.strptime(expiry_date_str, "%Y-%m-%d").date()
+    except ValueError:
+        return None
+
+    today = date.today()
+    delta_days = (expiry - today).days
+
+    if 0 < delta_days <= days:
+        return delta_days
+    elif delta_days == 0:
+        return 0  
+    
+    return None
 
 class TableMixin:
     def setup_table(self):
@@ -165,10 +184,24 @@ class TableMixin:
             self.table.setItem(r, 2, it_user)
             self.table.setItem(r, 3, it_status)
             self.table.setItem(r, 4, it_notes)
-
+            
             badge_status = status
+            days_left = days_left_if_expiring_soon(expiry_date, days=5)
             if status == "active" and is_expiring_soon(expiry_date, days=5):
                 badge_status = "expiring"
+                if days_left is not None and days_left >= 0:
+                    if days_left == 0:
+                        tip = "Expires today"
+                    elif days_left == 1:
+                        tip = "Expires in 1 day"
+                    else:
+                        tip = f"Expires in {days_left} days"
+
+                    it_site.setToolTip(tip)
+                    it_email.setToolTip(tip)
+                    it_user.setToolTip(tip)
+                    it_notes.setToolTip(tip)
+                    it_status.setToolTip(tip)
 
             badge = StatusBadgeTableWidget(badge_status, icon_family)
             self.table.setCellWidget(r, 3, badge)

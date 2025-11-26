@@ -53,7 +53,6 @@ class CategoryTreeWidget(StyledTreeWidget):
             getattr(self._owner, "SPECIAL_ARCHIVED", "__SPECIAL_ARCHIVED__"),
             getattr(self._owner, "SPECIAL_EXPIRED", "__SPECIAL_EXPIRED__"),
             getattr(self._owner, "SPECIAL_DELETED", "__SPECIAL_DELETED__"),
-            UNCATEGORIZED,
         ):
             return False
 
