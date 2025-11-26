@@ -196,6 +196,10 @@ class TotpPreviewWidget(QWidget):
         return SettingsManager()
     
     def _get_logger(self):
+        settings = self._get_settings()
+        if not bool(settings.get("copy_notifications", True)):
+            return None
+
         w = self
         while w is not None:
             if hasattr(w, "_log_status"):

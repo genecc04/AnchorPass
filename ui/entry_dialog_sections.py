@@ -23,13 +23,17 @@ class EntrySectionBase(QWidget):
         return SettingsManager()
     
     def _get_logger(self):
+        settings = self._get_settings()
+        if not bool(settings.get("copy_notifications", True)):
+            return None
+
         w = self
         while w is not None:
             if hasattr(w, "_log_status"):
                 return getattr(w, "_log_status")
             w = w.parent()
         return None
-    
+        
 class BasicInfoSection(EntrySectionBase):
     
     def __init__(self, entry: dict, icon_family: str | None, parent=None):
