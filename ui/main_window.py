@@ -36,6 +36,7 @@ class MainWindow(PreviewMixin, BackupMixin, LockMixin, CrudMixin, TableMixin, Tr
     def __init__(self, icon_family: str | None = None):
 
         super().__init__()
+        self.settings = SettingsManager()
         self.setWindowTitle("AnchorPass")
         self.resize(1000, 550)
         self.setMinimumSize(775, 385)
@@ -47,7 +48,6 @@ class MainWindow(PreviewMixin, BackupMixin, LockMixin, CrudMixin, TableMixin, Tr
             self.setWindowIcon(self.normal_icon)
 
         self.current_db = None
-        self.settings = SettingsManager()
         self.master = None
         self.cipher = None
         self._ensure_backup_path_default()
@@ -61,13 +61,17 @@ class MainWindow(PreviewMixin, BackupMixin, LockMixin, CrudMixin, TableMixin, Tr
         self.backup_manager = BackupManager(self.settings)
         self.clipboard_manager = ClipboardManager(self.settings, self._log_status)
         self.ui_builder = UIBuilder(self)
-
         self.ui_builder.build_menus()
         self.ui_builder.build_shortcuts()
         self.ui_builder.build_central_widget()
         self.ui_builder.wire_connections()
 
         self.prompt_login(force=True)
+
+        try:
+            self._restore_column_order()
+        except Exception:
+            pass
 
         self.tray_icon = TrayIconWidget(
             parent=self,
@@ -763,11 +767,10 @@ class MainWindow(PreviewMixin, BackupMixin, LockMixin, CrudMixin, TableMixin, Tr
             if is_error:
                 bar.setStyleSheet("color: red;")
             else:
-                bar.setStyleSheet("")  # reset to default
+                bar.setStyleSheet("")
 
             bar.showMessage(text, ms)
         except Exception:
-            # Avoid crashing if statusBar is not available yet
             pass
 
     def _sleep_guard_tick(self):
@@ -789,6 +792,10 @@ class MainWindow(PreviewMixin, BackupMixin, LockMixin, CrudMixin, TableMixin, Tr
             super().change_database()
         finally:
             self._cache_active_db_path_safely()
+            try:
+                self._restore_column_order()
+            except Exception:
+                pass
 
     def _in_deleted_folder(self) -> bool:
         return getattr(self, "current_category", None) == getattr(TreeMixin, "SPECIAL_DELETED", "__SPECIAL_DELETED__")

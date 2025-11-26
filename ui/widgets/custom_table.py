@@ -54,6 +54,7 @@ class ModernTable(QTableWidget):
         header = self.horizontalHeader()
         header.setSectionsClickable(True)
         header.setSortIndicatorShown(True)
+        header.setSectionsMovable(True)
         self.setSortingEnabled(True)
 
     def _on_cell_entered(self, row, _col):

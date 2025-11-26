@@ -1,5 +1,5 @@
 from PySide6.QtWidgets import QTableWidgetItem, QMenu, QApplication, QHeaderView, QMessageBox, QAbstractItemView
-from PySide6.QtCore import Qt, QTimer, QEventLoop, QItemSelectionModel
+from PySide6.QtCore import Qt, QTimer, QEventLoop, QItemSelectionModel, QByteArray
 from PySide6.QtGui import QColor
 
 from ui.widgets.custom_table import ModernTable, SortableItem, STATUS_ORDER
@@ -39,6 +39,9 @@ class TableMixin:
         self.table.customContextMenuRequested.connect(self.show_context_menu)
         self.table.doubleClicked.connect(self.on_table_double_clicked)
 
+        header = self.table.horizontalHeader()
+        header.sectionMoved.connect(self._on_header_section_moved)
+
         self.adjust_table_columns()
 
     def adjust_table_columns(self):
@@ -52,6 +55,46 @@ class TableMixin:
         hdr.setSectionResizeMode(4, QHeaderView.Stretch)
 
         hdr.setDefaultAlignment(Qt.AlignLeft | Qt.AlignVCenter)
+
+    def _on_header_section_moved(self, logical_index: int, old_visual_index: int, new_visual_index: int):
+        self._save_column_order()
+
+    def _save_column_order(self):
+        if not hasattr(self, "table") or self.table is None:
+            return
+
+        header = self.table.horizontalHeader()
+        state = header.saveState()
+        state_str = bytes(state.toBase64()).decode("ascii")
+
+        settings = getattr(self, "settings", None)
+        if settings is None:
+            return
+
+        settings.set("table_header_state", state_str)
+
+    def _restore_column_order(self):
+        if not hasattr(self, "table") or self.table is None:
+            return
+
+        settings = getattr(self, "settings", None)
+        if settings is None:
+            return
+
+        state_str = settings.get("table_header_state", None)
+
+
+        if not state_str:
+            return
+
+        header = self.table.horizontalHeader()
+
+        try:
+            ba = QByteArray.fromBase64(state_str.encode("ascii"))
+        except Exception:
+            return
+
+        header.restoreState(ba)
 
     def refresh_qss(self):
         app = QApplication.instance()
