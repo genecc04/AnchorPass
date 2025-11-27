@@ -44,7 +44,6 @@ ArchitecturesInstallIn64BitMode=x64
 
 DisableDirPage=no
 DisableProgramGroupPage=yes
-PrivilegedInstallOnly=yes
 
 ; -----------------------
 ; Language(s)
