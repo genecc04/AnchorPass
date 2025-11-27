@@ -89,15 +89,16 @@ def format_modified_date(raw) -> str:
     except Exception:
         pass 
 
-    return dt.strftime("%b %d, %Y %H:%M")
+    return dt.strftime("%b %d, %Y %I:%M %p")
 
 COLUMN_DEFS = {
     "email":        "Email",
     "username":     "Username",
     "status":       "Status",
     "notes":        "Notes",
-    "site_link":         "link",
+    "site_link":         "Link",
     "date_modified": "Modified",
+    "date_created": "Created"
 }
 
 DEFAULT_EXTRA_COLUMNS = ["email", "username", "status", "notes"]
@@ -300,6 +301,17 @@ class TableMixin:
                         entry_full.get("modified_at")
                         or entry_full.get("date_modified")
                         or entry_full.get("updated_at")
+                        or ""
+                    )
+
+                    text = format_modified_date(modified_raw)
+                    it_mod = QTableWidgetItem(text)
+                    it_mod.setFlags(flags)
+                    self.table.setItem(r, col, it_mod)
+
+                elif col_key == "date_created":
+                    modified_raw = (
+                        entry_full.get("date_created")
                         or ""
                     )
 
