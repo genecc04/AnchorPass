@@ -206,7 +206,7 @@ def update_entry_full(id_: int, data: Dict[str, Any]) -> None:
     d = {k: v for k, v in data.items() if k in cols and k != "id"}
     if not d:
         return
-    if "date_modified" in cols:
+    if "date_modified" in cols and "date_modified" not in d:
         d["date_modified"] = _now_iso()
     sets = ",".join(f"{k}=?" for k in d.keys())
     with get_connection() as conn:

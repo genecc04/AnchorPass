@@ -66,7 +66,6 @@ def permanently_delete_entry(id_: int) -> None:
         conn.commit()
 
 def check_and_expire_entries() -> List[int]:
-    from datetime import date
     today = date.today().isoformat()
     expired_ids = []
     

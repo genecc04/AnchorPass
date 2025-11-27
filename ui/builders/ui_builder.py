@@ -165,11 +165,14 @@ class UIBuilder:
                                                 hover_enabled=False, border_enabled=False)
         self.window.del_btn     = FontIconButton("delete",  tooltip="Delete",  size=14, min_button_side=40,
                                                 hover_enabled=False, border_enabled=False)
+        
+        self.window.columns_btn = FontIconButton("Settings", tooltip="Customize Columns", size=14, min_button_side=40, 
+                                                 hover_enabled=False, border_enabled=False,)
 
         for btn in (
             self.window.add_btn, self.window.duplicate_btn, self.window.edit_btn,
             self.window.copy_email_btn, self.window.copy_user_btn, self.window.copy_pass_btn,
-            self.window.archive_btn, self.window.expire_btn, self.window.del_btn
+            self.window.archive_btn, self.window.expire_btn, self.window.del_btn, self.window.columns_btn
         ):
             btn.setStyleSheet("")
             btn.setObjectName("topelements")
@@ -194,6 +197,9 @@ class UIBuilder:
         top.addWidget(self.window.expire_btn)
         top.addWidget(self.window.del_btn)
 
+        top.addSpacing(GAP)
+
+        top.addWidget(self.window.columns_btn)
         parent_layout.addWidget(top_bar)
 
         
@@ -227,13 +233,16 @@ class UIBuilder:
     
     def _setup_table(self):
         self.window.setup_table()
-        self.window.table.setSelectionBehavior(QAbstractItemView.SelectRows)
-        self.window.table.setSelectionMode(QAbstractItemView.ExtendedSelection)
-        self.window.table.verticalHeader().setDefaultSectionSize(36)
-        self.window.table.verticalHeader().setVisible(False)
-        self.window.table.setWordWrap(True)
-        self.window.table.setEditTriggers(QAbstractItemView.NoEditTriggers)
-        self.window.splitter_r.addWidget(self.window.table)
+        table = self.window.table
+
+        vh = table.verticalHeader()
+        vh.setDefaultSectionSize(36)
+        vh.setVisible(False)
+
+        table.setWordWrap(True)
+        table.setEditTriggers(QAbstractItemView.NoEditTriggers)
+
+        self.window.splitter_r.addWidget(table)
     
     def wire_connections(self):
         self.window.add_btn.clicked.connect(self.window.add_entry)
@@ -242,6 +251,7 @@ class UIBuilder:
         self.window.del_btn.clicked.connect(self.window.delete_entry)
         self.window.archive_btn.clicked.connect(self.window._on_archive_clicked)
         self.window.expire_btn.clicked.connect(self.window._on_expire_clicked)
+        self.window.columns_btn.clicked.connect(self.window.open_column_settings)
 
         self.window.copy_email_btn.clicked.connect(lambda: self.window._copy_selected_field("email"))
         self.window.copy_user_btn.clicked.connect(lambda: self.window._copy_selected_field("username"))

@@ -188,6 +188,11 @@ class AuthMixin:
 
                 payload = dict(normalized)
                 payload.pop("id", None)
+
+                for key in ("date_created", "date_modified", "expired_at", "archived_at", "deleted_at", "status"):
+                    if key in r:
+                        payload[key] = r[key]
+
                 if any(payload.get(k) != r.get(k) for k in payload.keys()):
                     changed = True
                     db.update_entry_full(rid, payload)

@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QTableWidgetItem, QMenu, QApplication, QHeaderView, QMessageBox, QAbstractItemView
+from PySide6.QtWidgets import QTableWidgetItem, QMenu, QApplication, QHeaderView, QMessageBox, QAbstractItemView, QDialog, QVBoxLayout, QCheckBox, QDialogButtonBox
 from PySide6.QtCore import Qt, QTimer, QEventLoop, QItemSelectionModel, QByteArray
 from PySide6.QtGui import QColor
 
@@ -41,6 +41,69 @@ def days_left_if_expiring_soon(expiry_date_str: str | None, days: int = 5) -> Op
     
     return None
 
+def format_modified_date(raw) -> str:
+    if not raw:
+        return ""
+
+    if isinstance(raw, datetime):
+        dt = raw
+    else:
+        s = str(raw).strip()
+        dt = None
+
+        if s.isdigit():
+            try:
+                ts = int(s)
+                if len(s) == 13:
+                    ts //= 1000
+                dt = datetime.fromtimestamp(ts)
+            except Exception:
+                dt = None
+
+        if dt is None:
+            try:
+                iso_candidate = s.replace("Z", "+00:00")
+                dt = datetime.fromisoformat(iso_candidate)
+            except ValueError:
+                dt = None
+
+        if dt is None:
+            for fmt in (
+                "%Y-%m-%d %H:%M:%S",
+                "%Y-%m-%d %H:%M:%S.%f",
+                "%Y-%m-%dT%H:%M:%S",
+                "%Y-%m-%dT%H:%M:%S.%f",
+                "%Y-%m-%d",
+            ):
+                try:
+                    dt = datetime.strptime(s, fmt)
+                    break
+                except ValueError:
+                    continue
+
+        if dt is None:
+            return s
+
+    try:
+        dt = dt.astimezone()
+    except Exception:
+        pass 
+
+    return dt.strftime("%b %d, %Y %H:%M")
+
+COLUMN_DEFS = {
+    "email":        "Email",
+    "username":     "Username",
+    "status":       "Status",
+    "notes":        "Notes",
+    "site_link":         "link",
+    "date_modified": "Modified",
+}
+
+DEFAULT_EXTRA_COLUMNS = ["email", "username", "status", "notes"]
+
+MAX_EXTRA_COLUMNS = 4
+
 class TableMixin:
     def setup_table(self):
         self.table = ModernTable(self)
@@ -51,8 +114,8 @@ class TableMixin:
         self.table.setDragEnabled(True)
         self.table.setDragDropMode(QAbstractItemView.DragOnly)
 
-        self.table.setColumnCount(5)
-        self.table.setHorizontalHeaderLabels(["Site/Title", "Email", "Username", "Status", "Notes"])
+        self._extra_column_keys = self._load_extra_column_keys()
+        self._apply_table_headers()
 
         self.table.setContextMenuPolicy(Qt.CustomContextMenu)
         self.table.customContextMenuRequested.connect(self.show_context_menu)
@@ -63,15 +126,17 @@ class TableMixin:
 
         self.adjust_table_columns()
 
+
     def adjust_table_columns(self):
         hdr = self.table.horizontalHeader()
         hdr.setStretchLastSection(True)
-        hdr.setSectionResizeMode(0, QHeaderView.Stretch)
-        hdr.setSectionResizeMode(1, QHeaderView.Stretch)
-        hdr.setSectionResizeMode(2, QHeaderView.Stretch)
-        hdr.setSectionResizeMode(3, QHeaderView.Fixed)
-        hdr.resizeSection(3, 120)
-        hdr.setSectionResizeMode(4, QHeaderView.Stretch)
+        for i in range(self.table.columnCount()):
+            hdr.setSectionResizeMode(i, QHeaderView.Stretch)
+
+        if hasattr(self, "_extra_column_keys") and "status" in self._extra_column_keys:
+            status_idx = 1 + self._extra_column_keys.index("status")
+            hdr.setSectionResizeMode(status_idx, QHeaderView.Fixed)
+            hdr.resizeSection(status_idx, 120)
 
         hdr.setDefaultAlignment(Qt.AlignLeft | Qt.AlignVCenter)
 
@@ -180,36 +245,127 @@ class TableMixin:
                 it.setFlags(flags)
 
             self.table.setItem(r, 0, it_site)
-            self.table.setItem(r, 1, it_email)
-            self.table.setItem(r, 2, it_user)
-            self.table.setItem(r, 3, it_status)
-            self.table.setItem(r, 4, it_notes)
-            
+
             badge_status = status
-            days_left = days_left_if_expiring_soon(expiry_date, days=5)
             if status == "active" and is_expiring_soon(expiry_date, days=5):
                 badge_status = "expiring"
-                if days_left is not None and days_left >= 0:
-                    if days_left == 0:
-                        tip = "Expires today"
-                    elif days_left == 1:
-                        tip = "Expires in 1 day"
-                    else:
-                        tip = f"Expires in {days_left} days"
 
-                    it_site.setToolTip(tip)
-                    it_email.setToolTip(tip)
-                    it_user.setToolTip(tip)
-                    it_notes.setToolTip(tip)
-                    it_status.setToolTip(tip)
-
+            days_left = days_left_if_expiring_soon(expiry_date, days=5)
             badge = StatusBadgeTableWidget(badge_status, icon_family)
-            self.table.setCellWidget(r, 3, badge)
             it_status.setSizeHint(badge.sizeHint())
+
+            if days_left is not None and days_left >= 0:
+                if days_left == 0:
+                    tip = "Expires today"
+                elif days_left == 1:
+                    tip = "Expires in 1 day"
+                else:
+                    tip = f"Expires in {days_left} days"
+
+                badge.setToolTip(tip)
+                it_status.setToolTip(tip)
+
+            for offset, col_key in enumerate(self._extra_column_keys, start=1):
+                col = offset
+
+                if col_key == "email":
+                    self.table.setItem(r, col, it_email)
+
+                elif col_key == "username":
+                    self.table.setItem(r, col, it_user)
+
+                elif col_key == "status":
+                    self.table.setItem(r, col, it_status)
+                    self.table.setCellWidget(r, col, badge)
+
+                elif col_key == "notes":
+                    self.table.setItem(r, col, it_notes)
+
+                elif col_key == "site_link":
+                    url = (entry_full.get("site_link") or "").strip()
+
+                    display_text = url
+
+                    it_link = QTableWidgetItem(display_text)
+                    it_link.setFlags(flags)
+
+                    if url:
+                        it_link.setToolTip(url)
+                        it_link.setData(Qt.UserRole, url)
+
+                    self.table.setItem(r, col, it_link)
+
+                elif col_key == "date_modified":
+                    modified_raw = (
+                        entry_full.get("modified_at")
+                        or entry_full.get("date_modified")
+                        or entry_full.get("updated_at")
+                        or ""
+                    )
+
+                    text = format_modified_date(modified_raw)
+                    it_mod = QTableWidgetItem(text)
+                    it_mod.setFlags(flags)
+                    self.table.setItem(r, col, it_mod)
+
 
         self.table.setSortingEnabled(True)
         if prev_col >= 0:
             self.table.sortItems(prev_col, prev_order)
+    
+    def _load_extra_column_keys(self) -> list[str]:
+        settings = getattr(self, "settings", None)
+        if settings is None:
+            return list(DEFAULT_EXTRA_COLUMNS)
+
+        saved = settings.get("table_columns", None)
+
+        if not saved:
+            keys = list(DEFAULT_EXTRA_COLUMNS)
+        else:
+            if isinstance(saved, str):
+                try:
+                    saved = [s.strip() for s in saved.split(",") if s.strip()]
+                except Exception:
+                    saved = []
+
+            if not isinstance(saved, (list, tuple)):
+                saved = []
+
+            keys = [k for k in saved if k in COLUMN_DEFS]
+
+        if not keys:
+            keys = list(DEFAULT_EXTRA_COLUMNS)
+
+        keys = keys[:MAX_EXTRA_COLUMNS]
+        return keys
+
+
+    def _apply_table_headers(self) -> None:
+        total_cols = 1 + len(self._extra_column_keys)
+        self.table.setColumnCount(total_cols)
+
+        headers = ["Site/Title"] + [COLUMN_DEFS[k] for k in self._extra_column_keys]
+        self.table.setHorizontalHeaderLabels(headers)
+
+    
+    def _rebuild_table_columns_and_reload(self):
+        settings = getattr(self, "settings", None)
+        if settings is not None:
+            settings.set("table_columns", self._extra_column_keys)
+
+        total_cols = 1 + len(self._extra_column_keys)
+        self.table.setColumnCount(total_cols)
+        headers = ["Site/Title"] + [COLUMN_DEFS[k] for k in self._extra_column_keys]
+        self.table.setHorizontalHeaderLabels(headers)
+
+        self.adjust_table_columns()
+        self.reload()
+        try:
+            self._save_column_order()
+        except Exception:
+            pass
+
 
     def reload(self):
         prev_ids = self._remember_selected_ids()
@@ -687,3 +843,68 @@ class TableMixin:
                 sm.setCurrentIndex(idx, QItemSelectionModel.ClearAndSelect | QItemSelectionModel.Rows)
                 view.scrollTo(idx)
                 break
+    
+    def apply_table_prefs_from_settings(self):
+        self._extra_column_keys = self._load_extra_column_keys()
+
+        total_cols = 1 + len(self._extra_column_keys)
+        self.table.setColumnCount(total_cols)
+        headers = ["Site/Title"] + [COLUMN_DEFS[k] for k in self._extra_column_keys]
+        self.table.setHorizontalHeaderLabels(headers)
+
+        try:
+            self._restore_column_order()
+        except Exception:
+            pass
+
+        self.adjust_table_columns()
+        self.reload()
+
+    def open_column_settings(self):
+        all_keys = list(COLUMN_DEFS.keys())
+
+        dlg = ColumnSettingsDialog(self, all_keys, getattr(self, "_extra_column_keys", []))
+        if dlg.exec() == QDialog.Accepted:
+            new_keys = dlg.selected_keys()
+            if not new_keys:
+                new_keys = list(DEFAULT_EXTRA_COLUMNS)[:MAX_EXTRA_COLUMNS]
+            self._extra_column_keys = new_keys
+            self._rebuild_table_columns_and_reload()
+
+
+class ColumnSettingsDialog(QDialog):
+    def __init__(self, parent, all_keys: list[str], selected_keys: list[str]):
+        super().__init__(parent)
+        self.setWindowTitle("Customize Columns")
+
+        self._all_keys = all_keys
+        self._selected_keys = set(selected_keys)
+
+        layout = QVBoxLayout(self)
+
+        self.checkboxes: dict[str, QCheckBox] = {}
+        for key in self._all_keys:
+            label = COLUMN_DEFS[key]
+            cb = QCheckBox(label)
+            cb.setChecked(key in self._selected_keys)
+            cb.toggled.connect(self._on_checkbox_toggled)
+            layout.addWidget(cb)
+            self.checkboxes[key] = cb
+
+        buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        buttons.accepted.connect(self.accept)
+        buttons.rejected.connect(self.reject)
+        layout.addWidget(buttons)
+
+    def _on_checkbox_toggled(self, checked: bool):
+        checked_keys = [k for k, cb in self.checkboxes.items() if cb.isChecked()]
+        if len(checked_keys) > MAX_EXTRA_COLUMNS:
+            sender = self.sender()
+            if isinstance(sender, QCheckBox):
+                sender.blockSignals(True)
+                sender.setChecked(False)
+                sender.blockSignals(False)
+
+    def selected_keys(self) -> list[str]:
+        keys = [k for k in self._all_keys if self.checkboxes[k].isChecked()]
+        return keys[:MAX_EXTRA_COLUMNS]

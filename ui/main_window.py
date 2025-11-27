@@ -69,7 +69,8 @@ class MainWindow(PreviewMixin, BackupMixin, LockMixin, CrudMixin, TableMixin, Tr
         self.prompt_login(force=True)
 
         try:
-            self._restore_column_order()
+            if hasattr(self, "apply_table_prefs_from_settings"):
+                self.apply_table_prefs_from_settings()
         except Exception:
             pass
 
@@ -793,7 +794,8 @@ class MainWindow(PreviewMixin, BackupMixin, LockMixin, CrudMixin, TableMixin, Tr
         finally:
             self._cache_active_db_path_safely()
             try:
-                self._restore_column_order()
+                if hasattr(self, "apply_table_prefs_from_settings"):
+                    self.apply_table_prefs_from_settings()
             except Exception:
                 pass
 
