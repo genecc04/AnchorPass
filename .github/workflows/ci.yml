@@ -35,7 +35,6 @@ jobs:
           flake8 core ui --count --exit-zero --max-complexity=20 --max-line-length=100 --statistics
 
   build:
-    # Build ONLY on tag pushes (refs/tags/…)
     if: startsWith(github.ref, 'refs/tags/')
     runs-on: windows-latest
     needs: lint
@@ -122,8 +121,11 @@ jobs:
             --exclude-module PySide6.QtSvgWidgets `
             --exclude-module PySide6.QtUiTools `
             --add-data "styles;styles" `
-            --add-data "assets;assets"
+            --add-data "assets;assets" `
+            --add-data ".\LICENSE.md;." `
+            --add-data ".\THIRD_PARTY_NOTICES.md;."
 
+      # NEW: make zip, same as before
       - name: Package onedir build as zip
         shell: pwsh
         run: |
@@ -132,15 +134,30 @@ jobs:
           $zipPath = "dist/AnchorPass-win-x64-$version.zip"
           Compress-Archive -Path "$outDir\*" -DestinationPath $zipPath -Force
 
-      - name: Upload artifact (zip)
+      # NEW: install Inno Setup and build installer
+      - name: Install Inno Setup
+        shell: pwsh
+        run: choco install innosetup -y
+
+      - name: Build installer (Inno Setup)
+        shell: pwsh
+        run: |
+          $version = "${{ github.ref_name }}"
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" `
+            /DAppVersion=$version `
+            ".\installer.iss"
+
+      # UPDATED: upload both zip + installer exe
+      - name: Upload artifact (zip + installer)
         uses: actions/upload-artifact@v4
         with:
           name: spm-win-x64-${{ github.ref_name }}
-          path: dist/AnchorPass-win-x64-${{ github.ref_name }}.zip
+          path: |
+            dist/AnchorPass-win-x64-${{ github.ref_name }}.zip
+            dist/AnchorPass-Setup-${{ github.ref_name }}.exe
           if-no-files-found: error
 
   release:
-    # Create a GitHub Release ONLY on tag pushes
     if: startsWith(github.ref, 'refs/tags/')
     needs: build
     runs-on: ubuntu-latest
@@ -158,6 +175,7 @@ jobs:
         with:
           files: |
             build_out/AnchorPass-win-x64-${{ github.ref_name }}.zip
+            build_out/AnchorPass-Setup-${{ github.ref_name }}.exe
           generate_release_notes: true
           prerelease: ${{ contains(github.ref_name, '-') }}
         env:

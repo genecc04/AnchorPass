@@ -36,8 +36,6 @@ class PreferencesDialog(QDialog):
 
         # Tabs 
         self._init_database_tab()
-        self._init_security_tab()
-        self._init_ui_tab()
         self._init_hotkeys_tab()
         self._init_backup_tab()
 
@@ -61,6 +59,7 @@ class PreferencesDialog(QDialog):
         tab = QWidget()
         tab.setObjectName("prefsTabs")
         form = QFormLayout(tab)
+        form.setContentsMargins(15,15,30,15)
         form.setObjectName("prefsTabs")
         form.setLabelAlignment(Qt.AlignLeft)
 
@@ -74,53 +73,15 @@ class PreferencesDialog(QDialog):
         self.auto_lock_spin.setValue(self.settings.get("auto_lock_minutes", 10))
         form.addRow("Auto-lock after (minutes):", self.auto_lock_spin)
 
-        self.lock_on_sleep_chk = QCheckBox("Lock when computer sleeps")
-        self.lock_on_sleep_chk.setChecked(self.settings.get("lock_on_sleep", True))
-        form.addRow("", self.lock_on_sleep_chk)
-
-        self.tabs.addTab(tab, "Database Settings")
-
-    # ADDITIONAL SECURITY TAB
-    def _init_security_tab(self):
-        tab = QWidget()
-        tab.setObjectName("prefsTabs")
-        form = QFormLayout(tab)
-        form.setObjectName("prefsTabs")
-        form.setLabelAlignment(Qt.AlignLeft)
-
         self.clipboard_spin = PlusMinusSpinBox()
         self.clipboard_spin.setRange(1, 300)
         self.clipboard_spin.setValue(self.settings.get("clipboard_clear_seconds", 15))
-        form.addRow("Clear clipboard after (seconds):", self.clipboard_spin)
-
-        self.lock_on_minimize_chk = QCheckBox("Lock when app is minimized")
-        self.lock_on_minimize_chk.setChecked(self.settings.get("lock_on_minimize", True))
-        form.addRow("", self.lock_on_minimize_chk)
-
-        self.copy_notify_chk = QCheckBox("Show notifications when copying passwords")
-        self.copy_notify_chk.setChecked(self.settings.get("copy_notifications", True))
-        form.addRow("", self.copy_notify_chk)
-
-        self.tabs.addTab(tab, "Security")
-
-    # App settings Tab
-    def _init_ui_tab(self):
-        tab = QWidget()
-        tab.setObjectName("prefsTabs")
-        form = QFormLayout(tab)
-        form.setObjectName("prefsTabs")
-        form.setLabelAlignment(Qt.AlignLeft)
+        form.addRow("Clear clipboard (seconds):", self.clipboard_spin)
 
         self.theme_combo = QComboBox()
         self.theme_combo.addItems(["dark", "light", "galaxy", "obsidian", "summer", "winter"])
         self.theme_combo.setCurrentText(self.settings.get("theme", "dark"))
         form.addRow("Theme:", self.theme_combo)
-
-        self.minimize_to_tray_chk = QCheckBox("Minimize to tray on exit")
-        self.minimize_to_tray_chk.setChecked(
-            bool(self.settings.get("minimize_to_tray_on_exit", False))
-        )
-        form.addRow("", self.minimize_to_tray_chk)
 
         self.start_with_windows_chk = QCheckBox("Start with Windows")
         stored = self.settings.get("start_with_windows", None)
@@ -130,7 +91,25 @@ class PreferencesDialog(QDialog):
             self.start_with_windows_chk.setChecked(bool(stored))
         form.addRow("", self.start_with_windows_chk)
 
-        self.tabs.addTab(tab, "App Settings")
+        self.minimize_to_tray_chk = QCheckBox("Minimize to tray on exit")
+        self.minimize_to_tray_chk.setChecked(
+            bool(self.settings.get("minimize_to_tray_on_exit", False))
+        )
+        form.addRow("", self.minimize_to_tray_chk)
+
+        self.lock_on_sleep_chk = QCheckBox("Lock when computer sleeps")
+        self.lock_on_sleep_chk.setChecked(self.settings.get("lock_on_sleep", True))
+        form.addRow("", self.lock_on_sleep_chk)
+
+        self.lock_on_minimize_chk = QCheckBox("Lock when app is minimized")
+        self.lock_on_minimize_chk.setChecked(self.settings.get("lock_on_minimize", True))
+        form.addRow("", self.lock_on_minimize_chk)
+
+        self.copy_notify_chk = QCheckBox("Show notifications when copying passwords")
+        self.copy_notify_chk.setChecked(self.settings.get("copy_notifications", True))
+        form.addRow("", self.copy_notify_chk)
+
+        self.tabs.addTab(tab, "Database/Application Settings")
 
     def _init_hotkeys_tab(self):
         tab = QWidget()
@@ -248,13 +227,12 @@ class PreferencesDialog(QDialog):
 
         self.tabs.addTab(tab, "Hotkeys")
 
-
-
     # BACKUP TAB
     def _init_backup_tab(self):
         tab = QWidget()
         tab.setObjectName("prefsTabs")
         form = QFormLayout(tab)
+        form.setContentsMargins(15,15,30,15)
         form.setObjectName("prefsTabs")
         form.setLabelAlignment(Qt.AlignLeft)
 
