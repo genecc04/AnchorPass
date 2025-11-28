@@ -38,7 +38,7 @@ class MainWindow(PreviewMixin, BackupMixin, LockMixin, CrudMixin, TableMixin, Tr
         super().__init__()
         self.settings = SettingsManager()
         self.setWindowTitle("AnchorPass")
-        self.resize(1000, 550)
+        self.resize(1030, 550)
         self.setMinimumSize(818, 385)
 
         self.normal_icon = QIcon(str(ICON_PATH))

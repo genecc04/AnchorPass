@@ -163,10 +163,12 @@ class ModernTable(QTableWidget):
         if len(rows) == 1:
             first_row = rows[0]
             site_index = model.index(first_row, 0)
-            text = str(site_index.data(Qt.DisplayRole) or "").strip()
-            if not text:
-                super().startDrag(supportedActions)
-                return
+            name = str(site_index.data(Qt.DisplayRole) or "").strip()
+
+            if name:
+                text = name
+            else:
+                text = "No Site/Title"
         else:
             count = len(rows)
             text = f"{count} items selected"

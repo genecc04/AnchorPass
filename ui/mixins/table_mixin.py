@@ -1,4 +1,5 @@
-from PySide6.QtWidgets import QTableWidgetItem, QMenu, QApplication, QHeaderView, QMessageBox, QAbstractItemView, QDialog, QVBoxLayout, QCheckBox, QDialogButtonBox
+from PySide6.QtWidgets import (QTableWidgetItem, QMenu, QApplication, QHeaderView, QMessageBox, QAbstractItemView, QDialog, QVBoxLayout, 
+                               QCheckBox, QDialogButtonBox, QHBoxLayout, QGridLayout)
 from PySide6.QtCore import Qt, QTimer, QEventLoop, QItemSelectionModel, QByteArray
 from PySide6.QtGui import QColor
 
@@ -98,7 +99,9 @@ COLUMN_DEFS = {
     "notes":        "Notes",
     "site_link":         "Link",
     "date_modified": "Modified",
-    "date_created": "Created"
+    "date_created": "Created",
+    "category": "Category",
+    "tags": "Tags"
 }
 
 DEFAULT_EXTRA_COLUMNS = ["email", "username", "status", "notes"]
@@ -131,12 +134,18 @@ class TableMixin:
     def adjust_table_columns(self):
         hdr = self.table.horizontalHeader()
         hdr.setStretchLastSection(True)
+        hdr.setMinimumSectionSize(150)
         for i in range(self.table.columnCount()):
-            hdr.setSectionResizeMode(i, QHeaderView.Stretch)
+            hdr.setSectionResizeMode(i, QHeaderView.Interactive)
+
+        default_widths = [150, 150, 150, 150]  # 1 per column, tweak as needed
+        for col, width in enumerate(default_widths):
+            if col < self.table.columnCount():
+                hdr.resizeSection(col, width)
 
         if hasattr(self, "_extra_column_keys") and "status" in self._extra_column_keys:
             status_idx = 1 + self._extra_column_keys.index("status")
-            hdr.setSectionResizeMode(status_idx, QHeaderView.Fixed)
+            hdr.setSectionResizeMode(status_idx, QHeaderView.Interactive)
             hdr.resizeSection(status_idx, 120)
 
         hdr.setDefaultAlignment(Qt.AlignLeft | Qt.AlignVCenter)
@@ -229,15 +238,18 @@ class TableMixin:
             it_status = self._create_status_badge(status)
             it_notes  = QTableWidgetItem(notes)
 
+            deleted_font = None
+            deleted_brush = None
             if status == "deleted":
-                font = it_site.font()
-                font.setStrikeOut(True)
+                deleted_font = it_site.font()
+                deleted_font.setStrikeOut(True)
+                deleted_brush = QColor("#6b7280")
+
                 for it in (it_site, it_email, it_user, it_notes):
-                    it.setFont(font)
-                    it.setForeground(QColor("#6b7280"))
+                    it.setFont(deleted_font)
+                    it.setForeground(deleted_brush)
 
-            can_drag = status not in ("deleted")
-
+            can_drag = status not in ("deleted",)
             flags = Qt.ItemIsSelectable | Qt.ItemIsEnabled
             if can_drag:
                 flags |= Qt.ItemIsDragEnabled
@@ -294,6 +306,10 @@ class TableMixin:
                         it_link.setToolTip(url)
                         it_link.setData(Qt.UserRole, url)
 
+                    if deleted_font is not None:
+                        it_link.setFont(deleted_font)
+                        it_link.setForeground(deleted_brush)
+
                     self.table.setItem(r, col, it_link)
 
                 elif col_key == "date_modified":
@@ -307,19 +323,56 @@ class TableMixin:
                     text = format_modified_date(modified_raw)
                     it_mod = QTableWidgetItem(text)
                     it_mod.setFlags(flags)
+
+                    if deleted_font is not None:
+                        it_mod.setFont(deleted_font)
+                        it_mod.setForeground(deleted_brush)
+
                     self.table.setItem(r, col, it_mod)
 
                 elif col_key == "date_created":
-                    modified_raw = (
+                    created_raw = (
                         entry_full.get("date_created")
                         or ""
                     )
 
-                    text = format_modified_date(modified_raw)
-                    it_mod = QTableWidgetItem(text)
-                    it_mod.setFlags(flags)
-                    self.table.setItem(r, col, it_mod)
+                    text = format_modified_date(created_raw)
+                    it_crd = QTableWidgetItem(text)
+                    it_crd.setFlags(flags)
 
+                    if deleted_font is not None:
+                        it_crd.setFont(deleted_font)
+                        it_crd.setForeground(deleted_brush)
+
+                    self.table.setItem(r, col, it_crd)
+
+                elif col_key == "category":
+                    cat = (entry_full.get("category") or "").strip()
+
+                    display_text = cat
+
+                    it_cat = QTableWidgetItem(display_text)
+                    it_cat.setFlags(flags)
+
+                    if deleted_font is not None:
+                        it_cat.setFont(deleted_font)
+                        it_cat.setForeground(deleted_brush)
+
+                    self.table.setItem(r, col, it_cat)
+
+                elif col_key == "tags":
+                    tags = (entry_full.get("tags") or "").strip()
+
+                    display_text = tags
+
+                    it_tags = QTableWidgetItem(display_text)
+                    it_tags.setFlags(flags)
+
+                    if deleted_font is not None:
+                        it_tags.setFont(deleted_font)
+                        it_tags.setForeground(deleted_brush)
+
+                    self.table.setItem(r, col, it_tags)
 
         self.table.setSortingEnabled(True)
         if prev_col >= 0:
@@ -844,8 +897,6 @@ class TableMixin:
         if model is None:
             return
 
-        from PySide6.QtCore import Qt, QItemSelectionModel
-
         id_column = 0  
 
         for row in range(model.rowCount()):
@@ -894,19 +945,35 @@ class ColumnSettingsDialog(QDialog):
 
         layout = QVBoxLayout(self)
 
+        grid = QGridLayout()
+        grid.setContentsMargins(10,5,10,15)
+        layout.addLayout(grid)
+
         self.checkboxes: dict[str, QCheckBox] = {}
-        for key in self._all_keys:
+
+        cols = 3
+        for i, key in enumerate(self._all_keys):
             label = COLUMN_DEFS[key]
             cb = QCheckBox(label)
             cb.setChecked(key in self._selected_keys)
             cb.toggled.connect(self._on_checkbox_toggled)
-            layout.addWidget(cb)
+
+            row = i // cols
+            col = i % cols
+            grid.addWidget(cb, row, col)
+
             self.checkboxes[key] = cb
 
-        buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        buttons = QDialogButtonBox(QDialogButtonBox.Ok)
         buttons.accepted.connect(self.accept)
-        buttons.rejected.connect(self.reject)
-        layout.addWidget(buttons)
+
+        btn_row = QHBoxLayout()
+        btn_row.addStretch()
+        btn_row.addWidget(buttons)
+        btn_row.addStretch()
+
+        layout.addLayout(btn_row)
+        self.setFixedSize(self.sizeHint())
 
     def _on_checkbox_toggled(self, checked: bool):
         checked_keys = [k for k, cb in self.checkboxes.items() if cb.isChecked()]

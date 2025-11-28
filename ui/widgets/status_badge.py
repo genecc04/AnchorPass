@@ -197,17 +197,19 @@ class StatusBadgeTableWidget(QWidget):
             return
 
         table = parent
-        while table and not hasattr(table, 'currentRow'):
+        while table is not None and not hasattr(table, "rowCount"):
             table = table.parent()
 
-        if not table:
+        if table is None:
             return
 
         try:
             for row in range(table.rowCount()):
-                if table.cellWidget(row, 3) == self:
-                    is_selected = table.item(row, 0) and table.item(row, 0).isSelected()
-                    self.badge.set_selected(is_selected)
-                    break
+                for col in range(table.columnCount()):
+                    if table.cellWidget(row, col) is self:
+                        item0 = table.item(row, 0)
+                        is_selected = bool(item0 and item0.isSelected())
+                        self.badge.set_selected(is_selected)
+                        return
         except Exception:
             pass
