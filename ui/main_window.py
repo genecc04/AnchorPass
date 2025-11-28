@@ -893,8 +893,6 @@ class MainWindow(PreviewMixin, BackupMixin, LockMixin, CrudMixin, TableMixin, Tr
     def searchEventFilter(self, obj: QObject, event: QEvent) -> bool:
         if obj is getattr(self, "search", None):
             if event.type() in (QEvent.FocusIn, QEvent.MouseButtonPress):
-                if self._search_prev_category is None:
-                    self._search_prev_category = getattr(self, "current_category", None)
 
                 table = getattr(self, "table", None)
                 if table is not None:

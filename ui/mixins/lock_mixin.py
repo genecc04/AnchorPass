@@ -13,6 +13,12 @@ class LockMixin:
         self._set_menu_locked_state(True)
         self.show_lock_overlay(True)
         self._update_tray_icon_locked_state(True)
+
+        if hasattr(self, "search"):
+            self.search.clear()
+            if hasattr(self, "_search_prev_category"):
+                self._search_prev_category = None
+                
         try:
             if hasattr(self, "table"):
                 self.table.blockSignals(True)
