@@ -118,10 +118,14 @@ class MainWindow(PreviewMixin, BackupMixin, LockMixin, CrudMixin, TableMixin, Tr
     def changeEvent(self, event):
         try:
             if event.type() == QEvent.WindowStateChange and self.isMinimized():
+                if bool(self.settings.get("minimize_to_tray_on_minimize_chk", True)):
+                    QTimer.singleShot(0, self._minimize_to_tray)
+
                 if bool(self.settings.get("lock_on_minimize", True)):
                     QTimer.singleShot(100, self.lock)
         except Exception:
             pass
+
         super().changeEvent(event)
 
     def closeEvent(self, event):
@@ -865,9 +869,24 @@ class MainWindow(PreviewMixin, BackupMixin, LockMixin, CrudMixin, TableMixin, Tr
             mb.setEnabled(not locked)
 
     def _tray_open_from_tray(self):
-        self.show()
+        if not self.isVisible():
+            self.show()
+
+        if self.isMinimized():
+            self.showNormal()
+
         self.raise_()
         self.activateWindow()
+
+        self.setWindowState(self.windowState() | Qt.WindowActive)
+
+    def _minimize_to_tray(self):
+        self.hide()
+
+        try:
+            self.setWindowState(self.windowState() & ~Qt.WindowMinimized)
+        except Exception:
+            pass
 
     def _lock_database_from_tray(self):
         if hasattr(self, "lock"):

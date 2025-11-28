@@ -59,9 +59,11 @@ class PreferencesDialog(QDialog):
         tab = QWidget()
         tab.setObjectName("prefsTabs")
         form = QFormLayout(tab)
-        form.setContentsMargins(15,15,30,15)
+        form.setContentsMargins(15, 15, 30, 15)
         form.setObjectName("prefsTabs")
         form.setLabelAlignment(Qt.AlignLeft)
+
+        # --- Top fields in normal form layout ---
 
         self.change_pw_btn = QPushButton("Change Password...")
         if self.main_window:
@@ -83,31 +85,55 @@ class PreferencesDialog(QDialog):
         self.theme_combo.setCurrentText(self.settings.get("theme", "dark"))
         form.addRow("Theme:", self.theme_combo)
 
+        # --- Checkboxes in a 2-column grid ---
+
+        # Create checkboxes (same as before)
         self.start_with_windows_chk = QCheckBox("Start with Windows")
         stored = self.settings.get("start_with_windows", None)
         if stored is None:
             self.start_with_windows_chk.setChecked(is_startup_enabled())
         else:
             self.start_with_windows_chk.setChecked(bool(stored))
-        form.addRow("", self.start_with_windows_chk)
 
         self.minimize_to_tray_chk = QCheckBox("Minimize to tray on exit")
         self.minimize_to_tray_chk.setChecked(
             bool(self.settings.get("minimize_to_tray_on_exit", False))
         )
-        form.addRow("", self.minimize_to_tray_chk)
+
+        self.minimize_to_tray_on_minimize_chk = QCheckBox("Minimize to tray")
+        self.minimize_to_tray_on_minimize_chk.setChecked(
+            bool(self.settings.get("minimize_to_tray_on_minimize", False))
+        )
 
         self.lock_on_sleep_chk = QCheckBox("Lock when computer sleeps")
         self.lock_on_sleep_chk.setChecked(self.settings.get("lock_on_sleep", True))
-        form.addRow("", self.lock_on_sleep_chk)
 
         self.lock_on_minimize_chk = QCheckBox("Lock when app is minimized")
         self.lock_on_minimize_chk.setChecked(self.settings.get("lock_on_minimize", True))
-        form.addRow("", self.lock_on_minimize_chk)
 
         self.copy_notify_chk = QCheckBox("Show notifications when copying passwords")
         self.copy_notify_chk.setChecked(self.settings.get("copy_notifications", True))
-        form.addRow("", self.copy_notify_chk)
+
+        # Put them into a 2-column grid
+        checks_panel = QWidget()
+        checks_panel.setObjectName("HotkeysPanel")
+        grid = QGridLayout(checks_panel)
+        grid.setContentsMargins(0, 8, 0, 0)
+        grid.setHorizontalSpacing(20)
+        grid.setVerticalSpacing(4)
+
+        row = 0
+        grid.addWidget(self.start_with_windows_chk,            row, 0)
+        grid.addWidget(self.lock_on_minimize_chk,              row, 1); row += 1
+
+        grid.addWidget(self.minimize_to_tray_on_minimize_chk,  row, 0)
+        grid.addWidget(self.lock_on_sleep_chk,                 row, 1); row += 1
+
+        grid.addWidget(self.minimize_to_tray_chk,              row, 0)
+        grid.addWidget(self.copy_notify_chk,                   row, 1)
+
+        # Add the whole panel as one form row (no label)
+        form.addRow("", checks_panel)
 
         self.tabs.addTab(tab, "Database/Application Settings")
 
@@ -341,6 +367,7 @@ class PreferencesDialog(QDialog):
         self.settings.set("theme", self.theme_combo.currentText())
         _global_settings.set("theme", self.theme_combo.currentText())
         self.settings.set("minimize_to_tray_on_exit", self.minimize_to_tray_chk.isChecked())
+        self.settings.set("minimize_to_tray_on_minimize", self.minimize_to_tray_on_minimize_chk.isChecked())
         self.settings.set("hotkeys_enabled", self.hotkeys_enabled_chk.isChecked())
         start_with_windows = self.start_with_windows_chk.isChecked()
         self.settings.set("start_with_windows", start_with_windows)
