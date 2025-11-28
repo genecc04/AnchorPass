@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QMenu, QTreeWidgetItem, QMessageBox, QInputDialog
+from PySide6.QtWidgets import QMenu, QTreeWidgetItem, QMessageBox, QInputDialog, QAbstractItemView
 from PySide6.QtCore import Qt, QPoint
 from PySide6.QtGui import QFont
 from core import db
@@ -11,8 +11,11 @@ class CategoryTreeWidget(StyledTreeWidget):
     def __init__(self, owner):
         super().__init__(owner)
         self._owner = owner
+        self._drag_source_item = None
         self.setAcceptDrops(True)
         self.setDropIndicatorShown(True)
+        self.setDragEnabled(True)
+        self.setDragDropMode(QAbstractItemView.DragDrop)
 
     def _event_item(self, event):
         try:
@@ -59,60 +62,241 @@ class CategoryTreeWidget(StyledTreeWidget):
         return True
 
     def dragEnterEvent(self, event):
-        if self._is_table_drag(event):
+        if self._is_table_drag(event) and self._should_accept_drag(event):
+            event.acceptProposedAction()
+        elif self._is_tree_drag(event) and self._should_accept_tree_drag(event):
             event.acceptProposedAction()
         else:
             event.ignore()
 
     def dragMoveEvent(self, event):
-        if self._should_accept_drag(event):
+        if self._is_table_drag(event) and self._should_accept_drag(event):
+            event.acceptProposedAction()
+        elif self._is_tree_drag(event) and self._should_accept_tree_drag(event):
             event.acceptProposedAction()
         else:
             event.ignore()
 
     def dropEvent(self, event):
-        if not self._should_accept_drag(event):
-            event.ignore()
-            return
+        if self._is_table_drag(event):
+            if not self._should_accept_drag(event):
+                event.ignore()
+                return
 
-        item = self._event_item(event)
-        if item is None:
-            event.ignore()
-            return
+            item = self._event_item(event)
+            if item is None:
+                event.ignore()
+                return
 
-        target_path = None
-        try:
-            if hasattr(self._owner, "current_item_path"):
-                target_path = self._owner.current_item_path(item)
-        except Exception:
             target_path = None
+            try:
+                if hasattr(self._owner, "current_item_path"):
+                    target_path = self._owner.current_item_path(item)
+            except Exception:
+                target_path = None
 
-        if not target_path:
-            event.ignore()
-            return
+            if not target_path:
+                event.ignore()
+                return
 
-        ids = []
-        try:
-            if hasattr(self._owner, "_get_all_selected_entry_ids"):
-                ids = self._owner._get_all_selected_entry_ids()
-        except Exception:
             ids = []
+            try:
+                if hasattr(self._owner, "_get_all_selected_entry_ids"):
+                    ids = self._owner._get_all_selected_entry_ids()
+            except Exception:
+                ids = []
 
-        if not ids:
-            event.ignore()
+            if not ids:
+                event.ignore()
+                return
+
+            mover = getattr(self._owner, "_move_entries_to_category", None)
+            if callable(mover):
+                mover(ids, target_path)
+                event.acceptProposedAction()
+            else:
+                event.ignore()
             return
 
-        mover = getattr(self._owner, "_move_entries_to_category", None)
-        if callable(mover):
-            mover(ids, target_path)
-            event.acceptProposedAction()
-        else:
-            event.ignore()
+        if self._is_tree_drag(event):
+            if not self._should_accept_tree_drag(event):
+                event.ignore()
+                return
+
+            src_item = self._drag_source_item or self.currentItem()
+            dest_item = self._event_item(event)
+            drop_pos = self.dropIndicatorPosition()
+
+            handler = getattr(self._owner, "_handle_category_drop", None)
+            if callable(handler) and handler(src_item, dest_item, drop_pos):
+                event.acceptProposedAction()
+            else:
+                event.ignore()
+            return
+
+        event.ignore()
+
+    def _is_tree_drag(self, event) -> bool:
+        return event.source() is self
+
+    def _should_accept_tree_drag(self, event) -> bool:
+        if not self._is_tree_drag(event):
+            return False
+
+        if not self._drag_source_item:
+            return False
+
+        handler = getattr(self._owner, "_can_accept_category_drop", None)
+        if callable(handler):
+            dest_item = self._event_item(event)
+            drop_pos = self.dropIndicatorPosition()
+            return handler(self._drag_source_item, dest_item, drop_pos)
+
+        return False
+    
+    def startDrag(self, supportedActions):
+        item = self.currentItem()
+        if not item:
+            return
+
+        # ask the owner if this item may be dragged at all
+        can_drag = True
+        checker = getattr(self._owner, "_can_drag_category_item", None)
+        if callable(checker):
+            can_drag = checker(item)
+
+        if not can_drag:
+            return
+
+        self._drag_source_item = item
+        try:
+            super().startDrag(supportedActions)
+        finally:
+            self._drag_source_item = None
+
 
 class TreeMixin:
     SPECIAL_ARCHIVED = "__SPECIAL_ARCHIVED__"
     SPECIAL_EXPIRED = "__SPECIAL_EXPIRED__"
     SPECIAL_DELETED = "__SPECIAL_DELETED__"
+
+    def _can_drag_category_item(self, item: QTreeWidgetItem) -> bool:
+        if not item:
+            return False
+
+        if self._is_special_folder(item):
+            return False
+
+        path = self.current_item_path(item)
+        if path == UNCATEGORIZED:
+            return False
+
+        return True
+
+    def _can_accept_category_drop(
+        self,
+        source_item: QTreeWidgetItem,
+        dest_item: QTreeWidgetItem | None,
+        drop_pos: QAbstractItemView.DropIndicatorPosition,
+        ) -> bool:
+        if not source_item:
+            return False
+
+        # Source must be draggable (not Uncategorized / not special)
+        if not self._can_drag_category_item(source_item):
+            return False
+
+        src_path = self.current_item_path(source_item)
+
+        # 1) True empty viewport -> move to root
+        if drop_pos == QAbstractItemView.OnViewport:
+            return True
+
+        if not dest_item:
+            return True
+
+        # 2) ABOVE / BELOW a TOP-LEVEL item -> treat as valid "root drop" zone
+        if drop_pos in (QAbstractItemView.AboveItem, QAbstractItemView.BelowItem):
+            return dest_item.parent() is None
+
+        # 3) Normal ON-ITEM drop: dest must be a normal folder
+        dest_path = self.current_item_path(dest_item)
+
+        if self._is_special_folder(dest_item) or dest_path == UNCATEGORIZED:
+            return False
+
+        # Don't move A under A/...
+        if drop_pos == QAbstractItemView.OnItem and dest_path.startswith(src_path + "/"):
+            return False
+
+        return True
+    
+    def _handle_category_drop(
+        self,
+        source_item: QTreeWidgetItem,
+        dest_item: QTreeWidgetItem | None,
+        drop_pos: QAbstractItemView.DropIndicatorPosition,
+        ) -> bool:
+        if not source_item:
+            return False
+
+        old_path = self.current_item_path(source_item)
+
+        # Cannot move Uncategorized or special folders at all
+        if old_path == UNCATEGORIZED or self._is_special_folder(source_item):
+            return False
+
+        # 1) Decide new parent item
+        if drop_pos == QAbstractItemView.OnItem:
+            parent_item = dest_item
+        elif drop_pos in (QAbstractItemView.AboveItem, QAbstractItemView.BelowItem):
+            # Above/Below a top-level item -> move to root
+            parent_item = None
+        else:
+            # OnViewport -> also root
+            parent_item = None
+
+        # 2) Resolve parent path
+        if parent_item is not None:
+            parent_path = self.current_item_path(parent_item)
+
+            # Still forbid putting things directly inside Uncategorized / special
+            if parent_path == UNCATEGORIZED or self._is_special_folder(parent_item):
+                return False
+        else:
+            parent_path = ""
+
+        leaf = old_path.split("/")[-1]
+        new_full = f"{parent_path}/{leaf}" if parent_path else leaf
+
+        if new_full == old_path:
+            return False
+
+        if new_full.startswith(old_path + "/"):
+            return False
+
+        if db.category_exists(new_full):
+            QMessageBox.warning(
+                self,
+                "Error",
+                f"A folder named '{leaf}' already exists in the target location.",
+            )
+            return False
+
+        try:
+            db.rename_category(old_path, new_full)
+        except ValueError as e:
+            QMessageBox.warning(self, "Move failed", str(e))
+            return False
+
+        self._rebuild_tree_preserving_selection(target_category=new_full)
+
+        try:
+            self.reload()
+        except Exception:
+            pass
+
+        return True
 
     def _clean_label(self, s: str) -> str:
         return re.sub(r"\s*\(\d+\)\s*$", "", s or "")
@@ -147,7 +331,11 @@ class TreeMixin:
         self.tree.setAnimated(False)
         self.tree.setExpandsOnDoubleClick(True)
         self.tree.expandAll()
-
+        try:
+            self.tree.setViewportMargins(0, 0, 0, 0)
+        except Exception:
+            pass
+        
     def _create_special_folder_item(self, label: str, identifier: str, count: int, icon_text: str = None) -> QTreeWidgetItem:
         display_text = f"{label} ({count})"
         item = QTreeWidgetItem([display_text])
@@ -216,11 +404,17 @@ class TreeMixin:
         self._path_items.clear()
 
         paths = db.fetch_categories()
-        paths_sorted = sorted(paths, key=lambda p: (p == UNCATEGORIZED, p.count("/"), p.lower()))
+
+        # UNCATEGORIZED first, then by depth, then alphabetically
+        paths_sorted = sorted(
+            paths,
+            key=lambda p: (0 if p == UNCATEGORIZED else 1, p.count("/"), p.lower())
+        )
+
         for p in paths_sorted:
             self._ensure_tree_item(p)
 
-        self._add_special_folders()
+        self._add_special_folders()   # still added at the bottom
 
         self._init_tree_view()
 
@@ -247,6 +441,9 @@ class TreeMixin:
         return "/".join(reversed(segs)) if segs else UNCATEGORIZED
 
     def filter_by_category(self, item, column):
+        if hasattr(self, "_search_prev_category"):
+            self._search_prev_category = None
+            
         try:
             self.search.blockSignals(True)
             self.search.clear()
