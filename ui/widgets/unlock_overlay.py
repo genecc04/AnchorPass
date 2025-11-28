@@ -1,10 +1,9 @@
 from PySide6.QtCore import Qt, Signal, QEvent
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QFrame, QFormLayout, QLabel, QDialogButtonBox, QApplication
-from PySide6.QtGui import QFont
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QFrame, QFormLayout, QLabel, QDialogButtonBox
+from PySide6.QtGui import QFont, QShortcut
 import time
 from core.settings_manager import SettingsManager
 from ui.widgets.password_field import PasswordLineEdit
-from ui.widgets.plusminus_spinbox import PlusMinusSpinBox 
 
 class UnlockOverlay(QWidget):
     accepted = Signal(str, str, int)
@@ -64,14 +63,18 @@ class UnlockOverlay(QWidget):
                                        copy_enabled=False, strength_enabled=False, strength_alpha=0.0)
             self.p2.hide()
             card_l.addRow(self.p1)
+            self.p1.returnPressed.connect(self._on_accept)
 
         hint = QLabel("The master password encrypts your entire vault. Keep it safe!")
         hint.setObjectName("hint")
         card_l.addRow("", hint)
 
         btns = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        self._esc_shortcut = QShortcut(Qt.Key_Escape, self)
         btns.accepted.connect(self._on_accept)
         btns.rejected.connect(self._on_cancel)
+        self._esc_shortcut.activated.connect(self._on_cancel)
+        
         card_l.addRow("", btns)
 
         root.addWidget(card)
