@@ -159,6 +159,8 @@ class ModernTable(QTableWidget):
         rows = sorted({idx.row() for idx in indexes})
         if not rows:
             return
+        
+        MAX_CHARS = 20 
 
         if len(rows) == 1:
             first_row = rows[0]
@@ -172,6 +174,9 @@ class ModernTable(QTableWidget):
         else:
             count = len(rows)
             text = f"{count} items selected"
+
+        if len(text) > MAX_CHARS:
+            text = text[:MAX_CHARS - 3] + "..."
 
         chip = QLabel(text, self)
         chip.setObjectName("DragPreviewChip")
