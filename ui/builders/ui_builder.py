@@ -2,7 +2,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLineEdit, QFrame,
-    QAbstractItemView, QSplitter, QLabel, QMessageBox, 
+    QAbstractItemView, QSplitter, QLabel, QMessageBox, QDialog, QDialogButtonBox, QTextBrowser
 )
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QAction, QKeySequence, QShortcut
@@ -10,6 +10,7 @@ from PySide6.QtGui import QAction, QKeySequence, QShortcut
 from ui.widgets.button import FontIconButton
 from core.settings_manager import SettingsManager
 from ui.mixins.tree_mixin import CategoryTreeWidget 
+from pathlib import Path
 
 if TYPE_CHECKING:
     from ui.main_window import MainWindow
@@ -54,6 +55,11 @@ class UIBuilder:
 
         help_menu = menubar.addMenu("&Help")
         help_menu.addAction(QAction("About", self.window, triggered=self._show_about))
+        help_menu.addSeparator()
+        help_menu.addAction(QAction("License", self.window,
+                                    triggered=self._show_license))
+        help_menu.addAction(QAction("Third-Party Notices", self.window,
+                                    triggered=self._show_third_party_notices))
     
     def build_shortcuts(self):
         settings = self._get_settings()
@@ -326,3 +332,51 @@ class UIBuilder:
         """
 
         QMessageBox.information(self.window, "About", text)
+
+    def _show_text_file_dialog(self, title: str, filename: str):
+        project_root = Path(__file__).resolve().parent.parent.parent
+        path = project_root / filename
+
+        if not path.exists():
+            QMessageBox.warning(
+                self.window,
+                title,
+                f"Could not find {filename} at:\n{path}"
+            )
+            return
+
+        try:
+            text = path.read_text(encoding="utf-8")
+        except Exception as e:
+            QMessageBox.critical(
+                self.window,
+                title,
+                f"Failed to read {filename}:\n{e}"
+            )
+            return
+
+        dlg = QDialog(self.window)
+        dlg.setWindowTitle(title)
+        dlg.resize(700, 500)
+
+        layout = QVBoxLayout(dlg)
+
+        viewer = QTextBrowser(dlg)
+        try:
+            viewer.setMarkdown(text)
+        except Exception:
+            viewer.setPlainText(text)
+
+        layout.addWidget(viewer)
+
+        buttons = QDialogButtonBox(QDialogButtonBox.Close)
+        buttons.rejected.connect(dlg.reject)
+        layout.addWidget(buttons)
+
+        dlg.exec()
+
+    def _show_license(self):
+        self._show_text_file_dialog("License", "license.md")
+
+    def _show_third_party_notices(self):
+        self._show_text_file_dialog("Third-Party Notices", "THIRD_PARTY_NOTICES.md")
