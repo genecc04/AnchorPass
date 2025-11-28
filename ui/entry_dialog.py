@@ -1,5 +1,5 @@
 from __future__ import annotations
-from PySide6.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QScrollArea, QWidget, QDialogButtonBox, QPushButton, 
+from PySide6.QtWidgets import (QDialog, QVBoxLayout, QScrollArea, QWidget, QDialogButtonBox, QPushButton, 
                                QApplication, QToolButton, QFrame, QSizePolicy)
 from PySide6.QtCore import Qt, QEvent, QTimer
 from PySide6.QtGui import QFontDatabase

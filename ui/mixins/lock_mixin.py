@@ -1,4 +1,3 @@
-from PySide6.QtWidgets import QMessageBox
 from PySide6.QtCore import QEvent
 import time
 from pathlib import Path
@@ -18,7 +17,7 @@ class LockMixin:
             self.search.clear()
             if hasattr(self, "_search_prev_category"):
                 self._search_prev_category = None
-                
+
         try:
             if hasattr(self, "table"):
                 self.table.blockSignals(True)

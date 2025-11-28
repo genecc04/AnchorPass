@@ -1,7 +1,7 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 from PySide6.QtWidgets import (
-    QWidget, QVBoxLayout, QHBoxLayout, QLineEdit, QFrame,
+    QWidget, QVBoxLayout, QHBoxLayout, QLineEdit,
     QAbstractItemView, QSplitter, QLabel, QMessageBox, QDialog, QDialogButtonBox, QTextBrowser
 )
 from PySide6.QtCore import Qt

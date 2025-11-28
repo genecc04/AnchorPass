@@ -30,7 +30,7 @@ QPushButton#topelements{
 QPushButton#topelements:hover   { background: #251338; color: #fff; border-color: #b26bff; }
 QPushButton#topelements:focus { border-color: #b26bff; }
 QPushButton#topelements:pressed { background: #b26bff; color: #fff; border-color:#b26bff; }
-QPushButton#topelements:disabled{ background: #161020; color: #7b7191; border-color:#2a213d; }
+QPushButton#topelements:disabled{ background: #161020; color: #000; border-color:#2a213d; }
 
 QToolTip {
     background-color: #221632;

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QFormLayout, QLineEdit, QPlainTextEdit, QLabel, QComboBox, 
-                               QCheckBox, QSizePolicy, QHBoxLayout, QPushButton)
+                               QCheckBox, QSizePolicy, QHBoxLayout)
 from PySide6.QtCore import Qt, QDate
 from datetime import datetime, timezone
 

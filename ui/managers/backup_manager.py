@@ -4,7 +4,6 @@ from datetime import datetime, date
 from calendar import monthrange
 from typing import Tuple, Optional
 
-
 class BackupManager:
     
     def __init__(self, settings_manager):

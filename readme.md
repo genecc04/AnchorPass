@@ -51,14 +51,12 @@ status badges, multi-select actions, sortable columns, and automatic backups.
 Third-party attributions are in **THIRD_PARTY_NOTICES.md** (MIT for zxcvbn; CC-BY-4.0 for the EFF list).  
 Please read those notices for details.
 
-## Cloud Backup (Future Work)
+## Security / Encryption
 
-Local backups are performed using a dedicated `BackupMixin` and are designed to be fast and safe on the local filesystem.
+All sensitive vault data is encrypted using AES (via the Fernet standard), with keys derived from the master password using PBKDF2 with SHA-256 and a per-vault random salt.
 
-If/when a cloud backup feature is added (e.g. uploading backup files to a remote server or cloud storage), **all network uploads MUST be done off the UI thread**. Uploading even a ~50 MB database can take several seconds on typical home upload speeds, and performing that work on the main thread would freeze the application.
+**Important limitations:**
 
-Planned approach for cloud backup:
-
-- Continue using `_export_backup_core()` to create a local backup file.
-- Perform any cloud uploads in a background worker (`QThread`/async job).
-- Only update the UI (status messages, errors) via signals back to the main thread.
+- Like other password managers, AnchorPass cannot protect you if your computer is compromised by malware, keyloggers, or screen capture tools. Use it only on devices you trust.
+- If you lose or forget your master password, you will lose access to your vault contents. There is no backdoor or recovery key by design.
+- AnchorPass uses modern, well-known cryptographic primitives (AES via Fernet, PBKDF2-HMAC-SHA256 with a per-vault salt, and bcrypt for the master password). Security is an ongoing effort, and feedback or review from the community is welcome.

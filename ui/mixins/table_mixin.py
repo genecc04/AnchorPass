@@ -1,6 +1,6 @@
 from PySide6.QtWidgets import (QTableWidgetItem, QMenu, QApplication, QHeaderView, QMessageBox, QAbstractItemView, QDialog, QVBoxLayout, 
                                QCheckBox, QDialogButtonBox, QHBoxLayout, QGridLayout)
-from PySide6.QtCore import Qt, QTimer, QEventLoop, QItemSelectionModel, QByteArray
+from PySide6.QtCore import Qt, QTimer, QItemSelectionModel, QByteArray
 from PySide6.QtGui import QColor
 
 from ui.widgets.custom_table import ModernTable, SortableItem, STATUS_ORDER
