@@ -486,13 +486,32 @@ class TreeMixin:
         
         menu = QMenu(self)
         if item:
+            path = self.current_item_path(item)
             menu.addAction("Add Subfolder", lambda: self.add_subfolder(item))
             menu.addAction("Rename Folder", lambda: self.rename_folder(item))
+            if "/" in path and path != UNCATEGORIZED and not self._is_special_folder(item):
+                menu.addAction("Make Root Folder", lambda: self.make_primary_folder(item))
             if self.current_item_path(item) != UNCATEGORIZED:
                 menu.addAction("Delete Folder", lambda: self.delete_folder(item))
         else:
             menu.addAction("Add Folder", self.add_folder)
         menu.exec(self.tree.viewport().mapToGlobal(pos))
+
+    def make_primary_folder(self, item: QTreeWidgetItem):
+        if not item:
+            return
+
+        old_path = self.current_item_path(item)
+
+        if "/" not in old_path:
+            QMessageBox.information(self, "Already root", "This folder is already a root folder.")
+            return
+
+        self._handle_category_drop(
+            source_item=item,
+            dest_item=None,
+            drop_pos=QAbstractItemView.OnViewport,
+        )
 
     def _empty_trash(self):
         try:
