@@ -1,5 +1,5 @@
 from PySide6.QtWidgets import ( QDialog, QVBoxLayout, QTabWidget, QWidget, QFormLayout, QLineEdit, QComboBox, QCheckBox, 
-                               QPushButton, QFileDialog, QHBoxLayout, QDialogButtonBox, QTimeEdit, QKeySequenceEdit, QLabel, QGridLayout )
+                               QPushButton, QFileDialog, QHBoxLayout, QDialogButtonBox, QKeySequenceEdit, QLabel, QGridLayout, QMessageBox)
 from PySide6.QtGui import QKeySequence, QKeyEvent
 from PySide6.QtCore import Qt, QTime, QEvent
 from core.settings_manager import SettingsManager
@@ -41,9 +41,31 @@ class PreferencesDialog(QDialog):
 
         # Dialog Buttons 
         buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
-        buttons.accepted.connect(self.accept)
+        buttons.accepted.connect(self._handle_accept)
         buttons.rejected.connect(self.reject)
         layout.addWidget(buttons)
+
+    def _handle_accept(self):
+        auto_lock_val = self.auto_lock_spin.value()
+        clipboard_val = self.clipboard_spin.value()
+
+        if auto_lock_val == 0 or clipboard_val == 0:
+            result = QMessageBox.warning(
+                self,
+                "Security warning",
+                (
+                    "Setting Auto-Lock or Clear Clipboard to 0 may expose your "
+                    "password and other sensitive data.\n\n"
+                    "Press OK to save anyway, or Cancel to go back."
+                ),
+                QMessageBox.Ok | QMessageBox.Cancel,
+                QMessageBox.Cancel,
+            )
+
+            if result != QMessageBox.Ok:
+                return
+
+        self.accept()
 
     def eventFilter(self, obj, event):
         if isinstance(obj, QKeySequenceEdit) and event.type() == QEvent.KeyPress:
@@ -73,12 +95,12 @@ class PreferencesDialog(QDialog):
         self.auto_lock_spin = PlusMinusSpinBox()
         self.auto_lock_spin.setRange(0, 120)
         self.auto_lock_spin.setValue(self.settings.get("auto_lock_minutes", 10))
-        form.addRow("Auto-lock after (minutes):", self.auto_lock_spin)
+        form.addRow("Auto-Lock (minutes):", self.auto_lock_spin)
 
         self.clipboard_spin = PlusMinusSpinBox()
-        self.clipboard_spin.setRange(1, 300)
+        self.clipboard_spin.setRange(0, 300)
         self.clipboard_spin.setValue(self.settings.get("clipboard_clear_seconds", 15))
-        form.addRow("Clear clipboard (seconds):", self.clipboard_spin)
+        form.addRow("Clear Clipboard (seconds):", self.clipboard_spin)
 
         self.theme_combo = QComboBox()
         self.theme_combo.addItems(["dark", "light", "galaxy", "obsidian", "summer", "winter"])
@@ -134,7 +156,10 @@ class PreferencesDialog(QDialog):
 
         # Add the whole panel as one form row (no label)
         form.addRow("", checks_panel)
-
+        
+        note = QLabel("Setting Clear Clipboard and Auto-Lock to 0 can expose your password and other info")
+        note.setObjectName("hint")
+        form.addRow("", note)
         self.tabs.addTab(tab, "Database/Application Settings")
 
     def _init_hotkeys_tab(self):

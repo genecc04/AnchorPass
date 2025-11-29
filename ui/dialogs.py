@@ -1,5 +1,5 @@
 from PySide6.QtWidgets import ( QDialog, QFormLayout, QLineEdit, QDialogButtonBox, QFileDialog, 
-                               QLabel, QMessageBox)
+                               QLabel, QMessageBox, QHBoxLayout, QWidget, QSpacerItem, QSizePolicy)
 
 from pathlib import Path
 from core.db_paths import DEFAULT_DB_DIR
@@ -14,9 +14,9 @@ class DatabaseDialog(QDialog):
         super().__init__(parent)
         self.setWindowTitle("Select or Create Database")
         layout = QFormLayout(self)
-        layout.setVerticalSpacing(15)
+        layout.setVerticalSpacing(0)
         layout.setHorizontalSpacing(10)
-        layout.setContentsMargins(30, 25, 30, 25)
+        layout.setContentsMargins(50, 20, 50, 15)
 
         self.db_path = db.load_last_db()
         if self.db_path and not Path(self.db_path).exists():
@@ -31,24 +31,37 @@ class DatabaseDialog(QDialog):
             self.db_edit.setToolTip("Click to select a vault...\n[Current] "+str(self.db_path))
 
         layout.addRow(QLabel("<b>Select a vault:</b>"))
+        layout.addItem(QSpacerItem(0, 15, QSizePolicy.Minimum, QSizePolicy.Fixed))
         layout.addRow("", self.db_edit)
 
-        note = QLabel("Open an existing vault by clicking the field\nor create a new one.")
+        note = QLabel(
+            "Don't have a vault? <a href='#create'>Create a vault.</a>"
+        )
         note.setObjectName("hint")
-        layout.addRow("", note)
+        note.setTextFormat(Qt.RichText)
+        note.setTextInteractionFlags(Qt.TextBrowserInteraction)
+        note.setOpenExternalLinks(False)
+        note.linkActivated.connect(lambda _: self.create_new_db())
 
         buttons = QDialogButtonBox()
-        self.btn_open = buttons.addButton("Open", QDialogButtonBox.AcceptRole)
-        self.btn_new = buttons.addButton("New", QDialogButtonBox.ActionRole)
+        self.btn_open = buttons.addButton("Login", QDialogButtonBox.AcceptRole)
 
         self.btn_open.setDefault(True)
         self.btn_open.setAutoDefault(True)
 
-        layout.addRow("", buttons)
+        btn_row = QHBoxLayout()
+        btn_row.setContentsMargins(0,20,0,0)
+        btn_row.addStretch()
+        btn_row.addWidget(buttons)
+        btn_row.addStretch()
+
+        btn_container = QWidget()
+        btn_container.setLayout(btn_row)
+        layout.addRow("", btn_container)
+        layout.addRow("", note)
 
         self.db_edit.clicked.connect(self.choose_existing_db)
         self.btn_open.clicked.connect(self.accept)
-        self.btn_new.clicked.connect(self.create_new_db)
         self.is_new_db = False
         self.setFixedSize(self.sizeHint())
         self.setSizeGripEnabled(False)
@@ -102,7 +115,7 @@ class DatabaseDialog(QDialog):
             self,
             "New Database Created",
             "A new database file has been created.\n"
-            "You will now set a master password after selecting Open.",
+            "You will now set a master password after selecting Login.",
         )
     
     def accept(self):
