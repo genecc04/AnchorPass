@@ -14,7 +14,6 @@ try:
 except Exception:
     dbx = None
 
-
 EMPTY_MESSAGE = "No record selected. Please select a record to view it here."
 
 _CHAR_LIMITS = {

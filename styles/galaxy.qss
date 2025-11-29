@@ -175,12 +175,6 @@ QWidget#HotkeysPanel QKeySequenceEdit:disabled {
     background-color: #251338;
 }
 
-/* Hover and selected rows */
-#ModernTable QTableView::item:hover,
-#ModernTable::item:hover {
-    background-color: #251338;
-    color: #ffffff;
-}
 #ModernTable QTableView::item:selected,
 #ModernTable::item:selected {
     background-color: #b26bff;
@@ -322,7 +316,7 @@ QAbstractSpinBox {
 }
 QAbstractSpinBox::up-button,
 QAbstractSpinBox::down-button {
-    background: #151024;
+    background: transparent;
     border: none;
     width: 24px;
     border-radius: 6px;
@@ -378,7 +372,6 @@ QCheckBox::indicator:hover {
 QCheckBox::indicator:checked {
     background-color: #b26bff;
     border: 1px solid #b26bff;
-    image: url(:/qt-project.org/styles/commonstyle/images/checkboxindicatorcheck.png);
 }
 QCheckBox::indicator:disabled {
     background-color: #1a1428;
@@ -466,33 +459,6 @@ QTreeView::item:selected {
     color: #ffffff;
 }
 
-/* === Table hover & selected === */
-QTableView::item {
-    border-radius: 0px;
-    padding: 4px 6px;
-}
-QTableView::item:hover {
-    background-color: #251338;
-    color: #ffffff;
-}
-QTableView::item:selected {
-    background-color: #b26bff;
-    color: #ffffff;
-    border-radius: 0px;
-}
-
-/* ===== Headers ===== */
-QHeaderView::section {
-    background-color: #191024;
-    color: #e1d7ff;
-    border: 0;
-    padding: 6px 8px;
-    font-weight: normal;
-}
-QTableView:focus QHeaderView::section {
-    font-weight: normal;
-}
-
 /* ===== Status bar ===== */
 QStatusBar {
     background: #120b22;
@@ -549,15 +515,6 @@ QTreeView, QTableView, QLineEdit, QTextEdit, QPlainTextEdit,
 QComboBox, QSpinBox, QAbstractSpinBox, QPushButton, QScrollBar,
 QMenu, QMenuBar, QHeaderView, QSplitter {
     outline: none;
-}
-
-/* Optional per-widget tweak */
-QAbstractSpinBox#autoLockSpin {
-    padding-right: 28px;
-}
-QAbstractSpinBox#autoLockSpin::up-button,
-QAbstractSpinBox#autoLockSpin::down-button {
-    width: 24px;
 }
 
 /* ===== TOTP Ring Widget ===== */

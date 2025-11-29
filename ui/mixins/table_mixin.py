@@ -93,11 +93,11 @@ def format_modified_date(raw) -> str:
     return dt.strftime("%b %d, %Y %I:%M %p")
 
 COLUMN_DEFS = {
-    "email":        "Email",
-    "username":     "Username",
-    "status":       "Status",
-    "notes":        "Notes",
-    "site_link":         "Link",
+    "email": "Email",
+    "username": "Username",
+    "status": "Status",
+    "notes": "Notes",
+    "site_link": "Link",
     "date_modified": "Modified",
     "date_created": "Created",
     "category": "Category",

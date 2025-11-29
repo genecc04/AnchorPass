@@ -9,9 +9,8 @@ QWidget {
 
 /* ===== LockOverlay ===== */
 #LockOverlay {
-                background: rgba(0, 0, 0, 0.45);
-            }
-
+    background: rgba(0, 0, 0, 0.45);
+}
 
 #LockOverlay QPushButton {
     font-size: 40px;
@@ -21,9 +20,7 @@ QWidget {
 
 /* QMenuBar base look */
 QMenuBar#AppMenuBar {
-    background: #020617;    /* slightly darker or lighter than TopBar */
-    color: #e5e7eb;
-    border-bottom: 1px solid rgba(148, 163, 184, 0.4); /* subtle separator line */
+    border-bottom: 1px solid; /* subtle separator line */
 }
 
 QMenuBar#AppMenuBar::item {
@@ -33,23 +30,12 @@ QMenuBar#AppMenuBar::item {
 
 /* normal hover/active */
 QMenuBar#AppMenuBar::item:selected {
-    background: rgba(255,255,255,0.06);
+    background: rgba(255,255,255,0.4);
     border-radius: 6px;
 }
-
-/* pure disabled (when you call setEnabled(false)) */
-QMenuBar#AppMenuBar:disabled {
-    background: #0b1220;
-    color: #8a8f98;
+QMenuBar#AppMenuBar::item:disabled{
+    color:#8d8d8d;
 }
-QMenuBar#AppMenuBar:disabled::item {
-    color: #8a8f98;
-}
-QMenuBar#AppMenuBar:disabled::item:selected,
-QMenuBar#AppMenuBar:disabled::item:pressed {
-    background: transparent; /* no hover highlight when disabled */
-}
-
 /* OPTIONAL: locked property – lets you style even if you keep some actions enabled */
 QMenuBar#AppMenuBar[locked="true"] {
     background: #0b1220;

@@ -186,11 +186,6 @@ QWidget#HotkeysPanel QKeySequenceEdit:disabled {
 }
 
 /* Hover and selected states */
-#ModernTable QTableView::item:hover,
-#ModernTable::item:hover {
-    background-color: #fff3de;
-    color: #36251c;
-}
 #ModernTable QTableView::item:selected,
 #ModernTable::item:selected {
     background-color: #fad28f;
@@ -303,7 +298,7 @@ QAbstractSpinBox {
 }
 QAbstractSpinBox::up-button,
 QAbstractSpinBox::down-button {
-    background: #ffffff;
+    background: transparent;
     border: none;
     width: 24px;
     border-radius: 6px;
@@ -361,7 +356,6 @@ QCheckBox::indicator:hover {
 QCheckBox::indicator:checked {
     background-color: #ff9800;
     border: 1px solid #ff9800;
-    image: url(:/qt-project.org/styles/commonstyle/images/checkboxindicatorcheck.png);
 }
 QCheckBox::indicator:disabled {
     background-color: #f5ede1;
@@ -403,7 +397,7 @@ QMenu::item:disabled {
 }
 
 /* ===== Tables & Trees ===== */
-QTreeWidget, QTableWidget, QTableView {
+QTreeWidget{
     background-color: #ffffff;
     alternate-background-color: #fff9f0;
     gridline-color: #f0e4d6;
@@ -424,33 +418,6 @@ QTreeView::item:hover {
 QTreeView::item:selected {
     background-color: #fad28f;
     color: #3b2603;
-}
-
-/* === Table hover & selected === */
-QTableView::item {
-    border-radius: 0px;
-    padding: 4px 6px;
-}
-QTableView::item:hover {
-    background-color: #fff3de;
-    color: #36251c;
-}
-QTableView::item:selected {
-    background-color: #fad28f;
-    color: #fff7ec;
-    border-radius: 0px;
-}
-
-/* ===== Headers ===== */
-QHeaderView::section {
-    background-color: #fff7e6;
-    color: #5b4332;
-    border: 0;
-    padding: 6px 8px;
-    font-weight: normal;
-}
-QTableView:focus QHeaderView::section {
-    font-weight: normal;
 }
 
 /* ===== Status bar ===== */
@@ -509,15 +476,6 @@ QTreeView, QTableView, QLineEdit, QTextEdit, QPlainTextEdit,
 QComboBox, QSpinBox, QAbstractSpinBox, QPushButton, QScrollBar,
 QMenu, QMenuBar, QHeaderView, QSplitter {
     outline: none;
-}
-
-/* Optional per-widget tweak */
-QAbstractSpinBox#autoLockSpin {
-    padding-right: 28px;
-}
-QAbstractSpinBox#autoLockSpin::up-button,
-QAbstractSpinBox#autoLockSpin::down-button {
-    width: 24px;
 }
 
 /* TOTP Ring Widget */

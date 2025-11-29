@@ -159,7 +159,6 @@ class CategoryTreeWidget(StyledTreeWidget):
         if not item:
             return
 
-        # ask the owner if this item may be dragged at all
         can_drag = True
         checker = getattr(self._owner, "_can_drag_category_item", None)
         if callable(checker):
@@ -202,30 +201,25 @@ class TreeMixin:
         if not source_item:
             return False
 
-        # Source must be draggable (not Uncategorized / not special)
         if not self._can_drag_category_item(source_item):
             return False
 
         src_path = self.current_item_path(source_item)
 
-        # 1) True empty viewport -> move to root
         if drop_pos == QAbstractItemView.OnViewport:
             return True
 
         if not dest_item:
             return True
 
-        # 2) ABOVE / BELOW a TOP-LEVEL item -> treat as valid "root drop" zone
         if drop_pos in (QAbstractItemView.AboveItem, QAbstractItemView.BelowItem):
             return dest_item.parent() is None
 
-        # 3) Normal ON-ITEM drop: dest must be a normal folder
         dest_path = self.current_item_path(dest_item)
 
         if self._is_special_folder(dest_item) or dest_path == UNCATEGORIZED:
             return False
 
-        # Don't move A under A/...
         if drop_pos == QAbstractItemView.OnItem and dest_path.startswith(src_path + "/"):
             return False
 
@@ -242,25 +236,19 @@ class TreeMixin:
 
         old_path = self.current_item_path(source_item)
 
-        # Cannot move Uncategorized or special folders at all
         if old_path == UNCATEGORIZED or self._is_special_folder(source_item):
             return False
 
-        # 1) Decide new parent item
         if drop_pos == QAbstractItemView.OnItem:
             parent_item = dest_item
         elif drop_pos in (QAbstractItemView.AboveItem, QAbstractItemView.BelowItem):
-            # Above/Below a top-level item -> move to root
             parent_item = None
         else:
-            # OnViewport -> also root
             parent_item = None
 
-        # 2) Resolve parent path
         if parent_item is not None:
             parent_path = self.current_item_path(parent_item)
 
-            # Still forbid putting things directly inside Uncategorized / special
             if parent_path == UNCATEGORIZED or self._is_special_folder(parent_item):
                 return False
         else:
@@ -405,7 +393,6 @@ class TreeMixin:
 
         paths = db.fetch_categories()
 
-        # UNCATEGORIZED first, then by depth, then alphabetically
         paths_sorted = sorted(
             paths,
             key=lambda p: (0 if p == UNCATEGORIZED else 1, p.count("/"), p.lower())
@@ -414,7 +401,7 @@ class TreeMixin:
         for p in paths_sorted:
             self._ensure_tree_item(p)
 
-        self._add_special_folders()   # still added at the bottom
+        self._add_special_folders()
 
         self._init_tree_view()
 

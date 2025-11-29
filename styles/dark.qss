@@ -176,11 +176,6 @@ QWidget#HotkeysPanel QKeySequenceEdit:disabled {
     background-color: #061019;
 }
 /* Hover and selected rows — consistent with global table behavior */
-#ModernTable QTableView::item:hover,
-#ModernTable::item:hover {
-    background-color: transparent;
-    color: #ffffff;
-}
 #ModernTable QTableView::item:selected,
 #ModernTable::item:selected {
     background-color: #075cb2;
@@ -322,7 +317,7 @@ QAbstractSpinBox {
 }
 QAbstractSpinBox::up-button,
 QAbstractSpinBox::down-button {
-    background: #1a1a1a;
+    background: transparent;
     border: none;
     width: 24px;
     border-radius: 6px;
@@ -378,7 +373,6 @@ QCheckBox::indicator:hover {
 QCheckBox::indicator:checked {
     background-color: #075cb2;
     border: 1px solid #075cb2;
-    image: url(:/qt-project.org/styles/commonstyle/images/checkboxindicatorcheck.png);
 }
 QCheckBox::indicator:disabled {
     background-color: #222222;
@@ -465,33 +459,6 @@ QTreeView::item:selected {
     color: #ffffff;
 }
 
-/* === Table hover & selected === */
-QTableView::item {
-    border-radius: 0px;
-    padding: 4px 6px;
-}
-QTableView::item:hover {
-    background-color: #061019;
-    color: #ffffff;
-}
-QTableView::item:selected {
-    background-color: #075cb2;
-    color: #ffffff;
-    border-radius: 0px;
-}
-
-/* ===== Headers ===== */
-QHeaderView::section {
-    background-color: #1f1f1f;
-    color: #dcdcdc;
-    border: 0;
-    padding: 6px 8px;
-    font-weight: normal;
-}
-QTableView:focus QHeaderView::section {
-    font-weight: normal;
-}
-
 /* ===== Status bar ===== */
 QStatusBar {
     background: #1b1b1b;
@@ -542,16 +509,6 @@ QTreeView, QTableView, QLineEdit, QTextEdit, QPlainTextEdit,
 QComboBox, QSpinBox, QAbstractSpinBox, QPushButton, QScrollBar,
 QMenu, QMenuBar, QHeaderView, QSplitter {
     outline: none;
-}
-
-/* Optional per-widget tweak */
-QAbstractSpinBox#autoLockSpin {
-    /* relies on dark palette; override spacing only */
-    padding-right: 28px;
-}
-QAbstractSpinBox#autoLockSpin::up-button,
-QAbstractSpinBox#autoLockSpin::down-button {
-    width: 24px;
 }
 
 TotpRingWidget {

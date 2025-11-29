@@ -25,7 +25,6 @@ class ModernTable(QTableWidget):
         self._setup_ui()
 
         self.setMouseTracking(True)
-        self.cellEntered.connect(self._on_cell_entered)
 
     def _setup_ui(self):
         self.setObjectName("ModernTable")
@@ -56,14 +55,6 @@ class ModernTable(QTableWidget):
         header.setSortIndicatorShown(True)
         header.setSectionsMovable(True)
         self.setSortingEnabled(True)
-
-    def _on_cell_entered(self, row, _col):
-        if self._hovered_row == row:
-            return
-        if self._hovered_row != -1:
-            self._reset_row_color(self._hovered_row)
-        self._hovered_row = row
-        self._set_row_color(row, QColor(0, 0, 0, 25))
 
     def mouseMoveEvent(self, event):
         index = self.indexAt(event.pos())
