@@ -64,9 +64,9 @@ class MainWindow(PreviewMixin, BackupMixin, LockMixin, CrudMixin, TableMixin, Tr
         
         self.ui_builder.build_central_widget()
         
-        
-        self.ui_builder.build_menus()
         self.prompt_login(force=True)
+        self.ui_builder.build_menus()
+
         self.ui_builder.build_shortcuts()
         self.ui_builder.wire_connections()
 
