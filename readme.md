@@ -1,7 +1,6 @@
 # AnchorPass (PySide6)
 
-A desktop password manager built with PySide6, SQLite, and modern UX touches:
-status badges, multi-select actions, sortable columns, and automatic backups.
+AnchorPass is a desktop password manager built with PySide6 and SQLite, featuring a clean, keyboard-friendly UI, built-in password generator, TOTP authenticator, and automatic backups. It uses strong, modern cryptography to protect your vault while giving you practical tools like status-based lifecycle management, folder-like categories, and flexible column and view customization for your entries.
 
 ## Features
 
