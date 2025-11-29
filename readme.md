@@ -6,14 +6,15 @@ status badges, multi-select actions, sortable columns, and automatic backups.
 ## Features
 
 - **Clean UI**
-  - Modern table with hover highlight and **sortable headers** (including proper ordering for the **Status** column).
-  - **Status badges** (Active, Archived, Expired, Deleted) rendered as pills.
-  - Top bar with **Add / Edit**, grouped **Copy Email/Username/Password** buttons (enabled only for a single selection), and **Archive / Expire / Delete** actions.
-
-- **Context Menus**
-  - Right-click preserves multi-selection.
-  - **Multi-select menu**: Archive Selected, Expire Selected, Delete (to Trash), Restore/Purge when in special folders.
-  - Single-item menu includes quick **Copy** actions, **Edit**, lifecycle ops, and TOTP code copy when available.
+  - Feature-rich table with **sortable** and **movable headers**, plus a **customizable column layout**.
+  - Table rows support **drag & drop** into the category tree for quick re-organization.
+  - Category tree uses a familiar **folder-like structure**.
+  - **Status badges** (Active, Archived, Expired, Deleted) are rendered as pill-style labels for quick scanning.
+  - Compact top bar with:
+    - **Add / Duplicate / Edit** entry actions  
+    - Grouped **Copy Email / Username / Password** buttons (enabled only when a single row is selected)  
+    - **Archive / Expire / Delete** actions  
+    - Table **Settings** for view and column customization
 
 - **Folders**
   - Normal categories **do not show counts** in the tree.
@@ -21,9 +22,19 @@ status badges, multi-select actions, sortable columns, and automatic backups.
     - Archived, Expired, Deleted.
   - Selecting these loads the corresponding status view.
 
+- **Password Generator**
+  - **Built-in password generator** for creating strong, unique passwords.
+  - Can generate **random character-based passwords** based on your length and character set preferences.
+  - Can generate **random word-based passphrases** with customizable separators for easier-to-memorize passwords.
+
+- **Authenticator**
+  - **Built-in authenticator** with TOTP (Time-based One-Time Password) support.
+  - Works with TOTP secrets provided manually or extracted from QR codes (where available).
+
 - **Lifecycle**
   - Archive, Expire, Soft Delete (move to Deleted), and **Permanent Delete** inside Deleted.
   - **Automatic expiration checker** runs periodically; when entries expire, the UI (tree + table) refreshes.
+  - **Expiry warnings** for entries that are about to expire (highlighted as Expiring with a tooltip showing days remaining).
 
 - **Backups**
   - Manual: "Backup now".
@@ -53,7 +64,11 @@ Please read those notices for details.
 
 ## Security / Encryption
 
-All sensitive vault data is encrypted using AES (via the Fernet standard), with keys derived from the master password using PBKDF2 with SHA-256 and a per-vault random salt.
+- All sensitive vault data is encrypted using AES (via the Fernet standard). Encryption keys are derived from your master password using PBKDF2 (SHA-256) with a per-vault random salt.
+- **Clipboard auto-clear**: copied secrets are automatically cleared from the clipboard after a configurable timeout.
+- **Auto-lock on idle**: the vault locks itself after a period of inactivity.
+- **Lock on minimize**: optionally lock the vault whenever the window is minimized.
+- **Lock on sleep**: automatically lock the vault when the system goes to sleep or is locked.
 
 **Important limitations:**
 
