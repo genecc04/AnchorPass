@@ -17,6 +17,8 @@ class AuthMixin:
 
         db_path = None
         is_new_db = False
+        inline_password = ""
+
         if reuse_current_db and getattr(self, "current_db", None):
             db_path = self.current_db
             is_new_db = False
@@ -28,7 +30,7 @@ class AuthMixin:
                         sys.exit(0)
                     return False
 
-                db_path, is_new_db = db_dlg.values()
+                db_path, is_new_db, inline_password = db_dlg.values()
                 if not db_path:
                     QMessageBox.warning(self, "Error", "Create a database first.")
                     continue
@@ -80,28 +82,55 @@ class AuthMixin:
         except Exception:
             pass
 
-        while True:
-            dlg = MasterDialog(setup=is_new_db, parent=self, icon_family=getattr(self, "icon_family", None), settings=self.settings)
-            if dlg.exec() != QDialog.Accepted:
-                return False
+        if is_new_db:
+            while True:
+                dlg = MasterDialog(
+                    setup=True,
+                    parent=self,
+                    icon_family=getattr(self, "icon_family", None),
+                    settings=self.settings,
+                )
+                if dlg.exec() != QDialog.Accepted:
+                    return False
 
-            p1, p2, minutes = dlg.values()
+                p1, p2, _ignored_minutes = dlg.values()
 
-            if is_new_db:
                 if not p1 or p1 != p2:
                     QMessageBox.warning(self, "Error", "Passwords do not match.")
                     continue
+
                 security.set_master(p1)
+                password = p1
                 break
+        else:
+            if inline_password:
+                password = inline_password
             else:
-                if not security.verify_master(p1):
-                    QMessageBox.critical(self, "Error", "Incorrect master password.")
-                    continue
-                break
+                while True:
+                    dlg = MasterDialog(
+                        setup=False,
+                        parent=self,
+                        icon_family=getattr(self, "icon_family", None),
+                        settings=self.settings,
+                    )
+                    if dlg.exec() != QDialog.Accepted:
+                        return False
+
+                    p1, _p2, _ignored_minutes = dlg.values()
+                    if not security.verify_master(p1):
+                        QMessageBox.critical(self, "Error", "Incorrect master password.")
+                        continue
+                    password = p1
+                    break
 
         salt = security.get_salt()
-        self.cipher = crypto.make_cipher(p1, salt)
-        self.master = p1
+        self.cipher = crypto.make_cipher(password, salt)
+        self.master = password
+
+        try:
+            minutes = int(self.settings.get("auto_lock_minutes", 10))
+        except Exception:
+            minutes = 10
         self.auto_lock_minutes = minutes
 
         try:

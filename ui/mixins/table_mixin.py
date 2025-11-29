@@ -124,12 +124,18 @@ class TableMixin:
         self.table.setContextMenuPolicy(Qt.CustomContextMenu)
         self.table.customContextMenuRequested.connect(self.show_context_menu)
         self.table.doubleClicked.connect(self.on_table_double_clicked)
+        self.table.clicked.connect(self._on_table_clicked)
 
         header = self.table.horizontalHeader()
         header.sectionMoved.connect(self._on_header_section_moved)
 
         self.adjust_table_columns()
 
+    def _on_table_clicked(self, index):
+        search = getattr(self, "search", None)
+        if search is None:
+            return
+        search.clearFocus()
 
     def adjust_table_columns(self):
         hdr = self.table.horizontalHeader()

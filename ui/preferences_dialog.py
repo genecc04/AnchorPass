@@ -157,9 +157,6 @@ class PreferencesDialog(QDialog):
         # Add the whole panel as one form row (no label)
         form.addRow("", checks_panel)
         
-        note = QLabel("Setting Clear Clipboard and Auto-Lock to 0 can expose your password and other info")
-        note.setObjectName("hint")
-        form.addRow("", note)
         self.tabs.addTab(tab, "Database/Application Settings")
 
     def _init_hotkeys_tab(self):

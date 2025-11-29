@@ -12,6 +12,12 @@ QWidget {
     background: rgba(0, 0, 0, 0.45);
 }
 
+QTableView::item,
+QTableWidget::item {
+    padding-left: 4px;
+    padding-right: 8px;
+}
+
 #LockOverlay QPushButton {
     font-size: 40px;
     padding: 8px 32px;
@@ -86,3 +92,4 @@ QDateTimeEdit::down-arrow {
 QFrame {
     border: none;
 }
+
