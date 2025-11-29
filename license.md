@@ -1,6 +1,6 @@
 # License
 
-Copyright (c) 2025 [Your Name Here]  
+Copyright (c) 2025 genecc04.  
 All rights reserved.
 
 This software and associated documentation files (the "Software") are the
