@@ -22,7 +22,7 @@ from ui.managers.clipboard_manager import ClipboardManager
 from ui.builders.ui_builder import UIBuilder
 
 import time
-from datetime import datetime
+from datetime import datetime, date
 from ui.widgets.tray_icon_widget import TrayIconWidget
 from pathlib import Path
 from core import totp as totp_util
@@ -61,12 +61,14 @@ class MainWindow(PreviewMixin, BackupMixin, LockMixin, CrudMixin, TableMixin, Tr
         self.backup_manager = BackupManager(self.settings)
         self.clipboard_manager = ClipboardManager(self.settings, self._log_status)
         self.ui_builder = UIBuilder(self)
-        self.ui_builder.build_menus()
-        self.ui_builder.build_shortcuts()
+        
         self.ui_builder.build_central_widget()
-        self.ui_builder.wire_connections()
-
+        
         self.prompt_login(force=True)
+        self.ui_builder.build_menus()
+
+        self.ui_builder.build_shortcuts()
+        self.ui_builder.wire_connections()
 
         try:
             if hasattr(self, "apply_table_prefs_from_settings"):
@@ -760,7 +762,6 @@ class MainWindow(PreviewMixin, BackupMixin, LockMixin, CrudMixin, TableMixin, Tr
         if self.backup_manager.should_run_backup(interval, last_run):
             dst = self.export_backup(reason="scheduled")
             if dst:
-                from datetime import date
                 self.settings.set("backup_last_run", date.today().strftime("%Y-%m-%d"))
                 self._log_status("Scheduled backup saved.")
             else:
