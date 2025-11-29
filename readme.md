@@ -53,7 +53,8 @@ AnchorPass is a desktop password manager built with PySide6 and SQLite, featurin
 
 - **PySide6** for the UI.
 - **SQLite** for storage.
-- **Cryptography** for encryption.
+- **cryptography** for encryption.
+- **bcrypt** for master password hashing.
 - **zxcvbn** for strength estimation.
 - **EFF Short Wordlist** for passphrase generation.
 - **pywin32** for Windows startup integration.
