@@ -31,13 +31,13 @@ third-party licenses.
 
 Examples include (but are not limited to):
 
-- **zxcvbn (and ports such as `_zxcvbn`)**  
+- **zxcvbn (and ports such as ***_zxcvbn***)**  
   - License: MIT License  
-  - See: `THIRD_PARTY_NOTICES.md` for license text and attribution.
+  - See: ***THIRD_PARTY_NOTICES.md*** for license text and attribution.
 
 - **EFF Short Wordlist #1**  
   - License: Creative Commons Attribution 4.0 International (CC BY 4.0)  
-  - See: `THIRD_PARTY_NOTICES.md` for attribution and license links.
+  - See: ***THIRD_PARTY_NOTICES.md*** for attribution and license links.
 
 - **cryptography (Python)**  
   - Licenses: Apache License 2.0 and BSD 3-Clause (dual-licensed).  
@@ -49,7 +49,7 @@ Examples include (but are not limited to):
   - The bcrypt library is provided under the terms of its upstream license.
 
 For full texts, attributions, and any required NOTICE content, see
-`THIRD_PARTY_NOTICES.md` and any additional license files distributed with
+***THIRD_PARTY_NOTICES.md*** and any additional license files distributed with
 this project.
 
 ---

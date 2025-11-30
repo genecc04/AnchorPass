@@ -15,13 +15,10 @@ class AuthMixin:
     def _login(self, reuse_current_db: bool = False) -> bool:
         default_db_dir = get_user_documents_dir() / "anchorpass" / "data"
 
-        db_path = None
-        is_new_db = False
         inline_password = ""
 
         if reuse_current_db and getattr(self, "current_db", None):
-            db_path = self.current_db
-            is_new_db = False
+            db_path, is_new_db = self.current_db, False
         else:
             while True:
                 db_dlg = DatabaseDialog(self)
@@ -55,10 +52,9 @@ class AuthMixin:
 
         self.settings = SettingsManager(db_path=db_path)
 
-        if hasattr(self, "backup_manager"):
-            self.backup_manager.settings = self.settings
-        if hasattr(self, "clipboard_manager"):
-            self.clipboard_manager.settings = self.settings
+        for mgr in ("backup_manager", "clipboard_manager"):
+            if hasattr(self, mgr):
+                getattr(self, mgr).settings = self.settings
 
         try:
             theme = self.settings.get("theme", "dark")
@@ -66,7 +62,6 @@ class AuthMixin:
 
             if theme != SettingsManager().get("theme", "dark"):
                 SettingsManager().set("theme", theme)
-
         except Exception:
             pass
 
@@ -84,12 +79,7 @@ class AuthMixin:
 
         if is_new_db:
             while True:
-                dlg = MasterDialog(
-                    setup=True,
-                    parent=self,
-                    icon_family=getattr(self, "icon_family", None),
-                    settings=self.settings,
-                )
+                dlg = MasterDialog(setup=True, parent=self, icon_family=getattr(self, "icon_family", None), settings=self.settings)
                 if dlg.exec() != QDialog.Accepted:
                     return False
 
@@ -128,10 +118,9 @@ class AuthMixin:
         self.master = password
 
         try:
-            minutes = int(self.settings.get("auto_lock_minutes", 10))
+            self.auto_lock_minutes = int(self.settings.get("auto_lock_minutes", 10))
         except Exception:
-            minutes = 10
-        self.auto_lock_minutes = minutes
+            self.auto_lock_minutes = 10
 
         try:
             self._repair_encryption()
@@ -151,7 +140,7 @@ class AuthMixin:
             return
 
         try:
-            old_cipher = self.cipher 
+            old_cipher = self.cipher
             extra_ciphers = []
             if hasattr(crypto, "derive_cipher_from_password"):
                 try:
@@ -164,7 +153,7 @@ class AuthMixin:
             salt = security.get_salt()
             new_cipher = crypto.make_cipher(new_pw, salt)
 
-            stats = db.rewrap_all_encrypted_fields(
+            db.rewrap_all_encrypted_fields(
                 old_cipher=old_cipher,
                 new_cipher=new_cipher,
                 extra_ciphers=extra_ciphers,
@@ -179,14 +168,7 @@ class AuthMixin:
             if hasattr(self, "reload"):
                 self.reload()
 
-            QMessageBox.information(
-                self,
-                "Success",
-                (
-                    "Master password changed successfully.\n\n"
-                ),
-            )
-
+            QMessageBox.information(self, "Success", "Master password changed successfully.\n\n")
         except Exception as e:
             QMessageBox.critical(self, "Error", f"Failed to change password:\n{e}")
 
@@ -228,15 +210,19 @@ class AuthMixin:
 
             if changed and hasattr(self, "reload"):
                 self.reload()
-
-        except Exception as e:
+        except Exception:
             pass
 
     def _ask_master_inline(self, setup: bool):
-        overlay = UnlockOverlay(parent=self.centralWidget(), setup=setup,
-                                icon_family=getattr(self, "icon_family", None), settings=getattr(self, "settings", None))
-        
-        overlay.show(); overlay.raise_()
+        overlay = UnlockOverlay(
+            parent=self.centralWidget(),
+            setup=setup,
+            icon_family=getattr(self, "icon_family", None),
+            settings=getattr(self, "settings", None),
+        )
+
+        overlay.show()
+        overlay.raise_()
 
         loop = QEventLoop()
         result = {"ok": False, "p1": "", "p2": "", "m": 0}
@@ -255,7 +241,7 @@ class AuthMixin:
         loop.exec()
         overlay.deleteLater()
         return result["ok"], result["p1"], result["p2"], result["m"]
-    
+
     def prompt_login(self, force: bool = False, reuse_current_db: bool = False) -> None:
         if getattr(self, "_login_in_progress", False):
             return
@@ -272,9 +258,6 @@ class AuthMixin:
                         self._initial_login_done = True
                         self.unlock()
                         break
-                    else:
-                        continue
-
             else:
                 ok = self._login(reuse_current_db=reuse_current_db)
                 if ok:
@@ -285,26 +268,27 @@ class AuthMixin:
             self._login_in_progress = False
 
     def unlock(self):
-        self.show_lock_overlay(False)
-        self._set_menu_locked_state(False)
-        self._update_tray_icon_locked_state(False)
-        
         if hasattr(self, "show_lock_overlay"):
             self.show_lock_overlay(False)
-        if hasattr(self, "_cache_active_db_path_safely"):
-            self._cache_active_db_path_safely()
-        if hasattr(self, "populate_tree"):
-            self.populate_tree()
-        if hasattr(self, "reload"):
-            self.reload()
-        if hasattr(self, "_update_actions_for_selection"):
-            self._update_actions_for_selection()
+        self._set_menu_locked_state(False)
+        self._update_tray_icon_locked_state(False)
 
-        for fn in ("_start_idle_lock_timer",
-                "_start_scheduled_backup_timer",
-                "_start_sleep_guard",
-                "_start_expiration_checker",
-                "_check_and_warn_expiring_entries"):
+        for fn in (
+            "_cache_active_db_path_safely",
+            "populate_tree",
+            "reload",
+            "_update_actions_for_selection",
+        ):
+            if hasattr(self, fn):
+                getattr(self, fn)()
+
+        for fn in (
+            "_start_idle_lock_timer",
+            "_start_scheduled_backup_timer",
+            "_start_sleep_guard",
+            "_start_expiration_checker",
+            "_check_and_warn_expiring_entries",
+        ):
             if hasattr(self, fn):
                 getattr(self, fn)()
 
@@ -354,7 +338,6 @@ class AuthMixin:
                 self._lock_btn.setEnabled(True)
 
     def _unlock_with_inline_master(self) -> None:
-
         if not getattr(self, "_initial_login_done", False):
             self.prompt_login(force=True)
             return
