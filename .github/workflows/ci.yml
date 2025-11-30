@@ -123,7 +123,8 @@ jobs:
             --add-data "styles;styles" `
             --add-data "assets;assets" `
             --add-data ".\LICENSE.md;." `
-            --add-data ".\THIRD_PARTY_NOTICES.md;."
+            --add-data ".\THIRD_PARTY_NOTICES.md;." `
+            --add-data ".\CREDITS.md;."
 
       # NEW: make zip, same as before
       - name: Package onedir build as zip
