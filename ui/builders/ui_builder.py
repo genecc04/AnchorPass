@@ -11,6 +11,7 @@ from ui.widgets.button import FontIconButton
 from core.settings_manager import SettingsManager
 from ui.mixins.tree_mixin import CategoryTreeWidget 
 from pathlib import Path
+from ui.widgets.rounded_menu import RoundedMenu
 
 if TYPE_CHECKING:
     from ui.main_window import MainWindow
@@ -32,36 +33,65 @@ class UIBuilder:
         menubar.setNativeMenuBar(False)
         menubar.setObjectName("AppMenuBar")
 
-        file_menu = menubar.addMenu("&File")
-        file_menu.addAction(QAction("Change Database", self.window, 
-                                    triggered=self.window.change_database))
-        file_menu.addAction(QAction("Backup now", self.window, 
-                                    triggered=lambda: self.window.export_backup(reason="manual")))
-        file_menu.addAction(QAction("Open Backup Folder…", self.window, 
-                                    triggered=self.window._open_backup_folder))
+        file_menu = RoundedMenu("&File", self.window)
+        menubar.addMenu(file_menu)
+
+        file_menu.addAction(QAction(
+            "Change Database", self.window,
+            triggered=self.window.change_database
+        ))
+        file_menu.addAction(QAction(
+            "Backup now", self.window,
+            triggered=lambda: self.window.export_backup(reason="manual")
+        ))
+        file_menu.addAction(QAction(
+            "Open Backup Folder…", self.window,
+            triggered=self.window._open_backup_folder
+        ))
         file_menu.addSeparator()
-        file_menu.addAction(QAction("Exit", self.window, triggered=self.window.close))
+        file_menu.addAction(QAction(
+            "Exit", self.window,
+            triggered=self.window.close
+        ))
 
-        vault_menu = menubar.addMenu("&Vault")
+        vault_menu = RoundedMenu("&Vault", self.window)
+        menubar.addMenu(vault_menu)
 
-        self.window.lock_action = QAction("Lock Vault", self.window,
-                                        triggered=self.window.lock)
-        
+        self.window.lock_action = QAction(
+            "Lock Vault", self.window,
+            triggered=self.window.lock
+        )
         vault_menu.addAction(self.window.lock_action)
 
-        settings_menu = menubar.addMenu("&Settings")
-        settings_menu.addAction(QAction("Preferences", self.window, 
-                                       triggered=self.window.open_settings_dialog))
+        settings_menu = RoundedMenu("&Settings", self.window)
+        menubar.addMenu(settings_menu)
 
-        help_menu = menubar.addMenu("&Help")
-        help_menu.addAction(QAction("About", self.window, triggered=self._show_about))
+        settings_menu.addAction(QAction(
+            "Preferences", self.window,
+            triggered=self.window.open_settings_dialog
+        ))
+
+        help_menu = RoundedMenu("&Help", self.window)
+        menubar.addMenu(help_menu)
+
+        help_menu.addAction(QAction(
+            "About", self.window,
+            triggered=self._show_about
+        ))
         help_menu.addSeparator()
-        help_menu.addAction(QAction("License", self.window,
-                                    triggered=self._show_license))
-        help_menu.addAction(QAction("Third-Party Notices", self.window,
-                                    triggered=self._show_third_party_notices))
-        help_menu.addAction(QAction("Credits", self.window,
-                                    triggered=self._show_credits))
+        help_menu.addAction(QAction(
+            "License", self.window,
+            triggered=self._show_license
+        ))
+        help_menu.addAction(QAction(
+            "Third-Party Notices", self.window,
+            triggered=self._show_third_party_notices
+        ))
+        help_menu.addAction(QAction(
+            "Credits", self.window,
+            triggered=self._show_credits
+        ))
+
     
     def build_shortcuts(self):
         settings = self._get_settings()

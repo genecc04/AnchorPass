@@ -61,6 +61,27 @@ QLabel#DragPreviewChip {
     border: 1px solid #d0d0d0;
 }
 
+QMenu#RoundedMenu {
+    background-color: #cccccc;
+    color: #1a1a1a;
+    border: 1px solid #ededed;
+    padding: 4px 4px 8px 4px;
+}
+
+QMenu#RoundedMenu::item {
+    padding: 8px 22px 8px 12px;
+    margin: 2px 4px;
+    border-radius: 4px;
+}
+
+QMenu#RoundedMenu::item:selected {
+    background-color: #d2e2ff;
+    color: #11151e;
+}
+
+QMenu#RoundedMenu::item:disabled {
+    color: #9aa4b6;
+}
 /* ===== Settings Tabs (Light / Neutral Theme) ===== */
 
 /* Main tab widget */
