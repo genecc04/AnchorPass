@@ -60,6 +60,8 @@ class UIBuilder:
                                     triggered=self._show_license))
         help_menu.addAction(QAction("Third-Party Notices", self.window,
                                     triggered=self._show_third_party_notices))
+        help_menu.addAction(QAction("Credits", self.window,
+                                    triggered=self._show_credits))
     
     def build_shortcuts(self):
         settings = self._get_settings()
@@ -362,6 +364,8 @@ class UIBuilder:
         layout = QVBoxLayout(dlg)
 
         viewer = QTextBrowser(dlg)
+        viewer.setOpenExternalLinks(True)
+
         try:
             viewer.setMarkdown(text)
         except Exception:
@@ -380,3 +384,6 @@ class UIBuilder:
 
     def _show_third_party_notices(self):
         self._show_text_file_dialog("Third-Party Notices", "THIRD_PARTY_NOTICES.md")
+
+    def _show_credits(self):
+        self._show_text_file_dialog("Credits", "CREDITS.md")
