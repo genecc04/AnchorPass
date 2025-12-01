@@ -3,7 +3,6 @@ from PySide6.QtWidgets import ( QDialog, QVBoxLayout, QTabWidget, QWidget, QForm
 from PySide6.QtGui import QKeySequence, QKeyEvent
 from PySide6.QtCore import Qt, QTime, QEvent
 from core.settings_manager import SettingsManager
-from ui.widgets.plusminus_timeedit import PlusMinusTimeEdit
 from core.startup_manager import is_startup_enabled, set_startup_enabled
 from ui.widgets.rounded_context_menu import KeySequenceEdit, LineEdit, SpinBox, TimeEdit
 
