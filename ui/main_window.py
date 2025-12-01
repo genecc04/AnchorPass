@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from PySide6.QtWidgets import QMainWindow, QMessageBox, QFileDialog, QApplication, QMenu, QDialog
+from PySide6.QtWidgets import QMainWindow, QMessageBox, QFileDialog, QApplication, QDialog
 from PySide6.QtCore import Qt, QTimer, QEvent, QPoint, QItemSelectionModel, QObject
 from PySide6.QtGui import QIcon
 
@@ -26,6 +26,7 @@ from datetime import datetime, date
 from ui.widgets.tray_icon_widget import TrayIconWidget
 from pathlib import Path
 from core import totp as totp_util
+from ui.widgets.rounded_menu import RoundedMenu
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 ICON_PATH = BASE_DIR / "assets" / "icon.ico"
@@ -277,7 +278,7 @@ class MainWindow(PreviewMixin, BackupMixin, LockMixin, CrudMixin, TableMixin, Tr
         try:
             super().show_context_menu(pos)
         except AttributeError:
-            menu = QMenu(self)
+            menu = RoundedMenu(self)
             if count == 1:
                 menu.addAction("Edit", self.edit_entry)
             label = "Delete Permanently" if self._in_deleted_folder() else "Delete (to Trash)"
@@ -294,7 +295,7 @@ class MainWindow(PreviewMixin, BackupMixin, LockMixin, CrudMixin, TableMixin, Tr
         if cnt < 2:
             return
 
-        menu = QMenu(self)
+        menu = RoundedMenu(self)
 
         hdr = menu.addAction(f"{cnt} selected")
         hdr.setEnabled(False)

@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import (QTableWidgetItem, QMenu, QApplication, QHeaderView, QMessageBox, QAbstractItemView, QDialog, QVBoxLayout, 
+from PySide6.QtWidgets import (QTableWidgetItem, QApplication, QHeaderView, QMessageBox, QAbstractItemView, QDialog, QVBoxLayout, 
                                QCheckBox, QDialogButtonBox, QHBoxLayout, QGridLayout)
 from PySide6.QtCore import Qt, QTimer, QItemSelectionModel, QByteArray
 from PySide6.QtGui import QColor
@@ -11,6 +11,7 @@ from core.settings_manager import SettingsManager
 from ui.mixins.tree_mixin import TreeMixin
 from datetime import date, timedelta, datetime
 from typing import Optional
+from ui.widgets.rounded_menu import RoundedMenu
 
 def is_expiring_soon(expiry_date_str: str | None, days: int = 5) -> bool:
     if not expiry_date_str:
@@ -685,7 +686,7 @@ class TableMixin:
         if otp_secret:
             code_now, _, _ = totp_util.totp_from_uri_or_secret(otp_secret)
 
-        menu = QMenu(self)
+        menu = RoundedMenu(self)
 
         menu.addAction("Edit…", lambda: QTimer.singleShot(0, lambda: self.edit_single_entry(entry_id)))
         menu.addAction("Duplicate Entry",lambda: QTimer.singleShot(0, lambda: self._duplicate_single_entry(entry_id)))

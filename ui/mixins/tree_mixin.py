@@ -1,11 +1,11 @@
-from PySide6.QtWidgets import QMenu, QTreeWidgetItem, QMessageBox, QInputDialog, QAbstractItemView
+from PySide6.QtWidgets import QTreeWidgetItem, QMessageBox, QInputDialog, QAbstractItemView
 from PySide6.QtCore import Qt, QPoint
 from PySide6.QtGui import QFont
 from core import db
 from core.db import UNCATEGORIZED
 from core.styled_tree import StyledTreeWidget
 import re
-
+from ui.widgets.rounded_menu import RoundedMenu
 class CategoryTreeWidget(StyledTreeWidget):
 
     def __init__(self, owner):
@@ -460,7 +460,7 @@ class TreeMixin:
         item = self.tree.itemAt(pos)
         
         if item and self._is_special_folder(item):
-            menu = QMenu(self)
+            menu = RoundedMenu(self)
             
             if self.current_item_path(item) == self.SPECIAL_DELETED:
                 menu.addAction("Empty Trash", self._empty_trash)
@@ -471,7 +471,7 @@ class TreeMixin:
                 menu.exec(self.tree.viewport().mapToGlobal(pos))
             return
         
-        menu = QMenu(self)
+        menu = RoundedMenu(self)
         if item:
             path = self.current_item_path(item)
 

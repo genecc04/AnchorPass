@@ -1,6 +1,7 @@
 from PySide6.QtWidgets import QSystemTrayIcon, QMenu, QApplication, QMessageBox
 from PySide6.QtGui import QIcon, QAction
 from PySide6.QtCore import QObject, Slot
+from ui.widgets.rounded_menu import RoundedMenu
 
 
 class TrayIconWidget(QObject):
@@ -26,7 +27,7 @@ class TrayIconWidget(QObject):
         self.tray.show()
 
     def _create_menu(self):
-        menu = QMenu()
+        menu = RoundedMenu(self.parent())
 
         self.action_open = QAction("Open", self)
         self.action_lock = QAction("Lock Database", self)
