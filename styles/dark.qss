@@ -49,7 +49,6 @@ QLabel#DragPreviewChip {
 }
 
 QMenu#RoundedMenu {
-    background-color: #1b1b1b;
     color: #ffffff;
     border: 1px solid #232323;
     padding: 4px 4px 8px 4px;
@@ -416,7 +415,7 @@ QMenuBar::item:selected {
     color: #ffffff;
 }
 QMenu {
-    background-color: #1b1b1b;
+    background-color: #232323;
     color: #ffffff;
     border: 1px solid #333333;
     border-radius: 6px;
