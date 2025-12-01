@@ -59,14 +59,9 @@ class AuthMixin:
         try:
             theme = self.settings.get("theme", "dark")
             load_styles(QApplication.instance(), theme=theme)
-
+            self._refresh_lock_overlay_icon()
             if theme != SettingsManager().get("theme", "dark"):
                 SettingsManager().set("theme", theme)
-        except Exception:
-            pass
-
-        try:
-            self._refresh_lock_overlay_icon()
         except Exception:
             pass
 

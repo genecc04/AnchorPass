@@ -1,11 +1,11 @@
-from PySide6.QtWidgets import ( QDialog, QVBoxLayout, QTabWidget, QWidget, QFormLayout, QLineEdit, QComboBox, QCheckBox, 
+from PySide6.QtWidgets import ( QDialog, QVBoxLayout, QTabWidget, QWidget, QFormLayout, QComboBox, QCheckBox, 
                                QPushButton, QFileDialog, QHBoxLayout, QDialogButtonBox, QKeySequenceEdit, QLabel, QGridLayout, QMessageBox)
 from PySide6.QtGui import QKeySequence, QKeyEvent
 from PySide6.QtCore import Qt, QTime, QEvent
 from core.settings_manager import SettingsManager
-from ui.widgets.plusminus_spinbox import PlusMinusSpinBox
 from ui.widgets.plusminus_timeedit import PlusMinusTimeEdit
 from core.startup_manager import is_startup_enabled, set_startup_enabled
+from ui.widgets.rounded_context_menu import KeySequenceEdit, LineEdit, SpinBox, TimeEdit
 
 class PreferencesDialog(QDialog):
 
@@ -92,12 +92,12 @@ class PreferencesDialog(QDialog):
             self.change_pw_btn.clicked.connect(self.main_window.change_master_password)
         form.addRow("Change Password:", self.change_pw_btn)
 
-        self.auto_lock_spin = PlusMinusSpinBox()
+        self.auto_lock_spin = SpinBox()
         self.auto_lock_spin.setRange(0, 120)
         self.auto_lock_spin.setValue(self.settings.get("auto_lock_minutes", 10))
         form.addRow("Auto-Lock (minutes):", self.auto_lock_spin)
 
-        self.clipboard_spin = PlusMinusSpinBox()
+        self.clipboard_spin = SpinBox()
         self.clipboard_spin.setRange(0, 300)
         self.clipboard_spin.setValue(self.settings.get("clipboard_clear_seconds", 15))
         form.addRow("Clear Clipboard (seconds):", self.clipboard_spin)
@@ -177,9 +177,9 @@ class PreferencesDialog(QDialog):
             bool(self.settings.get("hotkeys_enabled", True))
         )
 
-        def _make_key_edit(setting_key: str, default: str = "") -> QKeySequenceEdit:
+        def _make_key_edit(setting_key: str, default: str = "") -> KeySequenceEdit:
             seq_str = self.settings.get(setting_key, default) or ""
-            edit = QKeySequenceEdit()
+            edit = KeySequenceEdit()
             if seq_str:
                 edit.setKeySequence(QKeySequence(seq_str))
             edit.installEventFilter(self)
@@ -293,7 +293,7 @@ class PreferencesDialog(QDialog):
         path_row = QHBoxLayout()
         current_folder = (self.settings.get("backup_path", "") or "").strip() \
                          or (self.settings.get("backup_dir", "") or "").strip()
-        self.backup_path_edit = QLineEdit(current_folder)
+        self.backup_path_edit = LineEdit(current_folder)
         browse_btn = QPushButton("Browse")
         backup_now_btn = QPushButton("Backup now")
         path_row.addWidget(self.backup_path_edit, 1)
@@ -317,7 +317,7 @@ class PreferencesDialog(QDialog):
         self.sched_interval_combo.setCurrentText(self.settings.get("backup_interval",
                                                                    self.settings.get("backup_schedule", "Daily")))
 
-        self.sched_time_edit = PlusMinusTimeEdit()
+        self.sched_time_edit = TimeEdit()
         time_str = self.settings.get("backup_time", "02:00")
         t = QTime.fromString(time_str, "HH:mm")
         if not t.isValid():
@@ -336,7 +336,7 @@ class PreferencesDialog(QDialog):
         form.addRow("Scheduled:", sched_row)
 
         #Retention (0 = unlimited)
-        self.backup_retention_spin = PlusMinusSpinBox()
+        self.backup_retention_spin = SpinBox()
         self.backup_retention_spin.setRange(0, 500)
         self.backup_retention_spin.setToolTip("How many backups to keep (0 = unlimited)")
         self.backup_retention_spin.setValue(int(self.settings.get("backup_retention",

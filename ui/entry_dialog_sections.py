@@ -1,15 +1,15 @@
 from __future__ import annotations
 
-from PySide6.QtWidgets import (QWidget, QVBoxLayout, QFormLayout, QLineEdit, QPlainTextEdit, QLabel, QComboBox, 
+from PySide6.QtWidgets import (QWidget, QVBoxLayout, QFormLayout, QLabel, QComboBox, 
                                QCheckBox, QSizePolicy, QHBoxLayout)
 from PySide6.QtCore import Qt, QDate
 from datetime import datetime, timezone
-
+from PySide6.QtGui import QFont
 from core import db
 from core.settings_manager import SettingsManager
 from ui.widgets.password_field import PasswordLineEdit
-from ui.widgets.date_picker import DatePicker
 from ui.entry_dialog_totp import TotpPreviewWidget
+from ui.widgets.rounded_context_menu import LineEdit, PlainTextEdit, DatePicker
 
 class EntrySectionBase(QWidget):
     def _get_settings(self) -> SettingsManager:
@@ -62,7 +62,7 @@ class BasicInfoSection(EntrySectionBase):
         sm = self._get_settings()
         clear_ms = max(0, int(sm.get("clipboard_clear_seconds", 15))) * 1000
 
-        self.site = QLineEdit(self._entry.get("site", ""))
+        self.site = LineEdit(self._entry.get("site", ""))
         self.site.setPlaceholderText("Site / App")
 
         self.site_link = self._create_plain_copy_field(
@@ -95,7 +95,7 @@ class BasicInfoSection(EntrySectionBase):
         if self._entry.get("password"):
             self.password.setText(self._entry["password"])
 
-        self.notes = QPlainTextEdit(self._entry.get("notes", ""))
+        self.notes = PlainTextEdit(self._entry.get("notes", ""))
         self.notes.setFixedHeight(96)
         self.notes.setAttribute(Qt.WA_StyledBackground, True)
         self.notes.setViewportMargins(2, 2, 2, 2)
@@ -138,7 +138,7 @@ class BasicInfoSection(EntrySectionBase):
             copy_enabled=True,
             visibility_enabled=False
         )
-        fld.setEchoMode(QLineEdit.Normal)
+        fld.setEchoMode(LineEdit.Normal)
         if initial:
             fld.setText(initial)
         return fld
@@ -259,10 +259,10 @@ class RecoverySection(EntrySectionBase):
         sm = self._get_settings()
         clear_ms = max(0, int(sm.get("clipboard_clear_seconds", 15))) * 1000
         
-        self.recovery_email = QLineEdit(self._entry.get("recovery_email", ""))
-        self.recovery_phone = QLineEdit(self._entry.get("recovery_phone", ""))
+        self.recovery_email = LineEdit(self._entry.get("recovery_email", ""))
+        self.recovery_phone = LineEdit(self._entry.get("recovery_phone", ""))
         
-        self.security_questions = QPlainTextEdit(self._entry.get("security_questions", ""))
+        self.security_questions = PlainTextEdit(self._entry.get("security_questions", ""))
         self.security_questions.setPlaceholderText("Example:\nPet name: Python\nFavorite Drink: Coffee")
         self.security_questions.setFixedHeight(96)
         self.security_questions.setAttribute(Qt.WA_StyledBackground, True)
@@ -348,11 +348,10 @@ class MetadataSection(EntrySectionBase):
             if idx >= 0:
                 self.category.setCurrentIndex(idx)
         
-        self.tags = QLineEdit(self._entry.get("tags", ""))
+        self.tags = LineEdit(self._entry.get("tags", ""))
         self.favorite = QCheckBox("Favorite")
         self.favorite.setChecked(bool(self._entry.get("favorite", 0)))
-        
-        from PySide6.QtGui import QFont
+                
         icon_font = None
         if self._icon_family:
             icon_font = QFont(self._icon_family)

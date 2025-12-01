@@ -970,5 +970,6 @@ class MainWindow(PreviewMixin, BackupMixin, LockMixin, CrudMixin, TableMixin, Tr
         try:
             theme = self.settings.get("theme", "dark")
             load_styles(QApplication.instance(), theme=theme)
+            self._refresh_lock_overlay_icon()
         except Exception as e:
             pass

@@ -12,7 +12,7 @@ from core.settings_manager import SettingsManager
 from ui.mixins.tree_mixin import CategoryTreeWidget 
 from pathlib import Path
 from ui.widgets.rounded_menu import RoundedMenu
-from ui.widgets.search_line_edit import SearchLineEdit
+from ui.widgets.rounded_context_menu import LineEdit
 
 if TYPE_CHECKING:
     from ui.main_window import MainWindow
@@ -180,7 +180,7 @@ class UIBuilder:
         top.setSpacing(0)
         GAP = 4
 
-        self.window.search = SearchLineEdit(placeholderText="Search...")
+        self.window.search = LineEdit(placeholderText="Search...")
         self.window.search.setObjectName("topelements")
         self.window.search.installEventFilter(self.window)
 
