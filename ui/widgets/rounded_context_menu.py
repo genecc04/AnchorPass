@@ -17,7 +17,7 @@ def _is_dark_theme_for(widget) -> bool:
 
 
 def _tint_icon(icon: QIcon, color: QColor) -> QIcon:
-    size = 16  # menu icon size
+    size = 16
     base = icon.pixmap(size, size)
     if base.isNull():
         return icon
@@ -31,9 +31,21 @@ def _tint_icon(icon: QIcon, color: QColor) -> QIcon:
     p.fillRect(tinted.rect(), color)
     p.end()
 
+    disabled_color = QColor(color)
+    disabled_color.setAlphaF(0.35)
+
+    disabled = QPixmap(base.size())
+    disabled.fill(Qt.transparent)
+
+    p = QPainter(disabled)
+    p.drawPixmap(0, 0, base)
+    p.setCompositionMode(QPainter.CompositionMode_SourceIn)
+    p.fillRect(disabled.rect(), disabled_color)
+    p.end()
+
     new_icon = QIcon()
     new_icon.addPixmap(tinted, QIcon.Normal)
-    new_icon.addPixmap(tinted, QIcon.Disabled)
+    new_icon.addPixmap(disabled, QIcon.Disabled)
     return new_icon
 
 
