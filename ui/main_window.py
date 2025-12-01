@@ -121,7 +121,7 @@ class MainWindow(PreviewMixin, BackupMixin, LockMixin, CrudMixin, TableMixin, Tr
     def changeEvent(self, event):
         try:
             if event.type() == QEvent.WindowStateChange and self.isMinimized():
-                if bool(self.settings.get("minimize_to_tray_on_minimize_chk", True)):
+                if bool(self.settings.get("minimize_to_tray_on_minimize", True)):
                     QTimer.singleShot(0, self._minimize_to_tray)
 
                 if bool(self.settings.get("lock_on_minimize", True)):
