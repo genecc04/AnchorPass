@@ -673,7 +673,7 @@ class TableMixin:
         plain = db.decrypt_row_to_plain(entry, self.cipher)
         status = entry.get("status", "active")
 
-        site = entry.get("site", "")
+        site = entry.get("site_link", "")
         email = entry.get("email", "")
         username = entry.get("username", "")
         password = plain.get("password", "")
