@@ -62,21 +62,27 @@ class CategoryTreeWidget(StyledTreeWidget):
         return True
 
     def dragEnterEvent(self, event):
-        if self._is_table_drag(event) and self._should_accept_drag(event):
-            event.acceptProposedAction()
-        elif self._is_tree_drag(event) and self._should_accept_tree_drag(event):
+        if self._is_table_drag(event) or self._is_tree_drag(event):
             event.acceptProposedAction()
         else:
             event.ignore()
 
     def dragMoveEvent(self, event):
-        if self._is_table_drag(event) and self._should_accept_drag(event):
-            event.acceptProposedAction()
-        elif self._is_tree_drag(event) and self._should_accept_tree_drag(event):
-            event.acceptProposedAction()
-        else:
-            event.ignore()
+        if self._is_table_drag(event):
+            if self._should_accept_drag(event):
+                event.acceptProposedAction()
+            else:
+                event.ignore()
+            return
 
+        if self._is_tree_drag(event):
+            if self._should_accept_tree_drag(event):
+                event.acceptProposedAction()
+            else:
+                event.ignore()
+            return
+        event.ignore()
+        
     def dropEvent(self, event):
         if self._is_table_drag(event):
             if not self._should_accept_drag(event):
@@ -463,8 +469,14 @@ class TreeMixin:
             menu = RoundedMenu(self)
             
             if self.current_item_path(item) == self.SPECIAL_DELETED:
+                menu.addAction("Add Folder", self.add_folder)
+                menu.addSeparator()
                 menu.addAction("Empty Trash", self._empty_trash)
+            elif self.current_item_path(item) == self.SPECIAL_EXPIRED:
+                menu.addAction("Add Folder", self.add_folder)
             elif self.current_item_path(item) in [self.SPECIAL_ARCHIVED, self.SPECIAL_DELETED]:
+                menu.addAction("Add Folder", self.add_folder)
+                menu.addSeparator()
                 menu.addAction("Restore All", lambda: self._restore_all_from_folder(item))
             
             if menu.actions():
@@ -476,15 +488,17 @@ class TreeMixin:
             path = self.current_item_path(item)
 
             if path == UNCATEGORIZED:
-                return
+                menu.addAction("Add Folder", self.add_folder)
+            else:
+                menu.addAction("Add Folder", self.add_folder)
+                menu.addSeparator()
+                menu.addAction("Add Subfolder", lambda: self.add_subfolder(item))
+                menu.addAction("Rename Folder", lambda: self.rename_folder(item))
 
-            menu.addAction("Add Subfolder", lambda: self.add_subfolder(item))
-            menu.addAction("Rename Folder", lambda: self.rename_folder(item))
+                if "/" in path and not self._is_special_folder(item):
+                    menu.addAction("Make Root Folder", lambda: self.make_primary_folder(item))
 
-            if "/" in path and not self._is_special_folder(item):
-                menu.addAction("Make Root Folder", lambda: self.make_primary_folder(item))
-
-            menu.addAction("Delete Folder", lambda: self.delete_folder(item))
+                menu.addAction("Delete Folder", lambda: self.delete_folder(item))
         else:
             menu.addAction("Add Folder", self.add_folder)
         menu.exec(self.tree.viewport().mapToGlobal(pos))

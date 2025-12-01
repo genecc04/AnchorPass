@@ -261,14 +261,22 @@ class MainWindow(PreviewMixin, BackupMixin, LockMixin, CrudMixin, TableMixin, Tr
 
     def show_context_menu(self, pos: QPoint):
         view = self.table
+        sm = view.selectionModel()
         idx = view.indexAt(pos)
         if not idx.isValid():
+            if not sm.selectedRows():
+                menu = RoundedMenu(self)
+                menu.addAction("None selected").setEnabled(False)
+                menu.addSeparator()
+                menu.addAction("Add Entry", self.add_entry)
+                menu.exec(view.viewport().mapToGlobal(pos))
             return
         
-        sm = view.selectionModel()
         sm.setCurrentIndex(idx, QItemSelectionModel.NoUpdate | QItemSelectionModel.Rows)
 
         count = len(sm.selectedRows())
+        if count == 0:
+            count = 1
 
         if count > 1:
             self.show_context_menu_multi(pos)
@@ -279,13 +287,14 @@ class MainWindow(PreviewMixin, BackupMixin, LockMixin, CrudMixin, TableMixin, Tr
             super().show_context_menu(pos)
         except AttributeError:
             menu = RoundedMenu(self)
-            if count == 1:
-                menu.addAction("Edit", self.edit_entry)
+            menu.addAction("Edit", self.edit_entry)
+
             label = "Delete Permanently" if self._in_deleted_folder() else "Delete (to Trash)"
             menu.addAction(
                 label,
                 self.delete_entry if count <= 1 else self.delete_selected_entries,
             )
+
             menu.exec(view.viewport().mapToGlobal(pos))
 
     def show_context_menu_multi(self, pos: QPoint):
@@ -306,6 +315,8 @@ class MainWindow(PreviewMixin, BackupMixin, LockMixin, CrudMixin, TableMixin, Tr
                 menu.addAction("Restore Selected", self.restore_selected_entries)
             menu.addAction("Delete Permanently", self.delete_selected_entries)
         else:
+            menu.addAction("Add Entry", self.add_entry)
+            menu.addSeparator()
             menu.addAction("Archive Selected", self.archive_selected_entries)
             menu.addAction("Expire Selected", self.expire_selected_entries)
             menu.addSeparator()
