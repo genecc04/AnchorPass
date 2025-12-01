@@ -148,13 +148,12 @@ jobs:
             /DAppVersion=$version `
             ".\installer.iss"
 
-      # UPDATED: upload both zip + installer exe
-      - name: Upload artifact (zip + installer)
+      # UPDATED: upload installer exe
+      - name: Upload artifact (installer)
         uses: actions/upload-artifact@v4
         with:
           name: spm-win-x64-${{ github.ref_name }}
           path: |
-            dist/AnchorPass-win-x64-${{ github.ref_name }}.zip
             dist/AnchorPass-Setup-${{ github.ref_name }}.exe
           if-no-files-found: error
 
