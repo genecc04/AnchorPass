@@ -30,7 +30,10 @@ License is intended to limit or override the rights granted to you by those
 third-party licenses.
 
 Examples include (but are not limited to):
-
+- **Material Symbols & Icons - Google Fonts**
+  - License: Apache License 2.0
+  - See: ***THIRD_PARTY_NOTICES.md*** for license text and attribution.
+  
 - **zxcvbn (and ports such as ***_zxcvbn***)**  
   - License: MIT License  
   - See: ***THIRD_PARTY_NOTICES.md*** for license text and attribution.

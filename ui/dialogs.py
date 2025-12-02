@@ -11,7 +11,7 @@ from PySide6.QtGui import QFont
 class DatabaseDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setWindowTitle("Select or Create Database")
+        self.setWindowTitle("Select or Create Vault")
         self.setFixedSize(400, 250)
 
         layout = QFormLayout(self)

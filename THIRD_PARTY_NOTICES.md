@@ -32,6 +32,24 @@ THE SOFTWARE.
 
 ---
 
+## Material Symbols & Icons (Google Fonts)
+
+- **Work:** Material Symbols & Icons
+- **Upstream:** https://fonts.google.com/icons
+- **Authors:** Google LLC
+- **License:** Apache License 2.0 (Apache-2.0)
+
+Material Symbols & Icons are provided by Google through the Google Fonts service and may be used under the terms of the Apache License 2.0.
+
+**Attribution (per Apache 2.0 requirements):**
+This project uses "Material Symbols & Icons" by Google LLC, licensed under the Apache License 2.0.
+You may include the icons via Google Fonts or by self-hosting them. If you redistribute the icon files, you must include the Apache 2.0 license text in your distribution.
+
+*Summary (non-exhaustive):*
+The Apache 2.0 license permits personal and commercial use, modification, distribution, and sublicensing, provided that you include required copyright notices, license text, and NOTICE files (if present). See the license for full terms.
+
+---
+
 ## EFF Short Wordlist #1
 
 - **Work:** EFF Short Wordlist #1  
