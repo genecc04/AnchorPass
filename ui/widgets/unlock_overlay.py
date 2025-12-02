@@ -78,6 +78,7 @@ class UnlockOverlay(QWidget):
         card_l.addRow("", btns)
 
         root.addWidget(card)
+        self.p1.setFocus()
 
     def eventFilter(self, obj, ev):
         t = ev.type()

@@ -47,8 +47,13 @@ class DatabaseDialog(QDialog):
                 "Click to select a vault...\n[Current] " + str(self.db_path)
             )
 
-        layout.addRow(QLabel("<b>Select a vault:</b>"))
-        layout.addItem(QSpacerItem(0, 7, QSizePolicy.Minimum, QSizePolicy.Fixed))
+        self.warn = QLabel("<b>Select a Vault</b>")
+        self.warn.setTextFormat(Qt.RichText)
+        self.warn.setTextInteractionFlags(Qt.TextBrowserInteraction)
+        self.warn.setOpenExternalLinks(False)
+        self.warn.linkActivated.connect(lambda _: self.create_new_db())
+        layout.addRow("", self.warn)
+        layout.addItem(QSpacerItem(0, 18, QSizePolicy.Minimum, QSizePolicy.Fixed))
         layout.addRow("", self.db_edit)
 
         self.master_pw = PasswordLineEdit(
@@ -63,6 +68,7 @@ class DatabaseDialog(QDialog):
         self.master_pw.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         self.master_pw.setVisible(False)
         layout.addRow("", self.master_pw)
+
 
         buttons = QDialogButtonBox()
         self.btn_open = buttons.addButton("Login", QDialogButtonBox.AcceptRole)
@@ -109,6 +115,16 @@ class DatabaseDialog(QDialog):
         self._update_password_field_visibility()
 
     def _update_password_field_visibility(self):
+        if not self.db_path:
+            self.setWindowTitle("AnchorPass: Create a Vault")
+            self.warn.setText("There is no Vault selected please <b><a href='#create' style='color:#4ea1ff; text-decoration:none;'>Create a vault</a>.</b>")
+        elif self.is_new_db:
+            self.setWindowTitle("AnchorPass: Set a Masterpassword")
+            self.warn.setText("Login to <b>set a Masterpassword:</b>")
+        else:
+            self.setWindowTitle("AnchorPass: Login")
+            self.warn.setText("<b>Select a vault:</b>")
+
         show = bool(self.db_path) and not getattr(self, "is_new_db", False)
         self.master_pw.setVisible(show)
         if show and not self.master_pw.text():

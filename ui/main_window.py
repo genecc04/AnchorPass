@@ -139,6 +139,14 @@ class MainWindow(PreviewMixin, BackupMixin, LockMixin, CrudMixin, TableMixin, Tr
 
             if bool(self.settings.get("lock_on_minimize", True)):
                 QTimer.singleShot(100, self.lock)
+            return
+        
+        try:
+            if hasattr(self, "maybe_auto_backup"):
+                self.maybe_auto_backup("close")
+        except Exception:
+            pass
+        
         else:
             super().closeEvent(event)
 

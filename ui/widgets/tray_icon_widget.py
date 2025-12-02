@@ -55,7 +55,15 @@ class TrayIconWidget(QObject):
             self._on_lock_db()
 
     @Slot()
+    @Slot()
     def _handle_exit(self):
+        parent = self.parent()
+        if parent is not None and hasattr(parent, "maybe_auto_backup"):
+            try:
+                parent.maybe_auto_backup("close")
+            except Exception:
+                pass
+
         app = QApplication.instance()
         if app is not None:
             app.quit()
