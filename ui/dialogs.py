@@ -12,7 +12,7 @@ class DatabaseDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowTitle("Select or Create Vault")
-        self.setFixedSize(400, 250)
+        self.setFixedSize(400, 255)
 
         layout = QFormLayout(self)
         layout.setVerticalSpacing(8)
@@ -234,7 +234,7 @@ class MasterDialog(QDialog):
     ):
         super().__init__(parent)
         self.setup = setup
-        self.setFixedSize(400, 250)
+        self.setFixedSize(400, 255)
 
         if settings is not None:
             self.settings = settings
