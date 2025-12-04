@@ -317,7 +317,6 @@ def set_setting(key: str, value: str) -> None:
         conn.commit()
 
 def category_exists(name: str) -> bool:
-    from .db_schema import get_connection
     if not name:
         return False
     

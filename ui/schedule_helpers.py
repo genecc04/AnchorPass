@@ -1,6 +1,7 @@
 from __future__ import annotations
 from datetime import datetime
 from core.settings_manager import SettingsManager
+from core import db
 
 def _read_bool(s: SettingsManager, key: str, default=False) -> bool:
     try:
@@ -98,7 +99,6 @@ def schedule_debug_snapshot() -> str:
     bpath = (_read_str(s, "backup_path", "") or _read_str(s, "backup_dir", "")).strip()
 
     try:
-        from core import db
         dbp = getattr(db, "get_db_path", lambda: None)() or getattr(db, "DB_PATH", "")
     except Exception:
         dbp = ""

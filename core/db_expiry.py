@@ -143,7 +143,6 @@ def fetch_expiring_soon(days: int = 7) -> List[Tuple]:
     Returns:
         List of tuples: (id, site, email, username, category, expiry_date, days_until_expiry)
     """
-    from datetime import timedelta
     today = date.today()
     future_date = (today + timedelta(days=days)).isoformat()
     

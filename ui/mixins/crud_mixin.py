@@ -1,6 +1,7 @@
 from PySide6.QtWidgets import QMessageBox
 from core import db
 from ui.entry_dialog import EntryDialog
+from datetime import datetime, timezone
 
 STORE_PLAINTEXT_EMAIL = False
 
@@ -116,7 +117,6 @@ class CrudMixin:
             new_row["status"] = merged_plain["status"]
 
         if old_status != new_status:
-            from datetime import datetime, timezone
             now = datetime.now(timezone.utc).isoformat()
             
             if new_status == "expired":
@@ -192,7 +192,6 @@ class CrudMixin:
             new_row["status"] = merged_plain["status"]
 
         if old_status != new_status:
-            from datetime import datetime, timezone
             now = datetime.now(timezone.utc).isoformat()
 
             if new_status == "expired":

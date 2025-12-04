@@ -9,7 +9,7 @@ from PySide6.QtGui import QIcon, QPalette, QFont, QFontDatabase, QPixmap, QPaint
 from core import totp as totp_util
 from core.settings_manager import SettingsManager
 from ui.widgets.totp_ring import TotpRingWidget
-
+from PySide6.QtCore import QRect
 
 def _icon_from_ligature(ligature: str, family: str, point_size: int = 18, 
                         padding: int = 2, color=None) -> QIcon:
@@ -30,7 +30,6 @@ def _icon_from_ligature(ligature: str, family: str, point_size: int = 18,
     p.setRenderHint(QPainter.TextAntialiasing, True)
     p.setPen(color)
     p.setFont(font)
-    from PySide6.QtCore import QRect
     p.drawText(QRect(0, 0, int(side), int(side)), Qt.AlignCenter, ligature)
     p.end()
     return QIcon(pix)

@@ -816,7 +816,6 @@ class TableMixin:
             return
 
         try:
-            from ui.mixins.tree_mixin import TreeMixin
             SPECIAL_DELETED  = TreeMixin.SPECIAL_DELETED
             SPECIAL_ARCHIVED = TreeMixin.SPECIAL_ARCHIVED
             SPECIAL_EXPIRED  = TreeMixin.SPECIAL_EXPIRED
@@ -840,8 +839,6 @@ class TableMixin:
             self._load_table([])
 
     def _permanently_delete_single_entry(self, entry_id: int):
-        from PySide6.QtWidgets import QMessageBox
-        
         reply = QMessageBox.warning(
             self, "Permanently Delete Entry",
             "This will PERMANENTLY delete this entry and cannot be undone.\n\n"
