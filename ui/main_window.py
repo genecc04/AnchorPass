@@ -703,7 +703,6 @@ class MainWindow(PreviewMixin, BackupMixin, LockMixin, CrudMixin, TableMixin, Tr
         if not row:
             self._log_status("Entry not found.", 2000)
             return
-
         self.clipboard_manager.copy_field_from_entry(row, field, self.cipher)
 
     def open_settings_dialog(self):
@@ -982,7 +981,6 @@ class MainWindow(PreviewMixin, BackupMixin, LockMixin, CrudMixin, TableMixin, Tr
 
         if not code_now:
             return
-
         self._copy_to_clipboard("TOTP code", code_now)
 
     def _apply_theme_from_settings(self):

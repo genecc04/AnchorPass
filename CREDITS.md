@@ -1,7 +1,7 @@
 # Credits
 
 **Project:** AnchorPass
-**Version:** v1.2.5 Beta
+**Version:** v1.2.6 Beta
 **Status:** Private testing  
 
 ---
@@ -25,9 +25,3 @@ This project is created and maintained by:
 **genecc04**
 
 - GitHub: [genecc04](https://github.com/genecc04)
-
----
-
-## Want to Be Credited?
-
-If you're an early beta tester and want your name/handle added or changed here, please let me know your preferred name/handle.
