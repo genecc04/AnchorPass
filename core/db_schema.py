@@ -110,6 +110,18 @@ def init() -> None:
             """
         )
         c.execute("INSERT OR IGNORE INTO categories (name) VALUES (?);", (UNCATEGORIZED,))
+        c.execute(
+        """
+        CREATE TABLE IF NOT EXISTS entry_history (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            entry_id INTEGER NOT NULL,
+            snapshot_at TEXT NOT NULL,
+            summary TEXT,
+            data TEXT NOT NULL,
+            FOREIGN KEY(entry_id) REFERENCES passwords(id) ON DELETE CASCADE
+        );
+        """
+        )
         conn.commit()
     _ensure_passwords_columns()
 

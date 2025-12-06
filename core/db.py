@@ -6,7 +6,9 @@ from .db_ops import (
     add_entry, update_entry, delete_entry, fetch_all, fetch_by_category,
     add_entry_full, update_entry_full, fetch_entry_dict,
     fetch_categories, add_category, rename_category, delete_category,
-    get_setting, set_setting, category_exists, duplicate_entry
+    get_setting, set_setting, category_exists, duplicate_entry,
+    add_entry_history_snapshot, fetch_entry_history, restore_entry_from_history,
+    delete_entry_history
 )
 from .db_search import search_entries
 from .db_crypto import (

@@ -199,7 +199,9 @@ class AuthMixin:
                     if key in r:
                         payload[key] = r[key]
 
-                if any(payload.get(k) != r.get(k) for k in payload.keys()):
+                payload["_skip_history"] = True
+
+                if any(payload.get(k) != r.get(k) for k in payload.keys() if k != "_skip_history"):
                     changed = True
                     db.update_entry_full(rid, payload)
 

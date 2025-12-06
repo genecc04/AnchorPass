@@ -84,6 +84,61 @@ QMenu#RoundedMenu::item:disabled {
 /* ===== Settings Tabs (Light / Neutral Theme) ===== */
 
 /* Main tab widget */
+#EntryTabs {
+    background: transparent;
+}
+
+/* Frame / page area */
+#EntryTabs::pane {
+    border: 1px solid #d0d0d0;
+    background: #f5f5f7;
+    border-radius: 0px;
+    padding: 4px;
+}
+
+/* Tab bar */
+#EntryTabs QTabBar {
+    background: transparent;
+}
+
+/* Default (unselected) tab */
+#EntryTabs QTabBar::tab {
+    background: #f5f5f7;
+    color: #333333;
+    border: 1px solid #d0d0d0;
+    padding: 6px 14px;
+    margin-right: 2px;
+    margin-top: 2px;
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+}
+
+/* Selected tab */
+#EntryTabs QTabBar::tab:selected {
+    background: #ffffff;
+    color: #1a1a1a;
+    border-color: #d0d0d0;
+    border-bottom-color: #ffffff;
+}
+
+/* Hover (unselected) */
+#EntryTabs QTabBar::tab:hover:!selected {
+    background-color: #eaf3ff;
+    color: #0a0a0a;
+}
+
+/* Disabled tab */
+#EntryTabs QTabBar::tab:disabled {
+    background-color: #f2f2f2;
+    color: #9a9a9a;
+    border-color: #e6e6e6;
+}
+
+/* Optional: page content background inside settings tabs */
+#EntryTabs QWidget {
+    background-color: #ffffff;
+}
+
 #SettingsTabs {
     background: transparent;
 }

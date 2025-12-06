@@ -1,5 +1,6 @@
 from __future__ import annotations
 import sqlite3
+import json
 from typing import Any, Dict
 from .db_schema import (
     get_connection, _get_passwords_columns, _ensure_category_chain,
@@ -203,9 +204,18 @@ def add_entry_full(data: Dict[str, Any]) -> int:
 
 def update_entry_full(id_: int, data: Dict[str, Any]) -> None:
     cols = _get_passwords_columns()
+    skip_history = bool(data.pop("_skip_history", False))
+
     d = {k: v for k, v in data.items() if k in cols and k != "id"}
     if not d:
         return
+
+    if not skip_history:
+        try:
+            add_entry_history_snapshot(id_, d)
+        except Exception:
+            pass
+
     if "date_modified" in cols and "date_modified" not in d:
         d["date_modified"] = _now_iso()
     sets = ",".join(f"{k}=?" for k in d.keys())
@@ -343,3 +353,127 @@ def duplicate_entry(id_: int) -> int:
 
     new_id = add_entry_full(d)
     return new_id
+
+def add_entry_history_snapshot(entry_id: int, row: Dict[str, Any], summary: str) -> None:
+    """
+    Save a snapshot of the *old* passwords row into entry_history.
+    'row' should be the current DB row BEFORE update (encrypted fields included).
+    """
+    if not row:
+        return
+
+    snapshot = dict(row)
+
+    with get_connection() as conn:
+        c = conn.cursor()
+        c.execute(
+            """
+            INSERT INTO entry_history (entry_id, snapshot_at, summary, data)
+            VALUES (?, ?, ?, ?);
+            """,
+            (entry_id, _now_iso(), summary, json.dumps(snapshot)),
+        )
+        conn.commit()
+
+def fetch_entry_history(entry_id: int) -> list[dict]:
+    """
+    Return history rows for an entry, newest first.
+    """
+    with get_connection() as conn:
+        conn.row_factory = sqlite3.Row
+        c = conn.cursor()
+        c.execute(
+            """
+            SELECT id, entry_id, snapshot_at, summary, data
+            FROM entry_history
+            WHERE entry_id=?
+            ORDER BY snapshot_at DESC, id DESC;
+            """,
+            (entry_id,),
+        )
+        return [dict(r) for r in c.fetchall()]
+
+def restore_entry_from_history(entry_id: int, history_id: int) -> None:
+    """
+    Overwrite passwords row with the snapshot stored in entry_history.
+    """
+    with get_connection() as conn:
+        conn.row_factory = sqlite3.Row
+        c = conn.cursor()
+        c.execute(
+            "SELECT data FROM entry_history WHERE id=? AND entry_id=?;",
+            (history_id, entry_id),
+        )
+        row = c.fetchone()
+        if not row:
+            return
+
+        try:
+            snapshot = json.loads(row["data"])
+        except Exception:
+            return
+
+        cols = set(_get_passwords_columns())
+        snapshot = dict(snapshot)
+
+        snapshot.pop("id", None)
+
+        if "date_modified" in cols:
+            snapshot["date_modified"] = _now_iso()
+
+        updates = {k: v for k, v in snapshot.items() if k in cols and k != "id"}
+        if not updates:
+            return
+
+        sets = ", ".join(f"{k}=?" for k in updates.keys())
+        c.execute(
+            f"UPDATE passwords SET {sets} WHERE id=?;",
+            (*updates.values(), entry_id),
+        )
+        conn.commit()
+
+
+def delete_entry_history(history_id: int) -> None:
+    """
+    Delete one history row.
+    """
+    with get_connection() as conn:
+        c = conn.cursor()
+        c.execute("DELETE FROM entry_history WHERE id=?;", (history_id,))
+        conn.commit()
+
+def _build_history_summary(original: dict, changes: dict) -> str:
+    """
+    Build a human-readable summary listing which columns changed.
+    """
+    cols = _get_passwords_columns()
+    ignore = {"id", "date_created", "date_modified", "deleted_at", "status"}
+
+    changed_cols: list[str] = []
+    for col in cols:
+        if col in ignore:
+            continue
+
+        old_val = original.get(col)
+        new_val = changes.get(col, old_val)
+
+        if new_val != old_val:
+            changed_cols.append(col)
+
+    if not changed_cols:
+        return original.get("site") or "Update"
+
+    label_map = {
+        "site": "Site",
+        "email": "Email",
+        "username": "Username",
+        "password_enc": "Password",
+        "notes": "Notes",
+        "category": "Category",
+    }
+    labels = [label_map.get(c, c) for c in changed_cols]
+
+    if len(labels) == 1:
+        return f"Changed {labels[0]}"
+
+    return "Changed " + ", ".join(labels)

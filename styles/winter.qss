@@ -85,6 +85,61 @@ QMenu#RoundedMenu::item:disabled {
 /* ===== Settings Tabs (Winter Theme) ===== */
 
 /* Base tab widget */
+#EntryTabs {
+    background: transparent;
+}
+
+/* The frame around the pages */
+#EntryTabs::pane {
+    border: 1px solid #cfd7e6;
+    background: #dde4f1;
+    border-radius: 0px;
+    padding: 4px; 
+}
+
+/* Tab bar itself */
+#EntryTabs QTabBar {
+    background: transparent;
+}
+
+/* Normal tab */
+#EntryTabs QTabBar::tab {
+    background: #eef3fb;
+    color: #283347;
+    border: 1px solid #cfd7e6;
+    padding: 6px 14px;
+    margin-right: 2px;
+    margin-top: 2px;
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+}
+
+/* Selected tab */
+#EntryTabs QTabBar::tab:selected {
+    background: #ffffff;
+    color: #141821;
+    border-color: #cfd7e6;
+    border-bottom-color: #ffffff;
+}
+
+/* Hover on unselected tabs */
+#EntryTabs QTabBar::tab:hover:!selected {
+    background: #e0ecff;
+    color: #11151e;
+}
+
+/* Disabled tab */
+#EntryTabs QTabBar::tab:disabled {
+    background: #edf1f7;
+    color: #9aa4b6;
+    border-color: #dde2ec;
+}
+
+/* Optional: page background inside the settings tabs */
+#EntryTabs QWidget {
+    background-color: #f7fafc;
+}
+
 #SettingsTabs {
     background: transparent;
 }

@@ -85,6 +85,63 @@ QMenu#RoundedMenu::item:disabled {
 /* ===== Settings Tabs (Summer Theme) ===== */
 
 /* Main tab widget */
+#EntryTabs {
+    background: transparent;
+}
+
+/* The frame / page area */
+#EntryTabs::pane {
+    border: 1px solid #e3d7c7;
+    background: #fff7e6;
+    border-radius: 0px;
+    padding: 4px;
+}
+
+/* Tab bar */
+#EntryTabs QTabBar {
+    background: transparent;
+}
+
+/* Default (unselected) tab */
+#EntryTabs QTabBar::tab {
+    background: #fff7e6;
+    color: #5b4332;
+    border: 1px solid #e3d7c7;
+    padding: 6px 14px;
+    margin-right: 2px;
+    margin-top: 2px;
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+}
+
+/* Selected tab */
+#EntryTabs QTabBar::tab:selected {
+    background: #ffffff;
+    color: #1f1a19;
+    border-color: #e3d7c7;
+    border-bottom-color: #ffffff;
+}
+
+/* Hover (unselected) */
+#EntryTabs QTabBar::tab:hover:!selected {
+    background: #ffe9c7;
+    color: #332018;
+}
+
+/* Disabled tab */
+#EntryTabs QTabBar::tab:disabled {
+    background: #f7efe3;
+    color: #b7a89a;
+    border-color: #e3d7c7;
+}
+
+/* Optional: inner page background inside settings tabs */
+#EntryTabs QWidget {
+    background-color: #fffdf8;
+}
+/* ===== Settings Tabs (Summer Theme) ===== */
+
+/* Main tab widget */
 #SettingsTabs {
     background: transparent;
 }

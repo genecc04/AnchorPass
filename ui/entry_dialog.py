@@ -1,12 +1,15 @@
 from __future__ import annotations
-from PySide6.QtWidgets import (QDialog, QVBoxLayout, QScrollArea, QWidget, QDialogButtonBox, QPushButton, 
-                               QApplication, QToolButton, QFrame, QSizePolicy)
+from PySide6.QtWidgets import (QDialog, QVBoxLayout, QScrollArea, QWidget, QDialogButtonBox, QPushButton,
+QApplication, QToolButton, QFrame, QSizePolicy,
+QTabWidget, QTableWidget, QTableWidgetItem, QLabel, QHBoxLayout)
 from PySide6.QtCore import Qt, QEvent, QTimer
 from PySide6.QtGui import QFontDatabase
 from ui import material_symbols as ms
 from ui.entry_dialog_sections import (BasicInfoSection, AuthSection, RecoverySection, MetadataSection)
 from pwGenerator.password_window import PasswordGeneratorDialog
 from core.settings_manager import SettingsManager
+
+from core import db
 
 class CollapsibleSection(QWidget):
 
@@ -122,7 +125,7 @@ class EntryDialog(QDialog):
 
         self._build_ui(default_category)
         self._finalize_initial_size()
-        self._lock_dialog_size()
+        #self._lock_dialog_size()
 
     def _finalize_initial_size(self):
         auth_section = self.auth
@@ -149,9 +152,19 @@ class EntryDialog(QDialog):
         root.setContentsMargins(18, 14, 18, 14)
         root.setSpacing(10)
 
-        scroll = QScrollArea(self)
+        tabs = QTabWidget(self)
+        tabs.setObjectName("EntryTabs")
+        root.addWidget(tabs)
+
+        # ----------------- Tab 1: existing details UI -------------------
+        details_tab = QWidget()
+        details_layout = QVBoxLayout(details_tab)
+        details_layout.setContentsMargins(0, 0, 0, 0)
+        details_layout.setSpacing(0)
+
+        scroll = QScrollArea(details_tab)
         scroll.setWidgetResizable(True)
-        root.addWidget(scroll)
+        details_layout.addWidget(scroll)
 
         content = QWidget()
         scroll.setWidget(content)
@@ -173,6 +186,15 @@ class EntryDialog(QDialog):
         main.addWidget(CollapsibleSection("Metadata", self.metadata, expanded=False))
 
         main.addStretch(1)
+
+        tabs.addTab(details_tab, "Details")
+
+        # ----------------- Tab 2: history UI ----------------------------
+        self.history_tab = HistoryTab(self._entry.get("id"), parent=self)
+        history_idx = tabs.addTab(self.history_tab, "History")
+
+        if not self._entry.get("id"):
+            tabs.setTabEnabled(history_idx, False)
 
         self._build_buttons(root)
 
@@ -228,3 +250,157 @@ class EntryDialog(QDialog):
         if self.recovery:
             self.recovery.handle_theme_change(ev)
         super().changeEvent(ev)
+
+    def reload_details_from_db(self):
+        """Reload the Details tab from the database after a restore."""
+        entry_id = self._entry.get("id")
+        if not entry_id:
+            return
+
+        parent = self.parent()
+        cipher = getattr(parent, "cipher", None) if parent is not None else None
+        if cipher is None:
+            return
+
+        row = db.fetch_entry_dict(int(entry_id)) or {}
+        if not row:
+            return
+
+        try:
+            plain = db.decrypt_row_to_plain(row, cipher) or {}
+        except Exception:
+            return
+
+        plain["id"] = entry_id
+        plain["expiry_date"] = row.get("expiry_date")
+        plain["status"] = row.get("status", "active")
+
+        self._entry = plain
+
+        if self.basic_info is not None:
+            self.basic_info.load_plain(plain)
+        if self.auth is not None:
+            self.auth.load_plain(plain)
+        if self.recovery is not None:
+            self.recovery.load_plain(plain)
+        if self.metadata is not None:
+            self.metadata.load_plain(plain)
+
+class HistoryTab(QWidget):
+    """
+    Tab that shows history rows for a password entry.
+    It calls functions that we'll add in core.db:
+        - db.fetch_entry_history(entry_id)
+        - db.restore_entry_from_history(entry_id, history_id)
+        - db.delete_entry_history(history_id)
+    """
+
+    def __init__(self, entry_id: int | None, parent=None):
+        super().__init__(parent)
+        self._entry_id = entry_id
+
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(6)
+
+        self.info_label = QLabel(self)
+        self.info_label.setWordWrap(True)
+        layout.addWidget(self.info_label)
+
+        self.table = QTableWidget(self)
+        self.table.setColumnCount(4)
+        self.table.setHorizontalHeaderLabels(["ID", "Changed at", "Changed by", "Summary"])
+        self.table.setSelectionBehavior(QTableWidget.SelectRows)
+        self.table.setSelectionMode(QTableWidget.SingleSelection)
+        self.table.setEditTriggers(QTableWidget.NoEditTriggers)
+        self.table.horizontalHeader().setStretchLastSection(True)
+        layout.addWidget(self.table, 1)
+
+        btn_row = QHBoxLayout()
+        btn_row.addStretch(1)
+        self.btn_restore = QPushButton("Restore", self)
+        self.btn_delete = QPushButton("Delete history row", self)
+        btn_row.addWidget(self.btn_restore)
+        btn_row.addWidget(self.btn_delete)
+        layout.addLayout(btn_row)
+
+        self.btn_restore.clicked.connect(self._on_restore_clicked)
+        self.btn_delete.clicked.connect(self._on_delete_clicked)
+
+        self.reload()
+
+    # --- public API -------------------------------------------------
+
+    def reload(self):
+        """Reload history rows from the database."""
+        self.table.setRowCount(0)
+
+        if not self._entry_id:
+            self.info_label.setText("Save this entry first to see its history.")
+            return
+
+        rows = []
+        try:
+            # this will come from db_ops, exported via core.db (see section 2)
+            if hasattr(db, "fetch_entry_history"):
+                rows = db.fetch_entry_history(self._entry_id) or []
+        except Exception:
+            rows = []
+
+        if not rows:
+            self.info_label.setText("No history recorded for this entry yet.")
+            return
+
+        self.info_label.setText("")
+        self.table.setRowCount(len(rows))
+
+        for r, row in enumerate(rows):
+            hid = row.get("id") or row.get("history_id") or ""
+            when = row.get("changed_at") or row.get("snapshot_at") or ""
+            who = row.get("changed_by") or ""
+            summary = row.get("summary") or ""
+
+            self.table.setItem(r, 0, QTableWidgetItem(str(hid)))
+            self.table.setItem(r, 1, QTableWidgetItem(str(when)))
+            self.table.setItem(r, 2, QTableWidgetItem(str(who)))
+            self.table.setItem(r, 3, QTableWidgetItem(str(summary)))
+
+    # --- helpers ----------------------------------------------------
+
+    def _selected_history_id(self) -> int | None:
+        row = self.table.currentRow()
+        if row < 0:
+            return None
+        item = self.table.item(row, 0)
+        if not item:
+            return None
+        try:
+            return int(item.text())
+        except ValueError:
+            return None
+
+    def _on_restore_clicked(self):
+        hid = self._selected_history_id()
+        if not hid:
+            return
+        try:
+            if hasattr(db, "restore_entry_from_history"):
+                db.restore_entry_from_history(self._entry_id, hid)
+        except Exception:
+            pass
+        self.reload()
+
+        dialog = self.window()
+        if dialog is not None and hasattr(dialog, "reload_details_from_db"):
+            dialog.reload_details_from_db()
+
+    def _on_delete_clicked(self):
+        hid = self._selected_history_id()
+        if not hid:
+            return
+        try:
+            if hasattr(db, "delete_entry_history"):
+                db.delete_entry_history(hid)
+        except Exception:
+            pass
+        self.reload()

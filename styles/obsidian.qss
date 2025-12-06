@@ -69,6 +69,66 @@ QMenu#RoundedMenu::item:disabled {
     color: #9aa4b6;
 }
 
+/* Entry Tabs */
+#EntryTabs {
+    background: transparent;
+}
+
+/* The frame / page area */
+#EntryTabs::pane {
+    border: 1px solid #313b47;
+    background: #141920;
+    border-radius: 0px;
+    padding: 0px;
+}
+/* Entry tab */
+/* Tab bar */
+#EntryTabs QTabBar {
+    background: transparent;
+}
+
+/* Default tab appearance */
+#EntryTabs QTabBar::tab {
+    background: #171b23;
+    color: #dde3ea;
+    border: 1px solid #313b47;
+    padding: 6px 14px;
+    margin-right: 2px;
+    margin-top: 2px;
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+}
+
+/* Selected tab */
+#EntryTabs QTabBar::tab:selected {
+    background: #0c0f14;
+    color: #ffffff;
+    border-color: #313b47;
+    border-bottom-color: #0c0f14;
+}
+
+/* Hover (unselected) */
+#EntryTabs QTabBar::tab:hover:!selected {
+    background: #0b2529;
+    color: #ffffff;
+}
+
+/* Disabled tab */
+#EntryTabs QTabBar::tab:disabled {
+    background: #151920;
+    color: #7b858f;
+    border-color: #262c36;
+}
+
+/* Optional: inner pages inside settings tabs */
+#EntryTabs QWidget {
+    background-color: #0c0f14;
+}
+
+#EntryTabs PlusMinusSpinBox, #EntryTabs QPushButton, #EntryTabs QComboBox, #EntryTabs QLineEdit, #EntryTabs QTimeEdit{
+    background-color: #141920;
+}
+
 /* ===== Settings Tabs (Obsidian Theme) ===== */
 
 /* Main tab widget */
@@ -83,7 +143,7 @@ QMenu#RoundedMenu::item:disabled {
     border-radius: 0px;
     padding: 0px;
 }
-
+/* Entry tab */
 /* Tab bar */
 #SettingsTabs QTabBar {
     background: transparent;

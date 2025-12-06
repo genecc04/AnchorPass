@@ -152,6 +152,15 @@ class BasicInfoSection(EntrySectionBase):
             "password": self.password.text(),
             "notes": self.notes.toPlainText(),
         }
+    
+    def load_plain(self, entry: dict) -> None:
+        self._entry = entry
+        self.site.setText(entry.get("site", "") or "")
+        self.site_link.setText(entry.get("site_link", "") or "")
+        self.username.setText(entry.get("username", "") or "")
+        self.email.setText(entry.get("email", "") or "")
+        self.password.setText(entry.get("password", "") or "")
+        self.notes.setPlainText(entry.get("notes", "") or "")
 
 
 class AuthSection(EntrySectionBase):
@@ -229,7 +238,12 @@ class AuthSection(EntrySectionBase):
             "pin": self.pin.text(),
             "security_code": self.security_code.text(),
         }
-
+    
+    def load_plain(self, entry: dict) -> None:
+        self._entry = entry
+        self.app_password.setText(entry.get("app_password", "") or "")
+        self.pin.setText(entry.get("pin", "") or "")
+        self.security_code.setText(entry.get("security_code", "") or "")
 
 class RecoverySection(EntrySectionBase):
     
@@ -308,6 +322,13 @@ class RecoverySection(EntrySectionBase):
             "security_questions": self.security_questions.toPlainText(),
             "otp_secret": self.otp_secret.text(),
         }
+    
+    def load_plain(self, entry: dict) -> None:
+        self._entry = entry
+        self.recovery_email.setText(entry.get("recovery_email", "") or "")
+        self.recovery_phone.setText(entry.get("recovery_phone", "") or "")
+        self.security_questions.setPlainText(entry.get("security_questions", "") or "")
+        self.otp_secret.setText(entry.get("otp_secret", "") or "")
 
 class MetadataSection(EntrySectionBase):
     
@@ -487,3 +508,34 @@ class MetadataSection(EntrySectionBase):
             "expiry_date": expiry_date_value,
             "status": self.status.currentText(),
         }
+    
+    def load_plain(self, entry: dict) -> None:
+        from PySide6.QtCore import QDate
+
+        self._entry = entry
+
+        # category
+        cat = entry.get("category", "") or ""
+        idx = self.category.findText(cat)
+        if idx >= 0:
+            self.category.setCurrentIndex(idx)
+
+        self.tags.setText(entry.get("tags", "") or "")
+        self.favorite.setChecked(bool(entry.get("favorite", 0)))
+
+        # expiry_date: expects "yyyy-MM-dd"
+        expiry_str = entry.get("expiry_date")
+        if expiry_str:
+            try:
+                parts = expiry_str.split("-")
+                qdate = QDate(int(parts[0]), int(parts[1]), int(parts[2]))
+                if qdate.isValid():
+                    self.expiry_date.setDate(qdate)
+            except Exception:
+                pass
+
+        # status
+        status = entry.get("status", "active")
+        idx = self.status.findText(status)
+        if idx >= 0:
+            self.status.setCurrentIndex(idx)

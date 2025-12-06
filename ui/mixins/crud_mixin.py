@@ -5,6 +5,66 @@ from datetime import datetime, timezone
 
 STORE_PLAINTEXT_EMAIL = False
 
+_FIELD_LABELS = {
+    "site": "Site",
+    "site_link": "Site link",
+    "username": "Username",
+    "email": "Email",
+    "password": "Password",
+    "app_password": "App password",
+    "pin": "PIN",
+    "security_code": "Security code",
+    "otp_secret": "OTP secret",
+    "recovery_email": "Recovery email",
+    "recovery_phone": "Recovery phone",
+    "security_questions": "Security questions",
+    "notes": "Notes",
+    "category": "Category",
+    "tags": "Tags",
+    "favorite": "Favorite",
+    "expiry_date": "Expiry date",
+    "status": "Status",
+}
+
+
+def _plain_changed_keys(old_plain: dict, new_plain: dict) -> list[str]:
+    """
+    Compare plaintext dicts and return which keys changed.
+    This runs BEFORE encryption, so encrypted fields are handled correctly.
+    """
+    changed: list[str] = []
+    keys = set(old_plain.keys()) | set(new_plain.keys())
+    ignore = {"id"}  # not a real content field
+
+    for k in keys:
+        if k in ignore:
+            continue
+        if old_plain.get(k) != new_plain.get(k):
+            changed.append(k)
+    return changed
+
+
+def _build_history_summary(changed_keys: list[str], plain_after: dict) -> str:
+    """
+    Build a human-friendly summary like:
+        "facebook.com: Changed Password, Notes"
+    using the list of changed plaintext keys.
+    """
+    if not changed_keys:
+        return plain_after.get("site") or "Update"
+
+    # map internal keys to nice labels
+    labels = [_FIELD_LABELS.get(k, k) for k in changed_keys]
+    if len(labels) == 1:
+        changed_text = f"Changed {labels[0]}"
+    else:
+        changed_text = "Changed " + ", ".join(labels)
+
+    site = (plain_after.get("site") or "").strip()
+    if site:
+        return f"{site}: {changed_text}"
+    return changed_text
+
 class CrudMixin:
     def _current_entry_id_from_table(self) -> int | None:
         row = self.table.currentRow()
@@ -94,6 +154,8 @@ class CrudMixin:
         old_status = row.get("status", "active")
         entry_plain["status"] = old_status
 
+        old_plain_for_diff = dict(entry_plain)
+
         dlg = EntryDialog(self, entry=entry_plain, default_category=self.current_category, settings=self.settings)
         if not dlg.exec():
             return
@@ -104,6 +166,18 @@ class CrudMixin:
         merged_plain = dict(entry_plain)
         merged_plain.update(v)
         merged_plain["id"] = entry_id
+
+        changed_keys = _plain_changed_keys(old_plain_for_diff, merged_plain)
+
+        if not changed_keys:
+            return
+        
+        try:
+            if hasattr(db, "add_entry_history_snapshot"):
+                summary = _build_history_summary(changed_keys, merged_plain)
+                db.add_entry_history_snapshot(entry_id, row, summary)
+        except Exception:
+            pass
 
         new_row = db.encrypt_plain_to_row( plain=merged_plain, cipher=self.cipher, base_row=row, 
                                           mirror_plaintext=STORE_PLAINTEXT_EMAIL, preserve_existing_cipher_on_empty=True, )
@@ -164,6 +238,8 @@ class CrudMixin:
         old_status = row.get("status", "active")
         entry_plain["status"] = old_status
 
+        old_plain_for_diff = dict(entry_plain)
+
         dlg = EntryDialog(self, entry=entry_plain, default_category=self.current_category, settings=self.settings)
         if not dlg.exec():
             return
@@ -174,6 +250,17 @@ class CrudMixin:
         merged_plain = dict(entry_plain)
         merged_plain.update(v)
         merged_plain["id"] = entry_id
+
+        changed_keys = _plain_changed_keys(old_plain_for_diff, merged_plain)
+        if not changed_keys:
+            return 
+        
+        try:
+            if hasattr(db, "add_entry_history_snapshot"):
+                summary = _build_history_summary(changed_keys, merged_plain)
+                db.add_entry_history_snapshot(entry_id, row, summary)
+        except Exception:
+            pass
 
         new_row = db.encrypt_plain_to_row(
             plain=merged_plain,
