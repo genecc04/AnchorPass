@@ -79,7 +79,7 @@ QMenu#RoundedMenu::item:disabled {
     border: 1px solid #313b47;
     background: #141920;
     border-radius: 0px;
-    padding: 0px;
+    padding: 4px;
 }
 /* Entry tab */
 /* Tab bar */
@@ -291,6 +291,45 @@ QWidget#HotkeysPanel QKeySequenceEdit:disabled {
 
 /* Corner section */
 #ModernTable QTableCornerButton::section {
+    background-color: #171b23;
+    border: none;
+}
+/* ===== HistoryTable (Obsidian Theme Integration) ===== */
+#HistoryTable {
+    background-color: #0c0f14;
+    alternate-background-color: #141920;
+    color: #e4e9ef;
+    border: 1px solid #313b47;
+    border-radius: 0px;
+    gridline-color: #28323e;
+    selection-background-color: #00b3c0;
+    selection-color: #ffffff;
+    font-family: "Segoe UI", "Inter", "Roboto", Arial, sans-serif;
+    font-size: 13px;
+}
+
+/* Headers */
+QHeaderView::section {
+    background-color: #171b23;
+    color: #dde3ea;
+    border: none;
+    border-bottom: 1px solid #28323e;
+    padding: 6px 8px;
+    font-weight: 600;
+    font-size: 13px;
+}
+
+QHeaderView::section:hover {
+    background-color: #202733;
+}
+
+QHeaderView {
+    border-top-left-radius: 0px;
+    border-top-right-radius: 0px;
+}
+
+/* Corner area blend */
+#HistoryTable QTableCornerButton::section {
     background-color: #171b23;
     border: none;
 }

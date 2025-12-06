@@ -292,6 +292,45 @@ QWidget#HotkeysPanel QKeySequenceEdit:disabled {
     background-color: #1f1f1f;
     border: none;
 }
+/* ===== HistoryTable (Dark Theme Integration) ===== */
+#HistoryTable {
+    background-color: #121212;
+    alternate-background-color: #181818;
+    color: #e6e6e6;
+    border: 1px solid #333333;
+    border-radius: 0px;
+    gridline-color: #2a2a2a;
+    selection-background-color: #075cb2;
+    selection-color: #ffffff;
+    font-family: "Segoe UI", "Inter", "Roboto", Arial, sans-serif;
+    font-size: 13px;
+}
+
+/* Headers */
+QHeaderView::section {
+    background-color: #1f1f1f;
+    color: #dcdcdc;
+    border: none;
+    border-bottom: 1px solid #2a2a2a;
+    padding: 6px 8px;
+    font-weight: 600;
+    font-size: 13px;
+}
+
+QHeaderView::section:hover {
+    background-color: #061019;
+}
+
+QHeaderView {
+    border-top-left-radius: 0px;
+    border-top-right-radius: 0px;
+}
+
+/* Corner area blend */
+#HistoryTable QTableCornerButton::section {
+    background-color: #1f1f1f;
+    border: none;
+}
 
 /* ===== Inputs (Dark theme) ===== */
 QLineEdit,

@@ -94,7 +94,7 @@ QMenu#RoundedMenu::item:disabled {
     border: 1px solid #e3d7c7;
     background: #fff7e6;
     border-radius: 0px;
-    padding: 4px;
+    padding: 0px;
 }
 
 /* Tab bar */
@@ -109,7 +109,7 @@ QMenu#RoundedMenu::item:disabled {
     border: 1px solid #e3d7c7;
     padding: 6px 14px;
     margin-right: 2px;
-    margin-top: 2px;
+    margin-top: 0px;
     border-top-left-radius: 6px;
     border-top-right-radius: 6px;
 }
@@ -302,6 +302,46 @@ QWidget#HotkeysPanel QKeySequenceEdit:disabled {
     background-color: #fff7e6;
     border: none;
 }
+/* ===== HistoryTable (Summer Theme Integration) ===== */
+#HistoryTable {
+    background-color: #ffffff;
+    alternate-background-color: #fff9f0;
+    color: #1f1a19;
+    border: 1px solid #e3d7c7;
+    border-radius: 0px;
+    gridline-color: #f0e4d6;
+    selection-background-color: #fad28f;
+    selection-color: #3b2603;
+    font-family: "Segoe UI", "Inter", "Roboto", Arial, sans-serif;
+    font-size: 13px;
+}
+
+/* Headers */
+QHeaderView::section {
+    background-color: #fff7e6;
+    color: #5b4332;
+    border: none;
+    border-bottom: 1px solid #ecdac2;
+    padding: 6px 8px;
+    font-weight: 600;
+    font-size: 13px;
+}
+
+QHeaderView::section:hover {
+    background-color: #ffe9c7;
+}
+
+QHeaderView {
+    border-top-left-radius: 0px;
+    border-top-right-radius: 0px;
+}
+
+/* Corner area blend */
+#HistoryTable QTableCornerButton::section {
+    background-color: #fff7e6;
+    border: none;
+}
+
 
 /* ===== Inputs ===== */
 QLineEdit, QTextEdit, QPlainTextEdit, QComboBox, QSpinBox, PlusMinusSpinBox, PlusMinusTimeEdit, #prefsTabs QPushButton {
@@ -552,7 +592,7 @@ QLabel#hint {
 /* ===== Global focus removal ===== */
 QTreeView, QTableView, QLineEdit, QTextEdit, QPlainTextEdit,
 QComboBox, QSpinBox, QAbstractSpinBox, QPushButton, QScrollBar,
-QMenu, QMenuBar, QHeaderView, QSplitter {
+QMenu, QMenuBar, QSplitter {
     outline: none;
 }
 

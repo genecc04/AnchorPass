@@ -301,6 +301,45 @@ QWidget#HotkeysPanel QKeySequenceEdit:disabled {
     background-color: #eef3fb;
     border: none;
 }
+/* ===== HistoryTable (Winter Theme Integration) ===== */
+#HistoryTable {
+    background-color: #ffffff;
+    alternate-background-color: #f3f7fc;
+    color: #141821;
+    border: 1px solid #cfd7e6;
+    border-radius: 0px;
+    gridline-color: #e0e6f2;
+    selection-background-color: #1f65d6;
+    selection-color: #e7f0ff;
+    font-family: "Segoe UI", "Inter", "Roboto", Arial, sans-serif;
+    font-size: 13px;
+}
+
+/* Headers */
+QHeaderView::section {
+    background-color: #eef3fb;
+    color: #283347;
+    border: none;
+    border-bottom: 1px solid #d6deee;
+    padding: 6px 8px;
+    font-weight: 600;
+    font-size: 13px;
+}
+
+QHeaderView::section:hover {
+    background-color: #e0ecff;
+}
+
+QHeaderView {
+    border-top-left-radius: 0px;
+    border-top-right-radius: 0px;
+}
+
+/* Corner area blend */
+#HistoryTable QTableCornerButton::section {
+    background-color: #eef3fb;
+    border: none;
+}
 
 /* ===== Inputs ===== */
 QLineEdit, QTextEdit, QPlainTextEdit, QComboBox, QSpinBox, PlusMinusSpinBox, PlusMinusTimeEdit, #prefsTabs QPushButton {

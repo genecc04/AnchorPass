@@ -1,6 +1,6 @@
 from __future__ import annotations
 from PySide6.QtWidgets import (QDialog, QVBoxLayout, QScrollArea, QWidget, QDialogButtonBox, QPushButton,
-QApplication, QToolButton, QFrame, QSizePolicy,
+QApplication, QToolButton, QFrame, QSizePolicy, QAbstractItemView, QHeaderView,
 QTabWidget, QTableWidget, QTableWidgetItem, QLabel, QHBoxLayout)
 from PySide6.QtCore import Qt, QEvent, QTimer
 from PySide6.QtGui import QFontDatabase
@@ -8,7 +8,7 @@ from ui import material_symbols as ms
 from ui.entry_dialog_sections import (BasicInfoSection, AuthSection, RecoverySection, MetadataSection)
 from pwGenerator.password_window import PasswordGeneratorDialog
 from core.settings_manager import SettingsManager
-
+import json
 from core import db
 
 class CollapsibleSection(QWidget):
@@ -152,9 +152,9 @@ class EntryDialog(QDialog):
         root.setContentsMargins(18, 14, 18, 14)
         root.setSpacing(10)
 
-        tabs = QTabWidget(self)
-        tabs.setObjectName("EntryTabs")
-        root.addWidget(tabs)
+        self.tabs = QTabWidget(self)
+        self.tabs.setObjectName("EntryTabs")
+        root.addWidget(self.tabs)
 
         # ----------------- Tab 1: existing details UI -------------------
         details_tab = QWidget()
@@ -187,29 +187,51 @@ class EntryDialog(QDialog):
 
         main.addStretch(1)
 
-        tabs.addTab(details_tab, "Details")
+        details_index = self.tabs.addTab(details_tab, "Details")
+        self.details_tab_index = details_index
 
         # ----------------- Tab 2: history UI ----------------------------
         self.history_tab = HistoryTab(self._entry.get("id"), parent=self)
-        history_idx = tabs.addTab(self.history_tab, "History")
+        self.history_tab_index = self.tabs.addTab(self.history_tab, "History")
 
         if not self._entry.get("id"):
-            tabs.setTabEnabled(history_idx, False)
+            self.tabs.setTabEnabled(self.history_tab_index, False)
 
         self._build_buttons(root)
 
     def _build_buttons(self, parent_layout):
-        btns = QDialogButtonBox(QDialogButtonBox.Save | QDialogButtonBox.Cancel, parent=self)
+        self.button_box = QDialogButtonBox(QDialogButtonBox.Save | QDialogButtonBox.Cancel, parent=self)
 
         self.btn_generate_password = QPushButton("Generate Password", self)
-        btns.addButton(self.btn_generate_password, QDialogButtonBox.ActionRole)
+        self.button_box.addButton(self.btn_generate_password, QDialogButtonBox.ActionRole)
         self.btn_generate_password.setFocusPolicy(Qt.NoFocus)
         self.btn_generate_password.pressed.connect(self._remember_focus)
         self.btn_generate_password.clicked.connect(self._open_password_generator)
 
-        btns.accepted.connect(self.accept)
-        btns.rejected.connect(self.reject)
-        parent_layout.addWidget(btns)
+        self.button_box.accepted.connect(self.accept)
+        self.button_box.rejected.connect(self.reject)
+        parent_layout.addWidget(self.button_box)
+
+        row = QHBoxLayout()
+        row.setContentsMargins(0, 0, 0, 0)
+
+        self.btn_snapshot_restore = QPushButton("Restore", self)
+        self.btn_snapshot_back = QPushButton("Back", self)
+
+        row.addStretch(1)
+        row.addWidget(self.btn_snapshot_restore)
+        row.addWidget(self.btn_snapshot_back)
+
+        self.snapshot_button_container = QWidget(self)
+        self.snapshot_button_container.setLayout(row)
+        self.snapshot_button_container.setVisible(False)
+        parent_layout.addWidget(self.snapshot_button_container)
+
+        self.btn_snapshot_restore.clicked.connect(self._on_snapshot_restore_clicked)
+        self.btn_snapshot_back.clicked.connect(self._on_snapshot_back_clicked)
+
+        self._snapshot_mode = False
+        self._snapshot_history_id = None
 
     def _remember_focus(self):
         self._last_focus_widget = self.focusWidget()
@@ -275,7 +297,7 @@ class EntryDialog(QDialog):
         plain["expiry_date"] = row.get("expiry_date")
         plain["status"] = row.get("status", "active")
 
-        self._entry = plain
+        self._load_plain_into_sections(plain)
 
         if self.basic_info is not None:
             self.basic_info.load_plain(plain)
@@ -285,6 +307,117 @@ class EntryDialog(QDialog):
             self.recovery.load_plain(plain)
         if self.metadata is not None:
             self.metadata.load_plain(plain)
+
+    def _load_plain_into_sections(self, plain: dict) -> None:
+        self._entry = plain
+        if self.basic_info is not None:
+            self.basic_info.load_plain(plain)
+        if self.auth is not None:
+            self.auth.load_plain(plain)
+        if self.recovery is not None:
+            self.recovery.load_plain(plain)
+        if self.metadata is not None:
+            self.metadata.load_plain(plain)
+
+    def enter_history_snapshot_mode(self, history_id: int):
+        """
+        Called by HistoryTab when the user double-clicks a history row.
+        Shows the details tab with that snapshot, hides the History tab,
+        and swaps buttons to [Restore] [Back].
+        """
+        entry_id = self._entry.get("id")
+        if not entry_id:
+            return
+
+        self._snapshot_mode = True
+        self._snapshot_history_id = int(history_id)
+
+        hist_row = None
+        try:
+            if hasattr(db, "fetch_entry_history"):
+                rows = db.fetch_entry_history(entry_id) or []
+                for r in rows:
+                    try:
+                        rid = int(r.get("id") or r.get("history_id") or 0)
+                    except Exception:
+                        continue
+                    if rid == self._snapshot_history_id:
+                        hist_row = r
+                        break
+        except Exception:
+            hist_row = None
+
+        if not hist_row:
+            return
+
+        data_json = hist_row.get("data")
+        if not data_json:
+            return
+
+        try:
+            old_row = json.loads(data_json) if isinstance(data_json, str) else data_json
+        except Exception:
+            return
+
+        parent = self.parent()
+        cipher = getattr(parent, "cipher", None) if parent is not None else None
+        if cipher is None:
+            return
+
+        try:
+            plain = db.decrypt_row_to_plain(old_row, cipher) or {}
+        except Exception:
+            return
+
+        plain["id"] = entry_id
+        plain["expiry_date"] = old_row.get("expiry_date")
+        plain["status"] = old_row.get("status", "active")
+
+        self._load_plain_into_sections(plain)
+
+        if hasattr(self, "tabs"):
+            self.tabs.setCurrentIndex(self.details_tab_index)
+            if self.tabs.tabBar() is not None:
+                self.tabs.tabBar().setVisible(False)
+
+        self.button_box.setVisible(False)
+        self.snapshot_button_container.setVisible(True)
+
+    def _exit_snapshot_mode_and_reload(self):
+        """Return to normal mode after restore or back."""
+        self._snapshot_mode = False
+        self._snapshot_history_id = None
+
+        if hasattr(self, "tabs") and self.tabs.tabBar() is not None:
+            self.tabs.tabBar().setVisible(True)
+
+        self.snapshot_button_container.setVisible(False)
+        self.button_box.setVisible(True)
+
+        self.reload_details_from_db()
+
+        if getattr(self, "history_tab", None) is not None and hasattr(self.history_tab, "reload"):
+            self.history_tab.reload()
+
+    def _on_snapshot_back_clicked(self):
+        """User clicked Back in snapshot mode: no DB change, just go back."""
+        self._exit_snapshot_mode_and_reload()
+
+    def _on_snapshot_restore_clicked(self):
+        """User clicked Restore in snapshot mode: restore this snapshot then go back."""
+        entry_id = self._entry.get("id")
+        hid = self._snapshot_history_id
+        if not entry_id or not hid:
+            return
+
+        try:
+            if hasattr(db, "restore_entry_from_history"):
+                db.restore_entry_from_history(int(entry_id), int(hid))
+        except Exception:
+            return
+
+        self._exit_snapshot_mode_and_reload()
+
 
 class HistoryTab(QWidget):
     """
@@ -303,18 +436,25 @@ class HistoryTab(QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(6)
 
-        self.info_label = QLabel(self)
-        self.info_label.setWordWrap(True)
-        layout.addWidget(self.info_label)
+        self.table = QTableWidget(0, 2, self)
+        self.table.setObjectName("HistoryTable")
 
-        self.table = QTableWidget(self)
-        self.table.setColumnCount(4)
-        self.table.setHorizontalHeaderLabels(["ID", "Changed at", "Changed by", "Summary"])
-        self.table.setSelectionBehavior(QTableWidget.SelectRows)
-        self.table.setSelectionMode(QTableWidget.SingleSelection)
-        self.table.setEditTriggers(QTableWidget.NoEditTriggers)
+        header = self.table.horizontalHeader()
+        header.setObjectName("HistoryHeader")
+
+        self.table.setHorizontalHeaderLabels(["Changed at", "Summary"])
+        self.table.verticalHeader().setVisible(False)
+        self.table.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.table.setSelectionMode(QAbstractItemView.SingleSelection)
+        self.table.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.table.horizontalHeader().setStretchLastSection(True)
+        self.table.horizontalHeader().setSectionResizeMode(QHeaderView.Interactive)
+        self.table.setColumnWidth(0, 160)
+    
+        self.table.setDragEnabled(False)
+        self.table.setDragDropMode(QAbstractItemView.NoDragDrop)
         layout.addWidget(self.table, 1)
+        self.table.itemDoubleClicked.connect(self._on_row_double_clicked)
 
         btn_row = QHBoxLayout()
         btn_row.addStretch(1)
@@ -323,47 +463,51 @@ class HistoryTab(QWidget):
         btn_row.addWidget(self.btn_restore)
         btn_row.addWidget(self.btn_delete)
         layout.addLayout(btn_row)
-
+        
         self.btn_restore.clicked.connect(self._on_restore_clicked)
         self.btn_delete.clicked.connect(self._on_delete_clicked)
 
         self.reload()
 
     # --- public API -------------------------------------------------
+    def _on_row_double_clicked(self, item):
+        hid = self._selected_history_id()
+        if not hid:
+            return
 
+        dialog = self.window()
+        if dialog is not None and hasattr(dialog, "enter_history_snapshot_mode"):
+            dialog.enter_history_snapshot_mode(hid)
+            
     def reload(self):
         """Reload history rows from the database."""
         self.table.setRowCount(0)
 
         if not self._entry_id:
-            self.info_label.setText("Save this entry first to see its history.")
             return
 
         rows = []
         try:
-            # this will come from db_ops, exported via core.db (see section 2)
             if hasattr(db, "fetch_entry_history"):
                 rows = db.fetch_entry_history(self._entry_id) or []
         except Exception:
             rows = []
 
         if not rows:
-            self.info_label.setText("No history recorded for this entry yet.")
             return
 
-        self.info_label.setText("")
         self.table.setRowCount(len(rows))
 
         for r, row in enumerate(rows):
             hid = row.get("id") or row.get("history_id") or ""
             when = row.get("changed_at") or row.get("snapshot_at") or ""
-            who = row.get("changed_by") or ""
             summary = row.get("summary") or ""
 
-            self.table.setItem(r, 0, QTableWidgetItem(str(hid)))
-            self.table.setItem(r, 1, QTableWidgetItem(str(when)))
-            self.table.setItem(r, 2, QTableWidgetItem(str(who)))
-            self.table.setItem(r, 3, QTableWidgetItem(str(summary)))
+            when_item = QTableWidgetItem(str(when))
+            when_item.setData(Qt.UserRole, hid)
+            self.table.setItem(r, 0, when_item)
+
+            self.table.setItem(r, 1, QTableWidgetItem(str(summary)))
 
     # --- helpers ----------------------------------------------------
 
@@ -374,9 +518,14 @@ class HistoryTab(QWidget):
         item = self.table.item(row, 0)
         if not item:
             return None
+
+        hid = item.data(Qt.UserRole)
+        if hid is None:
+            hid = item.text()
+
         try:
-            return int(item.text())
-        except ValueError:
+            return int(hid)
+        except (TypeError, ValueError):
             return None
 
     def _on_restore_clicked(self):

@@ -286,6 +286,45 @@ QWidget#HotkeysPanel QKeySequenceEdit:disabled {
 #ModernTable QScrollBar::handle:horizontal:hover {
     background: #3e2d56;
 }
+/* ===== HistoryTable (Galaxy Theme Integration) ===== */
+#HistoryTable {
+    background-color: #0b0614;
+    alternate-background-color: #140b24;
+    color: #ece6ff;
+    border: 1px solid #3a2a54;
+    border-radius: 0px;
+    gridline-color: #332447;
+    selection-background-color: #b26bff;
+    selection-color: #ffffff;
+    font-family: "Segoe UI", "Inter", "Roboto", Arial, sans-serif;
+    font-size: 13px;
+}
+
+/* Headers */
+QHeaderView::section {
+    background-color: #191024;
+    color: #e1d7ff;
+    border: none;
+    border-bottom: 1px solid #332447;
+    padding: 6px 8px;
+    font-weight: 600;
+    font-size: 13px;
+}
+
+QHeaderView::section:hover {
+    background-color: #251338;
+}
+
+QHeaderView {
+    border-top-left-radius: 0px;
+    border-top-right-radius: 0px;
+}
+
+/* Corner area blend */
+#HistoryTable QTableCornerButton::section {
+    background-color: #191024;
+    border: none;
+}
 
 /* Corner section to blend with header */
 #ModernTable QTableCornerButton::section {
