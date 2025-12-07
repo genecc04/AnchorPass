@@ -210,12 +210,6 @@ def update_entry_full(id_: int, data: Dict[str, Any]) -> None:
     if not d:
         return
 
-    if not skip_history:
-        try:
-            add_entry_history_snapshot(id_, d)
-        except Exception:
-            pass
-
     if "date_modified" in cols and "date_modified" not in d:
         d["date_modified"] = _now_iso()
     sets = ",".join(f"{k}=?" for k in d.keys())

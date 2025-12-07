@@ -2,6 +2,7 @@ from __future__ import annotations
 from datetime import date, timedelta
 from typing import List, Tuple
 from .db_schema import get_connection, _now_iso
+from .db_ops import fetch_entry_dict, add_entry_history_snapshot
 
 def set_expiry_date(id_: int, expiry_date: str | None) -> None:
     """
@@ -27,6 +28,17 @@ def change_status(id_: int, new_status: str) -> None:
     if new_status not in valid_statuses:
         raise ValueError(f"Invalid status: {new_status}. Must be one of {valid_statuses}")
     
+    original_entry = fetch_entry_dict(id_)
+    if not original_entry:
+        raise ValueError(f"Entry with id {id_} not found")
+
+    summary = f"Changed status to {new_status}"
+
+    try:
+        add_entry_history_snapshot(id_, original_entry, summary)
+    except Exception as e:
+        print(f"Error while adding history snapshot: {e}")
+    
     with get_connection() as conn:
         c = conn.cursor()
         now = _now_iso()
@@ -46,7 +58,7 @@ def change_status(id_: int, new_status: str) -> None:
                 "UPDATE passwords SET status=?, deleted_at=?, date_modified=? WHERE id=?;",
                 (new_status, now, now, id_)
             )
-        else:  
+        else:
             c.execute(
                 """UPDATE passwords 
                    SET status=?, expired_at=NULL, archived_at=NULL, deleted_at=NULL, date_modified=? 

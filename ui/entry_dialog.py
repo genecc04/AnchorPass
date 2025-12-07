@@ -453,7 +453,7 @@ class HistoryTab(QWidget):
         self.table.horizontalHeader().setStretchLastSection(True)
         self.table.horizontalHeader().setSectionResizeMode(QHeaderView.Interactive)
         self.table.setColumnWidth(0, 160)
-    
+        self.table.setSortingEnabled(True)
         self.table.setDragEnabled(False)
         self.table.setDragDropMode(QAbstractItemView.NoDragDrop)
         layout.addWidget(self.table, 1)
@@ -482,6 +482,10 @@ class HistoryTab(QWidget):
             dialog.enter_history_snapshot_mode(hid)
             
     def reload(self):
+        was_sorting = self.table.isSortingEnabled()
+        self.table.setSortingEnabled(False)
+        
+        self.table.clearContents()
         self.table.setRowCount(0)
 
         if not self._entry_id:
@@ -491,7 +495,7 @@ class HistoryTab(QWidget):
         try:
             if hasattr(db, "fetch_entry_history"):
                 rows = db.fetch_entry_history(self._entry_id) or []
-        except Exception:
+        except Exception as e:
             rows = []
 
         if not rows:
@@ -503,15 +507,18 @@ class HistoryTab(QWidget):
             hid = row.get("id") or row.get("history_id") or ""
             raw_when = row.get("changed_at") or row.get("snapshot_at") or ""
             summary = row.get("summary") or ""
-
             display_when = self._format_when(raw_when)
 
             when_item = QTableWidgetItem(str(display_when))
             when_item.setData(Qt.UserRole, hid)
             when_item.setData(Qt.UserRole + 1, str(raw_when))
             self.table.setItem(r, 0, when_item)
+            summary_item = QTableWidgetItem(str(summary))
+            self.table.setItem(r, 1, summary_item)
 
-            self.table.setItem(r, 1, QTableWidgetItem(str(summary)))
+        self.table.setSortingEnabled(was_sorting)
+        
+        QTimer.singleShot(0, self.table.viewport().update)
 
     def _selected_history_id(self) -> int | None:
         row = self.table.currentRow()
@@ -567,7 +574,6 @@ class HistoryTab(QWidget):
             s = str(when).strip()
             dt = None
 
-            # Try structured datetime strings first
             for fmt in (
                 "%Y-%m-%d %H:%M:%S",
                 "%Y-%m-%d %H:%M",
@@ -582,7 +588,6 @@ class HistoryTab(QWidget):
                 except ValueError:
                     continue
 
-            # ISO-formatted strings
             if dt is None:
                 try:
                     s_iso = s.replace("Z", "+00:00")
@@ -590,35 +595,27 @@ class HistoryTab(QWidget):
                 except Exception:
                     pass
 
-            # Unix timestamp (seconds or ms) – treat as UTC, NOT local time
             if dt is None:
                 try:
                     ts = int(s)
                     if ts > 10_000_000_000:
-                        ts = ts / 1000.0  # assume ms
-                    dt = datetime.utcfromtimestamp(ts)  # <-- changed here
+                        ts = ts / 1000.0
+                    dt = datetime.utcfromtimestamp(ts)
                 except Exception:
                     pass
 
             if dt is None:
                 return s
 
-        # Ensure the datetime is timezone-aware (convert to UTC if necessary)
         if dt.tzinfo is None:
-            # If naive datetime, assume it's in UTC (you can replace UTC with a different timezone if needed)
             dt = pytz.utc.localize(dt)
 
-        # Convert to local timezone (assuming you want the local timezone)
-        local_timezone = pytz.timezone('Asia/Manila')  # Use the correct timezone here
+        local_timezone = pytz.timezone('Asia/Manila')
         dt = dt.astimezone(local_timezone)
 
-        # Pretty 12-hour format: e.g. "Dec 07, 2025 2:32 PM"
-        date_str = dt.strftime("%b %d, %Y")  # Example: "Dec 07, 2025"
-        time_str = dt.strftime("%I:%M %p")   # Example: "02:32 PM" (note the zero before hour)
+        date_str = dt.strftime("%b %d, %Y")
+        time_str = dt.strftime("%I:%M %p")
 
-        # Remove leading zero for single-digit hours and remove the space between time and AM/PM
         time_str = time_str.lstrip("0").replace(" ", "")
         
         return f"{date_str} {time_str}"
-
-
