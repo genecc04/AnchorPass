@@ -77,8 +77,8 @@ QMenu#RoundedMenu::item:disabled {
 
 /* Frame / page area */
 #EntryTabs::pane {
-    border: 1px solid #333333;
-    background: #181818;
+    border: none;
+    background: transparent;
     border-radius: 0px;
     padding: 4px;
 }
@@ -90,22 +90,20 @@ QMenu#RoundedMenu::item:disabled {
 
 /* Default (unselected) tab */
 #EntryTabs QTabBar::tab {
-    background: #1f1f1f;
+    background: #121212;
     color: #dcdcdc;
     border: 1px solid #333333;
     padding: 6px 14px;
     margin-right: 2px;
     margin-top: 2px;
-    border-top-left-radius: 6px;
-    border-top-right-radius: 6px;
+    border-radius: 6px;
 }
 
 /* Selected tab */
 #EntryTabs QTabBar::tab:selected {
-    background: #121212;
+    background: #1f1f1f;
     color: #ffffff;
     border-color: #333333;
-    border-bottom-color: #121212;
 }
 
 /* Hover (unselected) */
@@ -118,7 +116,7 @@ QMenu#RoundedMenu::item:disabled {
 #EntryTabs QTabBar::tab:disabled {
     background-color: #1a1a1a;
     color: #777777;
-    border-color: #2a2a2a;
+    border-color: transparent;
 }
 
 /* Optional: inner page content background inside settings tabs */
@@ -126,9 +124,31 @@ QMenu#RoundedMenu::item:disabled {
     background-color: #121212;
 }
 
-#EntryTabs PlusMinusSpinBox, #EntryTabs QPushButton, #EntryTabs QComboBox, #EntryTabs QLineEdit, #EntryTabs QTimeEdit{
+#EntryTabs PlusMinusSpinBox, #EntryTabs QComboBox, #EntryTabs QLineEdit, #EntryTabs QTimeEdit{
     background-color: #181818;
 }
+
+#EntryTabs QPushButton {
+    background-color: #1f1f1f;
+    border: 1px solid #333333;
+    padding: 8px 14px;
+    border-radius: 6px;
+    color: #e6e6e6;
+}
+#EntryTabs QPushButton:hover {
+    background-color: #061019;  /* subtle dark hover */
+    color: #ffffff;
+}
+#EntryTabs QPushButton:pressed {
+    background-color: #075cb2;  /* bright blue active */
+    color: #ffffff;
+}
+#EntryTabs QPushButton:disabled {
+    background-color: #1a1a1a;
+    color: #777777;
+    border-color: #2a2a2a;
+}
+
 /* Main tab widget */
 #SettingsTabs {
     background: transparent;

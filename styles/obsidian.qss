@@ -76,8 +76,8 @@ QMenu#RoundedMenu::item:disabled {
 
 /* The frame / page area */
 #EntryTabs::pane {
-    border: 1px solid #313b47;
-    background: #141920;
+    border: none;
+    background: transparent;
     border-radius: 0px;
     padding: 4px;
 }
@@ -89,22 +89,20 @@ QMenu#RoundedMenu::item:disabled {
 
 /* Default tab appearance */
 #EntryTabs QTabBar::tab {
-    background: #171b23;
+    background: #0c0f14;
     color: #dde3ea;
     border: 1px solid #313b47;
     padding: 6px 14px;
     margin-right: 2px;
     margin-top: 2px;
-    border-top-left-radius: 6px;
-    border-top-right-radius: 6px;
+    border-radius: 6px;
 }
 
 /* Selected tab */
 #EntryTabs QTabBar::tab:selected {
-    background: #0c0f14;
+    background: #171b23;
     color: #ffffff;
     border-color: #313b47;
-    border-bottom-color: #0c0f14;
 }
 
 /* Hover (unselected) */
@@ -117,7 +115,7 @@ QMenu#RoundedMenu::item:disabled {
 #EntryTabs QTabBar::tab:disabled {
     background: #151920;
     color: #7b858f;
-    border-color: #262c36;
+    border-color: transparent;
 }
 
 /* Optional: inner pages inside settings tabs */
@@ -125,8 +123,29 @@ QMenu#RoundedMenu::item:disabled {
     background-color: #0c0f14;
 }
 
-#EntryTabs PlusMinusSpinBox, #EntryTabs QPushButton, #EntryTabs QComboBox, #EntryTabs QLineEdit, #EntryTabs QTimeEdit{
+#EntryTabs PlusMinusSpinBox, #EntryTabs QComboBox, #EntryTabs QLineEdit, #EntryTabs QTimeEdit{
     background-color: #141920;
+}
+
+#EntryTabs QPushButton {
+    background-color: #171b23;
+    border: 1px solid #313b47;
+    padding: 8px 14px;
+    border-radius: 6px;
+    color: #e4e9ef;
+}
+#EntryTabs QPushButton:hover {
+    background-color: #0b2529;
+    color: #ffffff;
+}
+#EntryTabs QPushButton:pressed {
+    background-color: #00b3c0;
+    color: #ffffff;
+}
+#EntryTabs QPushButton:disabled {
+    background-color: #151920;
+    color: #7b858f;
+    border-color: #262c36;
 }
 
 /* ===== Settings Tabs (Obsidian Theme) ===== */

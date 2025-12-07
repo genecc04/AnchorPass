@@ -10,6 +10,8 @@ from pwGenerator.password_window import PasswordGeneratorDialog
 from core.settings_manager import SettingsManager
 import json
 from core import db
+from datetime import datetime
+from ui.widgets.custom_table import ModernTable
 
 class CollapsibleSection(QWidget):
 
@@ -436,7 +438,7 @@ class HistoryTab(QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(6)
 
-        self.table = QTableWidget(0, 2, self)
+        self.table = ModernTable(0, 2, self)
         self.table.setObjectName("HistoryTable")
 
         header = self.table.horizontalHeader()
@@ -469,7 +471,6 @@ class HistoryTab(QWidget):
 
         self.reload()
 
-    # --- public API -------------------------------------------------
     def _on_row_double_clicked(self, item):
         hid = self._selected_history_id()
         if not hid:
@@ -480,7 +481,6 @@ class HistoryTab(QWidget):
             dialog.enter_history_snapshot_mode(hid)
             
     def reload(self):
-        """Reload history rows from the database."""
         self.table.setRowCount(0)
 
         if not self._entry_id:
@@ -500,16 +500,17 @@ class HistoryTab(QWidget):
 
         for r, row in enumerate(rows):
             hid = row.get("id") or row.get("history_id") or ""
-            when = row.get("changed_at") or row.get("snapshot_at") or ""
+            raw_when = row.get("changed_at") or row.get("snapshot_at") or ""
             summary = row.get("summary") or ""
 
-            when_item = QTableWidgetItem(str(when))
+            display_when = self._format_when(raw_when)
+
+            when_item = QTableWidgetItem(str(display_when))
             when_item.setData(Qt.UserRole, hid)
+            when_item.setData(Qt.UserRole + 1, str(raw_when))
             self.table.setItem(r, 0, when_item)
 
             self.table.setItem(r, 1, QTableWidgetItem(str(summary)))
-
-    # --- helpers ----------------------------------------------------
 
     def _selected_history_id(self) -> int | None:
         row = self.table.currentRow()
@@ -553,3 +554,57 @@ class HistoryTab(QWidget):
         except Exception:
             pass
         self.reload()
+
+
+    def _format_when(self, when) -> str:
+        if not when:
+            return ""
+
+        if isinstance(when, datetime):
+            dt = when
+        else:
+            s = str(when).strip()
+            dt = None
+            
+            for fmt in (
+                "%Y-%m-%d %H:%M:%S",
+                "%Y-%m-%d %H:%M",
+                "%Y-%m-%dT%H:%M:%S",
+                "%Y-%m-%dT%H:%M:%S.%f",
+                "%Y-%m-%dT%H:%M:%S%z",
+                "%Y-%m-%dT%H:%M:%S.%f%z",
+            ):
+                try:
+                    dt = datetime.strptime(s, fmt)
+                    break
+                except ValueError:
+                    continue
+
+            # ISO-formatted strings
+            if dt is None:
+                try:
+                    s_iso = s.replace("Z", "+00:00")
+                    dt = datetime.fromisoformat(s_iso)
+                except Exception:
+                    pass
+
+            # Unix timestamp (seconds or ms) – treat as UTC, NOT local time
+            if dt is None:
+                try:
+                    ts = int(s)
+                    if ts > 10_000_000_000:
+                        ts = ts / 1000.0  # assume ms
+                    dt = datetime.utcfromtimestamp(ts)  # <-- changed here
+                except Exception:
+                    pass
+
+            if dt is None:
+                return s
+
+        # Pretty 12h format: e.g. "Dec 07, 2025 2:32PM"
+        date_str = dt.strftime("%b %d, %Y")
+        time_str = dt.strftime("%I:%M %p")     # "02:32 PM"
+        time_str = time_str.lstrip("0").replace(" ", "")  # "2:32PM"
+        return f"{date_str} {time_str}"
+
+
