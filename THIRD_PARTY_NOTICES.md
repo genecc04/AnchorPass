@@ -103,3 +103,26 @@ Debian packaging for the Python ***bcrypt*** library lists the primary upstream 
 > Copyright (c) 2013–2019 Donald Stufft, Alex Gaynor, Paul Kehrer  
 
 Additional contributors are acknowledged in the upstream project’s history.
+
+---
+
+## pytz
+
+- **Package:** ***pytz***
+- **Upstream:** https://github.com/stub42/pytz
+- **Authors:** Stuart Bishop
+- **License:** MIT License
+
+The `pytz` library is provided under the MIT License. You should include the full text of this license in your distribution (for example in a ***LICENSE-MIT*** file, or appended to your main ***LICENSE***). The canonical text is available from https://opensource.org/licenses/MIT.
+
+**Copyright**
+
+According to Debian’s package metadata, the upstream project is attributed as:  
+
+> Copyright (c) 2003–2021 Stuart Bishop
+
+---
+
+For full texts, attributions, and any required NOTICE content, see  
+***THIRD_PARTY_NOTICES.md*** and any additional license files distributed with  
+this project.

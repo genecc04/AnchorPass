@@ -12,6 +12,7 @@ import json
 from core import db
 from datetime import datetime
 from ui.widgets.custom_table import ModernTable
+import pytz
 
 class CollapsibleSection(QWidget):
 
@@ -565,7 +566,8 @@ class HistoryTab(QWidget):
         else:
             s = str(when).strip()
             dt = None
-            
+
+            # Try structured datetime strings first
             for fmt in (
                 "%Y-%m-%d %H:%M:%S",
                 "%Y-%m-%d %H:%M",
@@ -601,10 +603,22 @@ class HistoryTab(QWidget):
             if dt is None:
                 return s
 
-        # Pretty 12h format: e.g. "Dec 07, 2025 2:32PM"
-        date_str = dt.strftime("%b %d, %Y")
-        time_str = dt.strftime("%I:%M %p")     # "02:32 PM"
-        time_str = time_str.lstrip("0").replace(" ", "")  # "2:32PM"
+        # Ensure the datetime is timezone-aware (convert to UTC if necessary)
+        if dt.tzinfo is None:
+            # If naive datetime, assume it's in UTC (you can replace UTC with a different timezone if needed)
+            dt = pytz.utc.localize(dt)
+
+        # Convert to local timezone (assuming you want the local timezone)
+        local_timezone = pytz.timezone('Asia/Manila')  # Use the correct timezone here
+        dt = dt.astimezone(local_timezone)
+
+        # Pretty 12-hour format: e.g. "Dec 07, 2025 2:32 PM"
+        date_str = dt.strftime("%b %d, %Y")  # Example: "Dec 07, 2025"
+        time_str = dt.strftime("%I:%M %p")   # Example: "02:32 PM" (note the zero before hour)
+
+        # Remove leading zero for single-digit hours and remove the space between time and AM/PM
+        time_str = time_str.lstrip("0").replace(" ", "")
+        
         return f"{date_str} {time_str}"
 
 

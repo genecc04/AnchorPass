@@ -58,6 +58,7 @@ AnchorPass is a desktop password manager built with PySide6 and SQLite, featurin
 - **zxcvbn** for strength estimation.
 - **EFF Short Wordlist** for passphrase generation.
 - **pywin32** for Windows startup integration.
+- **pytz** for timezone handling.
 
 Third-party attributions are in **THIRD_PARTY_NOTICES.md** (MIT for zxcvbn; CC-BY-4.0 for the EFF list).  
 Please read those notices for details.

@@ -8,5 +8,8 @@ bcrypt>=4.0
 # Password strength estimator (used as: from zxcvbn import zxcvbn)
 zxcvbn>=4.4.28
 
+# Timezone management (used as: import pytz)
+pytz>=2021.1
+
 # Windows-only: used for creating Start Menu Startup shortcut (.lnk)
 pywin32>=306; platform_system == "Windows"
