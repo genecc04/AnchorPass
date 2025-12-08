@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QFormLayout, QLabel, QComboBox, 
-                               QCheckBox, QSizePolicy, QHBoxLayout)
+QCheckBox, QSizePolicy, QHBoxLayout)
 from PySide6.QtCore import Qt, QDate
 from datetime import datetime, timezone
 from PySide6.QtGui import QFont
@@ -10,6 +10,7 @@ from core.settings_manager import SettingsManager
 from ui.widgets.password_field import PasswordLineEdit
 from ui.entry_dialog_totp import TotpPreviewWidget
 from ui.widgets.rounded_context_menu import LineEdit, PlainTextEdit, DatePicker
+from core.utils.datetime_utils import format_datetime_with_separator
 
 class EntrySectionBase(QWidget):
     def _get_settings(self) -> SettingsManager:
@@ -424,10 +425,8 @@ class MetadataSection(EntrySectionBase):
         created_iso = self._entry.get("date_created") or now_utc_iso
         modified_iso = self._entry.get("date_modified") or now_utc_iso
         
-        self.date_created_lbl = QLabel(self._format_datetime(created_iso))
-        self.date_modified_lbl = QLabel(self._format_datetime(modified_iso))
-        self.date_created_lbl.setToolTip(self._format_datetime_tooltip(created_iso))
-        self.date_modified_lbl.setToolTip(self._format_datetime_tooltip(modified_iso))
+        self.date_created_lbl = QLabel(format_datetime_with_separator(created_iso))
+        self.date_modified_lbl = QLabel(format_datetime_with_separator(modified_iso))
         self.date_created_lbl.setProperty("secondary", True)
         self.date_modified_lbl.setProperty("secondary", True)
         
@@ -444,36 +443,6 @@ class MetadataSection(EntrySectionBase):
         
         self._update_status_timestamp_visibility(current_status)
     
-    def _parse_iso_datetime(self, iso_str: str) -> datetime | None:
-        if not iso_str:
-            return None
-        try:
-            dt = datetime.fromisoformat(iso_str)
-            if dt.tzinfo is None:
-                dt = dt.replace(tzinfo=timezone.utc)
-            return dt
-        except Exception:
-            return None
-    
-    def _format_datetime(self, iso_str: str) -> str:
-        dt = self._parse_iso_datetime(iso_str)
-        if not dt:
-            return "—"
-        local = dt.astimezone()
-        return local.strftime("%b %d, %Y · %I:%M %p")
-    
-    def _format_datetime_tooltip(self, iso_str: str) -> str:
-        dt = self._parse_iso_datetime(iso_str)
-        if not dt:
-            return ""
-        local = dt.astimezone()
-        utc = dt.astimezone(timezone.utc)
-        return (
-            f"Local: {local.strftime('%Y-%m-%d %H:%M:%S %Z')}\n"
-            f"UTC:   {utc.strftime('%Y-%m-%d %H:%M:%S %Z')}\n"
-            f"ISO:   {iso_str}"
-        )
-    
     def _update_status_timestamp_visibility(self, status: str):
         timestamp_map = {
             "expired": ("Expired at:", self._entry.get("expired_at")),
@@ -485,15 +454,12 @@ class MetadataSection(EntrySectionBase):
             label_text, timestamp_value = timestamp_map[status]
             self.status_timestamp_label.setText(label_text)
             if timestamp_value:
-                self.status_timestamp_value.setText(self._format_datetime(timestamp_value))
-                self.status_timestamp_value.setToolTip(self._format_datetime_tooltip(timestamp_value))
+                self.status_timestamp_value.setText(format_datetime_with_separator(timestamp_value))
             else:
                 self.status_timestamp_value.setText("-")
-                self.status_timestamp_value.setToolTip("")
         else:
             self.status_timestamp_label.setText("")
             self.status_timestamp_value.setText("")
-            self.status_timestamp_value.setToolTip("")
         
     def values(self) -> dict:
         expiry_date_value = None

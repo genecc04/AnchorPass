@@ -12,6 +12,7 @@ from ui.mixins.tree_mixin import TreeMixin
 from datetime import date, timedelta, datetime
 from typing import Optional
 from ui.widgets.rounded_menu import RoundedMenu
+from core.utils.datetime_utils import format_datetime
 
 def is_expiring_soon(expiry_date_str: str | None, days: int = 5) -> bool:
     if not expiry_date_str:
@@ -42,56 +43,6 @@ def days_left_if_expiring_soon(expiry_date_str: str | None, days: int = 5) -> Op
         return 0  
     
     return None
-
-def format_modified_date(raw) -> str:
-    if not raw:
-        return ""
-
-    if isinstance(raw, datetime):
-        dt = raw
-    else:
-        s = str(raw).strip()
-        dt = None
-
-        if s.isdigit():
-            try:
-                ts = int(s)
-                if len(s) == 13:
-                    ts //= 1000
-                dt = datetime.fromtimestamp(ts)
-            except Exception:
-                dt = None
-
-        if dt is None:
-            try:
-                iso_candidate = s.replace("Z", "+00:00")
-                dt = datetime.fromisoformat(iso_candidate)
-            except ValueError:
-                dt = None
-
-        if dt is None:
-            for fmt in (
-                "%Y-%m-%d %H:%M:%S",
-                "%Y-%m-%d %H:%M:%S.%f",
-                "%Y-%m-%dT%H:%M:%S",
-                "%Y-%m-%dT%H:%M:%S.%f",
-                "%Y-%m-%d",
-            ):
-                try:
-                    dt = datetime.strptime(s, fmt)
-                    break
-                except ValueError:
-                    continue
-
-        if dt is None:
-            return s
-
-    try:
-        dt = dt.astimezone()
-    except Exception:
-        pass 
-
-    return dt.strftime("%b %d, %Y %I:%M %p")
 
 COLUMN_DEFS = {
     "email": "Email",
@@ -327,7 +278,7 @@ class TableMixin:
                         or ""
                     )
 
-                    text = format_modified_date(modified_raw)
+                    text = format_datetime(modified_raw, format_str="%b %d, %Y")
                     it_mod = QTableWidgetItem(text)
                     it_mod.setFlags(flags)
 
@@ -343,7 +294,7 @@ class TableMixin:
                         or ""
                     )
 
-                    text = format_modified_date(created_raw)
+                    text = format_datetime(created_raw, format_str="%b %d, %Y")
                     it_crd = QTableWidgetItem(text)
                     it_crd.setFlags(flags)
 

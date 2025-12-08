@@ -3,8 +3,8 @@ from collections import OrderedDict
 from typing import Callable, Dict, Optional
 
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import ( QDialog, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QFormLayout, QWidget, 
-                               QTabWidget, QComboBox, QMessageBox)
+from PySide6.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QFormLayout, QWidget, 
+QTabWidget, QComboBox, QMessageBox)
 
 from ui.widgets.plusminus_spinbox import PlusMinusSpinBox
 

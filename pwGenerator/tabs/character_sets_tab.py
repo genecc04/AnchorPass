@@ -1,5 +1,5 @@
 import string
-from PySide6.QtWidgets import ( QWidget, QVBoxLayout, QGroupBox, QGridLayout, QCheckBox, QLineEdit, QFormLayout )
+from PySide6.QtWidgets import (QWidget, QVBoxLayout, QGroupBox, QGridLayout, QCheckBox, QLineEdit, QFormLayout)
 
 class CharacterSetsTab(QWidget):
 

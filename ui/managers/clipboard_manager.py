@@ -3,7 +3,6 @@ from typing import Optional, Callable
 from PySide6.QtWidgets import QApplication
 from PySide6.QtCore import QTimer
 
-
 class ClipboardManager:
     
     def __init__(self, settings_manager, status_callback: Optional[Callable[[str, int], None]] = None):

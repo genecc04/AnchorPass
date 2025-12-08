@@ -1,6 +1,6 @@
-from PySide6.QtWidgets import ( QTableWidget, QTableWidgetItem, QHeaderView, QAbstractItemView, QGraphicsDropShadowEffect, QLabel )
+from PySide6.QtWidgets import ( QTableWidget, QTableWidgetItem, QHeaderView, QAbstractItemView, QLabel )
 from PySide6.QtCore import Qt, QRectF
-from PySide6.QtGui import QColor, QBrush, QFont, QDrag, QPainter, QPixmap, QPainterPath
+from PySide6.QtGui import QBrush, QFont, QDrag, QPainter, QPixmap, QPainterPath
 
 from datetime import datetime
 

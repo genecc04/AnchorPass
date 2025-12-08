@@ -426,7 +426,6 @@ def restore_entry_from_history(entry_id: int, history_id: int) -> None:
         )
         conn.commit()
 
-
 def delete_entry_history(history_id: int) -> None:
     """
     Delete one history row.
@@ -435,39 +434,3 @@ def delete_entry_history(history_id: int) -> None:
         c = conn.cursor()
         c.execute("DELETE FROM entry_history WHERE id=?;", (history_id,))
         conn.commit()
-
-def _build_history_summary(original: dict, changes: dict) -> str:
-    """
-    Build a human-readable summary listing which columns changed.
-    """
-    cols = _get_passwords_columns()
-    ignore = {"id", "date_created", "date_modified", "deleted_at", "status"}
-
-    changed_cols: list[str] = []
-    for col in cols:
-        if col in ignore:
-            continue
-
-        old_val = original.get(col)
-        new_val = changes.get(col, old_val)
-
-        if new_val != old_val:
-            changed_cols.append(col)
-
-    if not changed_cols:
-        return original.get("site") or "Update"
-
-    label_map = {
-        "site": "Site",
-        "email": "Email",
-        "username": "Username",
-        "password_enc": "Password",
-        "notes": "Notes",
-        "category": "Category",
-    }
-    labels = [label_map.get(c, c) for c in changed_cols]
-
-    if len(labels) == 1:
-        return f"Changed {labels[0]}"
-
-    return "Changed " + ", ".join(labels)

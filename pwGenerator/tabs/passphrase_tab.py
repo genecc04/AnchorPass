@@ -1,7 +1,7 @@
 import secrets
 from pathlib import Path
 from PySide6.QtWidgets import ( QWidget, QVBoxLayout, QFormLayout, QSpinBox, QLineEdit, QCheckBox, QLabel, 
-                               QComboBox, QPushButton, QHBoxLayout, QFileDialog )
+QComboBox, QPushButton, QHBoxLayout, QFileDialog )
 
 
 class PassphraseTab(QWidget):

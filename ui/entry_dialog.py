@@ -1,7 +1,7 @@
 from __future__ import annotations
 from PySide6.QtWidgets import (QDialog, QVBoxLayout, QScrollArea, QWidget, QDialogButtonBox, QPushButton,
 QApplication, QToolButton, QFrame, QSizePolicy, QAbstractItemView, QHeaderView,
-QTabWidget, QTableWidget, QTableWidgetItem, QLabel, QHBoxLayout)
+QTabWidget, QTableWidgetItem, QHBoxLayout)
 from PySide6.QtCore import Qt, QEvent, QTimer
 from PySide6.QtGui import QFontDatabase
 from ui import material_symbols as ms
@@ -10,9 +10,9 @@ from pwGenerator.password_window import PasswordGeneratorDialog
 from core.settings_manager import SettingsManager
 import json
 from core import db
-from datetime import datetime
 from ui.widgets.custom_table import ModernTable
-import pytz
+from core.utils.datetime_utils import format_datetime_compact
+
 
 class CollapsibleSection(QWidget):
 
@@ -139,8 +139,8 @@ class EntryDialog(QDialog):
         self.adjustSize()
         full_size = self.sizeHint()
 
-        full_size.setWidth(max(full_size.width(), 500))
-        full_size.setHeight(max(full_size.height(), 450))
+        full_size.setWidth(max(full_size.width(), 750))
+        full_size.setHeight(max(full_size.height(), 515))
 
         self.resize(full_size)
         self.setMinimumSize(full_size)
@@ -377,6 +377,7 @@ class EntryDialog(QDialog):
         plain["status"] = old_row.get("status", "active")
 
         self._load_plain_into_sections(plain)
+        self._set_fields_readonly(True)
 
         if hasattr(self, "tabs"):
             self.tabs.setCurrentIndex(self.details_tab_index)
@@ -390,6 +391,9 @@ class EntryDialog(QDialog):
         """Return to normal mode after restore or back."""
         self._snapshot_mode = False
         self._snapshot_history_id = None
+
+        # Make all fields editable again
+        self._set_fields_readonly(False)
 
         if hasattr(self, "tabs") and self.tabs.tabBar() is not None:
             self.tabs.tabBar().setVisible(True)
@@ -422,6 +426,55 @@ class EntryDialog(QDialog):
         self._exit_snapshot_mode_and_reload()
 
 
+    def _set_fields_readonly(self, readonly: bool):
+        """
+        Set all input fields to read-only or editable mode.
+        Called when entering/exiting snapshot mode.
+        """
+        if self.basic_info:
+            if hasattr(self.basic_info, 'site'):
+                self.basic_info.site.setReadOnly(readonly)
+            if hasattr(self.basic_info, 'site_link'):
+                self.basic_info.site_link.setReadOnly(readonly)
+            if hasattr(self.basic_info, 'username'):
+                self.basic_info.username.setReadOnly(readonly)
+            if hasattr(self.basic_info, 'email'):
+                self.basic_info.email.setReadOnly(readonly)
+            if hasattr(self.basic_info, 'password'):
+                self.basic_info.password.setReadOnly(readonly)
+            if hasattr(self.basic_info, 'notes'):
+                self.basic_info.notes.setReadOnly(readonly)
+        
+        if self.auth:
+            if hasattr(self.auth, 'app_password'):
+                self.auth.app_password.setReadOnly(readonly)
+            if hasattr(self.auth, 'pin'):
+                self.auth.pin.setReadOnly(readonly)
+            if hasattr(self.auth, 'security_code'):
+                self.auth.security_code.setReadOnly(readonly)
+        
+        if self.recovery:
+            if hasattr(self.recovery, 'recovery_email'):
+                self.recovery.recovery_email.setReadOnly(readonly)
+            if hasattr(self.recovery, 'recovery_phone'):
+                self.recovery.recovery_phone.setReadOnly(readonly)
+            if hasattr(self.recovery, 'security_questions'):
+                self.recovery.security_questions.setReadOnly(readonly)
+            if hasattr(self.recovery, 'otp_secret'):
+                self.recovery.otp_secret.setReadOnly(readonly)
+        
+        if self.metadata:
+            if hasattr(self.metadata, 'category'):
+                self.metadata.category.setEnabled(not readonly)
+            if hasattr(self.metadata, 'tags'):
+                self.metadata.tags.setReadOnly(readonly)
+            if hasattr(self.metadata, 'favorite'):
+                self.metadata.favorite.setEnabled(not readonly)
+            if hasattr(self.metadata, 'expiry_date'):
+                self.metadata.expiry_date.setEnabled(not readonly)
+            if hasattr(self.metadata, 'status'):
+                self.metadata.status.setEnabled(not readonly)
+
 class HistoryTab(QWidget):
     """
     Tab that shows history rows for a password entry.
@@ -430,7 +483,6 @@ class HistoryTab(QWidget):
         - db.restore_entry_from_history(entry_id, history_id)
         - db.delete_entry_history(history_id)
     """
-
     def __init__(self, entry_id: int | None, parent=None):
         super().__init__(parent)
         self._entry_id = entry_id
@@ -448,7 +500,7 @@ class HistoryTab(QWidget):
         self.table.setHorizontalHeaderLabels(["Changed at", "Summary"])
         self.table.verticalHeader().setVisible(False)
         self.table.setSelectionBehavior(QAbstractItemView.SelectRows)
-        self.table.setSelectionMode(QAbstractItemView.SingleSelection)
+        self.table.setSelectionMode(QAbstractItemView.ExtendedSelection)
         self.table.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.table.horizontalHeader().setStretchLastSection(True)
         self.table.horizontalHeader().setSectionResizeMode(QHeaderView.Interactive)
@@ -458,6 +510,7 @@ class HistoryTab(QWidget):
         self.table.setDragDropMode(QAbstractItemView.NoDragDrop)
         layout.addWidget(self.table, 1)
         self.table.itemDoubleClicked.connect(self._on_row_double_clicked)
+        self.table.itemSelectionChanged.connect(self._on_selection_changed)
 
         btn_row = QHBoxLayout()
         btn_row.addStretch(1)
@@ -471,6 +524,19 @@ class HistoryTab(QWidget):
         self.btn_delete.clicked.connect(self._on_delete_clicked)
 
         self.reload()
+
+    def _on_selection_changed(self):
+        """Update button states based on selection count."""
+        selected_count = len(self.table.selectionModel().selectedRows())
+        
+        self.btn_restore.setEnabled(selected_count == 1)
+        
+        self.btn_delete.setEnabled(selected_count > 0)
+        
+        if selected_count > 1:
+            self.btn_delete.setText(f"Delete {selected_count} history rows")
+        else:
+            self.btn_delete.setText("Delete history row")
 
     def _on_row_double_clicked(self, item):
         hid = self._selected_history_id()
@@ -489,6 +555,7 @@ class HistoryTab(QWidget):
         self.table.setRowCount(0)
 
         if not self._entry_id:
+            self._on_selection_changed()
             return
 
         rows = []
@@ -499,6 +566,7 @@ class HistoryTab(QWidget):
             rows = []
 
         if not rows:
+            self._on_selection_changed()
             return
 
         self.table.setRowCount(len(rows))
@@ -507,8 +575,8 @@ class HistoryTab(QWidget):
             hid = row.get("id") or row.get("history_id") or ""
             raw_when = row.get("changed_at") or row.get("snapshot_at") or ""
             summary = row.get("summary") or ""
-            display_when = self._format_when(raw_when)
-
+            display_when = format_datetime_compact(raw_when)
+            
             when_item = QTableWidgetItem(str(display_when))
             when_item.setData(Qt.UserRole, hid)
             when_item.setData(Qt.UserRole + 1, str(raw_when))
@@ -519,8 +587,10 @@ class HistoryTab(QWidget):
         self.table.setSortingEnabled(was_sorting)
         
         QTimer.singleShot(0, self.table.viewport().update)
+        QTimer.singleShot(0, self._on_selection_changed)
 
     def _selected_history_id(self) -> int | None:
+        """Get the history ID of the currently selected single row."""
         row = self.table.currentRow()
         if row < 0:
             return None
@@ -536,6 +606,28 @@ class HistoryTab(QWidget):
             return int(hid)
         except (TypeError, ValueError):
             return None
+
+    def _selected_history_ids(self) -> list[int]:
+        """Get all selected history IDs."""
+        history_ids = []
+        selected_rows = self.table.selectionModel().selectedRows()
+        
+        for index in selected_rows:
+            row = index.row()
+            item = self.table.item(row, 0)
+            if not item:
+                continue
+            
+            hid = item.data(Qt.UserRole)
+            if hid is None:
+                hid = item.text()
+            
+            try:
+                history_ids.append(int(hid))
+            except (TypeError, ValueError):
+                continue
+        
+        return history_ids
 
     def _on_restore_clicked(self):
         hid = self._selected_history_id()
@@ -553,69 +645,15 @@ class HistoryTab(QWidget):
             dialog.reload_details_from_db()
 
     def _on_delete_clicked(self):
-        hid = self._selected_history_id()
-        if not hid:
+        history_ids = self._selected_history_ids()
+        if not history_ids:
             return
-        try:
-            if hasattr(db, "delete_entry_history"):
-                db.delete_entry_history(hid)
-        except Exception:
-            pass
-        self.reload()
-
-
-    def _format_when(self, when) -> str:
-        if not when:
-            return ""
-
-        if isinstance(when, datetime):
-            dt = when
-        else:
-            s = str(when).strip()
-            dt = None
-
-            for fmt in (
-                "%Y-%m-%d %H:%M:%S",
-                "%Y-%m-%d %H:%M",
-                "%Y-%m-%dT%H:%M:%S",
-                "%Y-%m-%dT%H:%M:%S.%f",
-                "%Y-%m-%dT%H:%M:%S%z",
-                "%Y-%m-%dT%H:%M:%S.%f%z",
-            ):
-                try:
-                    dt = datetime.strptime(s, fmt)
-                    break
-                except ValueError:
-                    continue
-
-            if dt is None:
-                try:
-                    s_iso = s.replace("Z", "+00:00")
-                    dt = datetime.fromisoformat(s_iso)
-                except Exception:
-                    pass
-
-            if dt is None:
-                try:
-                    ts = int(s)
-                    if ts > 10_000_000_000:
-                        ts = ts / 1000.0
-                    dt = datetime.utcfromtimestamp(ts)
-                except Exception:
-                    pass
-
-            if dt is None:
-                return s
-
-        if dt.tzinfo is None:
-            dt = pytz.utc.localize(dt)
-
-        local_timezone = pytz.timezone('Asia/Manila')
-        dt = dt.astimezone(local_timezone)
-
-        date_str = dt.strftime("%b %d, %Y")
-        time_str = dt.strftime("%I:%M %p")
-
-        time_str = time_str.lstrip("0").replace(" ", "")
         
-        return f"{date_str} {time_str}"
+        for hid in history_ids:
+            try:
+                if hasattr(db, "delete_entry_history"):
+                    db.delete_entry_history(hid)
+            except Exception:
+                pass
+        
+        self.reload()

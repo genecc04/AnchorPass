@@ -17,7 +17,6 @@ from ui.widgets.rounded_context_menu import LineEdit
 if TYPE_CHECKING:
     from ui.main_window import MainWindow
 
-
 class UIBuilder:
     
     def __init__(self, window: 'MainWindow'):

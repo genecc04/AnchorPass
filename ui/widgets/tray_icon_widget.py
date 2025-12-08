@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QSystemTrayIcon, QMenu, QApplication, QMessageBox
+from PySide6.QtWidgets import QSystemTrayIcon, QApplication, QMessageBox
 from PySide6.QtGui import QIcon, QAction
 from PySide6.QtCore import QObject, Slot
 from ui.widgets.rounded_menu import RoundedMenu

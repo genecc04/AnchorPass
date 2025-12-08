@@ -34,7 +34,7 @@ def _plain_changed_keys(old_plain: dict, new_plain: dict) -> list[str]:
     """
     changed: list[str] = []
     keys = set(old_plain.keys()) | set(new_plain.keys())
-    ignore = {"id"}  # not a real content field
+    ignore = {"id"}
 
     for k in keys:
         if k in ignore:
@@ -45,16 +45,11 @@ def _plain_changed_keys(old_plain: dict, new_plain: dict) -> list[str]:
 
 
 def _build_history_summary(changed_keys: list[str], plain_after: dict) -> str:
-    """
-    Build a human-friendly summary like:
-        "facebook.com: Changed Password, Notes"
-    using the list of changed plaintext keys.
-    """
     if not changed_keys:
         return plain_after.get("site") or "Update"
-
-    # map internal keys to nice labels
+    
     labels = [_FIELD_LABELS.get(k, k) for k in changed_keys]
+    labels = [label if label.lower() != 'site' else 'Site/Title' for label in labels]
     if len(labels) == 1:
         changed_text = f"Changed {labels[0]}"
     else:
@@ -62,7 +57,7 @@ def _build_history_summary(changed_keys: list[str], plain_after: dict) -> str:
 
     site = (plain_after.get("site") or "").strip()
     if site:
-        return f"{site}: {changed_text}"
+        return f"{changed_text}"
     return changed_text
 
 class CrudMixin:
