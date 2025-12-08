@@ -124,7 +124,7 @@ QMenu#RoundedMenu::item:disabled {
     background-color: #121212;
 }
 
-#EntryTabs PlusMinusSpinBox, #EntryTabs QComboBox, #EntryTabs QLineEdit, #EntryTabs QTimeEdit{
+#EntryTabs PlusMinusSpinBox, #EntryTabs QComboBox, #EntryTabs QLineEdit, #EntryTabs QTimeEdit, #EntryTabs QPlainTextEdit{
     background-color: #181818;
 }
 
