@@ -1,7 +1,7 @@
 # Credits
 
 **Project:** AnchorPass
-**Version:** v1.2.6 Beta
+**Version:** v1.3.0 Beta
 **Status:** Private testing  
 
 ---
