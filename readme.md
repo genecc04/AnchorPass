@@ -1,6 +1,8 @@
 # AnchorPass (PySide6)
 
-AnchorPass is a desktop password manager built with PySide6 and SQLite, featuring a clean, keyboard-friendly UI, built-in password generator, TOTP authenticator, and automatic backups. It uses strong, modern cryptography to protect your vault while giving you practical tools like status-based lifecycle management, folder-like categories, and flexible column and view customization for your entries.
+AnchorPass is a personal upskilling and self improvement project, developed to test and showcase my skills in building a functional desktop application. Initially designed for my own use, the project grew into a larger offering when I realized that not everyone can afford subscription based password managers. As a result, I've decided to make it available to everyone, in the hopes that it can offer a free and accessible solution for secure password management, while also focusing on self improvement and enhancing the software’s quality to meet industry standards.
+
+AnchorPass is built with PySide6 and SQLite, featuring a clean, keyboard-friendly UI, a built-in password generator, TOTP authenticator, and automatic backups. It uses strong, modern cryptography to protect your vault while offering practical tools such as status-based lifecycle management, folder-like categories, and flexible column and view customization for your entries.
 
 ## Features
 
@@ -35,6 +37,11 @@ AnchorPass is a desktop password manager built with PySide6 and SQLite, featurin
   - **Automatic expiration checker** runs periodically; when entries expire, the UI (tree + table) refreshes.
   - **Expiry warnings** for entries that are about to expire (highlighted as Expiring with a tooltip showing days remaining).
 
+- **History**
+  - The History feature stores snapshots of entries prior to modifications.
+  - Previous versions of an entry can be restored from its history.
+  - Snapshots of entries can be deleted if needed.
+
 - **Backups**
   - Manual: "Backup now".
   - **Auto-backup on close** (configurable).
@@ -53,15 +60,27 @@ AnchorPass is a desktop password manager built with PySide6 and SQLite, featurin
 
 - **PySide6** for the UI.
 - **SQLite** for storage.
-- **cryptography** for encryption.
-- **bcrypt** for master password hashing.
-- **zxcvbn** for strength estimation.
-- **EFF Short Wordlist** for passphrase generation.
 - **pywin32** for Windows startup integration.
-- **pytz** for timezone handling.
 
-Third-party attributions are in **THIRD_PARTY_NOTICES.md** (MIT for zxcvbn; CC-BY-4.0 for the EFF list).  
-Please read those notices for details.
+- **cryptography** for encryption.
+  - **Licenses**: ***LICENSE-APACHE.md***, ***LICENSE-BSD.md***
+
+- **bcrypt** for master password hashing.
+  - **License**: ***LICENSE-APACHE.md***
+
+- **zxcvbn** for strength estimation.
+  - **License**: ***LICENSE-MIT.md***
+
+- **EFF Short Wordlist** for passphrase generation.
+  - **License**: ***LICENSE-CCBY.md***
+
+- **pytz** for timezone handling.
+  - **License**: ***LICENSE-MIT.md***
+
+- **Material Symbols & Icons (Google Fonts)**
+  - **License**: ***LICENSE-APACHE.md***
+
+Third-party attributions are in ***THIRD_PARTY_NOTICES.md*** Please read those notices for details.
 
 ## Security / Encryption
 
@@ -76,3 +95,6 @@ Please read those notices for details.
 - Like other password managers, AnchorPass cannot protect you if your computer is compromised by malware, keyloggers, or screen capture tools. Use it only on devices you trust.
 - If you lose or forget your master password, you will lose access to your vault contents. There is no backdoor or recovery key by design.
 - AnchorPass uses modern, well-known cryptographic primitives (AES via Fernet, PBKDF2-HMAC-SHA256 with a per-vault salt, and bcrypt for the master password). Security is an ongoing effort, and feedback or review from the community is welcome.
+
+## License
+AnchorPass is proprietary software. The source code is closed and protected by copyright law. Please refer to the ***LICENSE.md*** for more details.

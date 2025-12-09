@@ -123,6 +123,11 @@ jobs:
             --add-data "assets;assets" `
             --add-data ".\LICENSE.md;." `
             --add-data ".\THIRD_PARTY_NOTICES.md;." `
+            --add-data ".\LICENSE-APACHE.md;." `
+            --add-data ".\LICENSE-BSD.md;." `
+            --add-data ".\LICENSE-CCBY.md;." `
+            --add-data ".\LICENSE-MIT.md;." `
+            --add-data ".\readme.md;." `
             --add-data ".\CREDITS.md;."
 
       # NEW: make zip, same as before
