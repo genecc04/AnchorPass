@@ -1,12 +1,9 @@
 import secrets
 from collections import OrderedDict
 from typing import Callable, Dict, Optional
-
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QFormLayout, QWidget, 
 QTabWidget, QComboBox, QMessageBox)
-
-from ui.widgets.plusminus_spinbox import PlusMinusSpinBox
 
 from pwGenerator.tabs.character_sets_tab import CharacterSetsTab
 from pwGenerator.tabs.passphrase_tab import PassphraseTab
@@ -14,6 +11,7 @@ from pwGenerator.tabs.passphrase_tab import PassphraseTab
 from core.settings_manager import SettingsManager
 
 from ui.widgets.password_field import PasswordLineEdit
+from ui.widgets.rounded_context_menu import SpinBox
 
 
 class PasswordGeneratorDialog(QDialog):
@@ -35,7 +33,7 @@ class PasswordGeneratorDialog(QDialog):
         elif parent is not None and hasattr(parent, "settings"):
             self._settings = parent.settings
 
-        self.length = PlusMinusSpinBox()
+        self.length = SpinBox()
         self.length.setRange(4, 128)
         self.length.setValue(16)
 

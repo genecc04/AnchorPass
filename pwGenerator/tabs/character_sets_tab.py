@@ -1,5 +1,6 @@
 import string
-from PySide6.QtWidgets import (QWidget, QVBoxLayout, QGroupBox, QGridLayout, QCheckBox, QLineEdit, QFormLayout)
+from PySide6.QtWidgets import (QWidget, QVBoxLayout, QGroupBox, QGridLayout, QCheckBox, QFormLayout)
+from ui.widgets.rounded_context_menu import LineEdit
 
 class CharacterSetsTab(QWidget):
 
@@ -32,10 +33,10 @@ class CharacterSetsTab(QWidget):
             sets_grid.addWidget(cb, r, c)
         sets_group.setLayout(sets_grid)
 
-        self.custom_include = QLineEdit()
+        self.custom_include = LineEdit()
         self.custom_include.setPlaceholderText("e.g., @€# or any characters to include")
 
-        self.custom_exclude = QLineEdit()
+        self.custom_exclude = LineEdit()
         self.custom_exclude.setPlaceholderText("e.g., O0l1I| (characters to exclude)")
 
         form = QFormLayout()

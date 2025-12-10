@@ -1,10 +1,11 @@
-from PySide6.QtWidgets import ( QDialog, QFormLayout, QLineEdit, QDialogButtonBox, QFileDialog, 
+from PySide6.QtWidgets import ( QDialog, QFormLayout, QDialogButtonBox, QFileDialog, 
 QLabel, QMessageBox, QHBoxLayout, QWidget, QSpacerItem, QSizePolicy)
 from pathlib import Path
 from core.db_paths import DEFAULT_DB_DIR
 from core import db, security
 from core.settings_manager import SettingsManager
 from ui.widgets.password_field import PasswordLineEdit
+from ui.widgets.rounded_context_menu import LineEdit
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QFont
 
@@ -403,7 +404,7 @@ class ChangePasswordDialog(QDialog):
     def values(self):
         return self.old_pw.text(), self.new_pw.text()
 
-class ClickableLineEdit(QLineEdit):
+class ClickableLineEdit(LineEdit):
     clicked = Signal()
 
     def mousePressEvent(self, event):

@@ -1,7 +1,7 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 from PySide6.QtWidgets import (
-    QWidget, QVBoxLayout, QHBoxLayout, QLineEdit,
+    QWidget, QVBoxLayout, QHBoxLayout,
     QAbstractItemView, QSplitter, QLabel, QMessageBox, QDialog, QDialogButtonBox, QTextBrowser
 )
 from PySide6.QtCore import Qt
@@ -239,6 +239,8 @@ class UIBuilder:
 
         top.addWidget(self.window.columns_btn)
         parent_layout.addWidget(top_bar)
+        shortcut = QShortcut(QKeySequence("Ctrl+F"), self.window)
+        shortcut.activated.connect(self.window.search.setFocus)
 
         
     def _build_content_area(self, parent_layout):

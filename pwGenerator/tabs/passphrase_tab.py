@@ -1,8 +1,8 @@
 import secrets
 from pathlib import Path
-from PySide6.QtWidgets import ( QWidget, QVBoxLayout, QFormLayout, QSpinBox, QLineEdit, QCheckBox, QLabel, 
+from PySide6.QtWidgets import ( QWidget, QVBoxLayout, QFormLayout, QCheckBox, QLabel, 
 QComboBox, QPushButton, QHBoxLayout, QFileDialog )
-
+from ui.widgets.rounded_context_menu import LineEdit, SpinBox
 
 class PassphraseTab(QWidget):
 
@@ -13,11 +13,11 @@ class PassphraseTab(QWidget):
 
         layout = QVBoxLayout(self)
 
-        self.pp_words = QSpinBox()
+        self.pp_words = SpinBox()
         self.pp_words.setRange(2, 12)
         self.pp_words.setValue(4)
 
-        self.pp_separator = QLineEdit()
+        self.pp_separator = LineEdit()
         self.pp_separator.setPlaceholderText("e.g., -  _  space")
         self.pp_separator.setText("-")
 
@@ -33,7 +33,7 @@ class PassphraseTab(QWidget):
         self.pp_append_number = QCheckBox("Append random number (0–9)")
         self.pp_append_symbol = QCheckBox("Append random symbol (!@#$%^&*)")
 
-        self.wordlist_path_edit = QLineEdit()
+        self.wordlist_path_edit = LineEdit()
         self.wordlist_path_edit.setReadOnly(True)
         self.wordlist_path_edit.setPlaceholderText("No word list selected")
 
